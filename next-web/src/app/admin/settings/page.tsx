@@ -949,7 +949,7 @@ export default function AdminSettingsPage() {
           TOTP 加密密钥状态：{settings?.totp_encryption_key_configured ? '已配置' : '未配置'}
         </div>
         <div>
-          <FieldLabel>前端地址</FieldLabel>
+          <FieldLabel>站点地址</FieldLabel>
           <input
             value={form.frontend_url}
             onChange={(e) => updateForm('frontend_url', e.target.value)}

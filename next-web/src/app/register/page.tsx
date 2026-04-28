@@ -135,7 +135,7 @@ export default function RegisterPage() {
     setIsLoading(true);
 
     try {
-      // 密码长度校验等基础前端逻辑
+      // 密码长度校验等基础页面逻辑
       if (password.length < 6) {
         throw new Error(t('publicAuth.register.passwordTooShort'));
       }

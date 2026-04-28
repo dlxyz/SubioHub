@@ -12,7 +12,7 @@ import (
 )
 
 // PublicSettingsProvider is an interface to fetch public settings
-// This stub is needed for compilation when frontend is not embedded
+// This stub is needed for compilation when web assets are not embedded
 type PublicSettingsProvider interface {
 	GetPublicSettingsForInjection(ctx context.Context) (any, error)
 }
@@ -20,9 +20,9 @@ type PublicSettingsProvider interface {
 // FrontendServer is a stub for non-embed builds
 type FrontendServer struct{}
 
-// NewFrontendServer returns an error when frontend is not embedded
+// NewFrontendServer returns an error when web assets are not embedded
 func NewFrontendServer(settingsProvider PublicSettingsProvider) (*FrontendServer, error) {
-	return nil, errors.New("frontend not embedded")
+	return nil, errors.New("embedded web assets not available")
 }
 
 // InvalidateCache is a no-op for non-embed builds
@@ -31,14 +31,14 @@ func (s *FrontendServer) InvalidateCache() {}
 // Middleware returns a handler that returns 404 for non-embed builds
 func (s *FrontendServer) Middleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		c.String(http.StatusNotFound, "Frontend not embedded. Build with -tags embed to include frontend.")
+		c.String(http.StatusNotFound, "Embedded web assets are not available. Build with -tags embed to include them.")
 		c.Abort()
 	}
 }
 
 func ServeEmbeddedFrontend() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		c.String(http.StatusNotFound, "Frontend not embedded. Build with -tags embed to include frontend.")
+		c.String(http.StatusNotFound, "Embedded web assets are not available. Build with -tags embed to include them.")
 		c.Abort()
 	}
 }

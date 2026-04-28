@@ -1524,7 +1524,7 @@ func (h *OAuthHandler) ExchangeSetupTokenCode(c *gin.Context) {
 
 // CookieAuthRequest represents the request for cookie-based authentication
 type CookieAuthRequest struct {
-	SessionKey string `json:"code" binding:"required"` // Using 'code' field as sessionKey (frontend sends it this way)
+	SessionKey string `json:"code" binding:"required"` // Using 'code' field as sessionKey (the web client sends it this way)
 	ProxyID    *int64 `json:"proxy_id"`
 }
 

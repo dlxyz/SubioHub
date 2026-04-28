@@ -175,7 +175,7 @@ type LinuxDoConnectConfig struct {
 	UserInfoURL         string `mapstructure:"userinfo_url"`
 	Scopes              string `mapstructure:"scopes"`
 	RedirectURL         string `mapstructure:"redirect_url"`          // 后端回调地址（需在提供方后台登记）
-	FrontendRedirectURL string `mapstructure:"frontend_redirect_url"` // 前端接收 token 的路由（默认：/auth/linuxdo/callback）
+	FrontendRedirectURL string `mapstructure:"frontend_redirect_url"` // Web 端接收 token 的路由（默认：/auth/linuxdo/callback）
 	TokenAuthMethod     string `mapstructure:"token_auth_method"`     // client_secret_post / client_secret_basic / none
 	UsePKCE             bool   `mapstructure:"use_pkce"`
 
@@ -199,7 +199,7 @@ type OIDCConnectConfig struct {
 	JWKSURL              string `mapstructure:"jwks_url"`
 	Scopes               string `mapstructure:"scopes"`                // 默认 "openid email profile"
 	RedirectURL          string `mapstructure:"redirect_url"`          // 后端回调地址（需在提供方后台登记）
-	FrontendRedirectURL  string `mapstructure:"frontend_redirect_url"` // 前端接收 token 的路由（默认：/auth/oidc/callback）
+	FrontendRedirectURL  string `mapstructure:"frontend_redirect_url"` // Web 端接收 token 的路由（默认：/auth/oidc/callback）
 	TokenAuthMethod      string `mapstructure:"token_auth_method"`     // client_secret_post / client_secret_basic / none
 	UsePKCE              bool   `mapstructure:"use_pkce"`
 	ValidateIDToken      bool   `mapstructure:"validate_id_token"`
@@ -247,7 +247,7 @@ type ServerConfig struct {
 	Host               string    `mapstructure:"host"`
 	Port               int       `mapstructure:"port"`
 	Mode               string    `mapstructure:"mode"`                  // debug/release
-	FrontendURL        string    `mapstructure:"frontend_url"`          // 前端基础 URL，用于生成邮件中的外部链接
+	FrontendURL        string    `mapstructure:"frontend_url"`          // 站点基础 URL，用于生成邮件中的外部链接
 	ReadHeaderTimeout  int       `mapstructure:"read_header_timeout"`   // 读取请求头超时（秒）
 	IdleTimeout        int       `mapstructure:"idle_timeout"`          // 空闲连接超时（秒）
 	TrustedProxies     []string  `mapstructure:"trusted_proxies"`       // 可信代理列表（CIDR/IP）

@@ -49,7 +49,7 @@ func (s *Stripe) ensureInit() {
 	}
 }
 
-// GetPublishableKey returns the publishable key for frontend use.
+// GetPublishableKey returns the publishable key for web client use.
 func (s *Stripe) GetPublishableKey() string {
 	return s.config["publishableKey"]
 }

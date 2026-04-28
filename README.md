@@ -38,7 +38,7 @@ SubioHub is a self-hosted AI API gateway platform built for unified upstream acc
 | Component | Technology |
 |-----------|------------|
 | Backend | Go 1.25.7, Gin, Ent |
-| Frontend | Next.js 15+, React, TailwindCSS |
+| Web | Next.js 15+, React, TailwindCSS |
 | Database | PostgreSQL 15+ |
 | Cache/Queue | Redis 7+ |
 

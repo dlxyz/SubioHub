@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <AppLayout>
     <div class="mx-auto max-w-4xl space-y-6">
       <!-- Loading State -->
@@ -906,7 +906,7 @@
               </div>
               <Toggle v-model="form.password_reset_enabled" />
             </div>
-            <!-- Frontend URL - Only show when password reset is enabled -->
+            <!-- Site URL - Only show when password reset is enabled -->
             <div
               v-if="form.email_verify_enabled && form.password_reset_enabled"
               class="border-t border-gray-100 pt-4 dark:border-dark-700"

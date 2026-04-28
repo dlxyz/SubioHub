@@ -5,7 +5,7 @@ import "time"
 // Ops alert rule/event models.
 //
 // NOTE: These are admin-facing DTOs and intentionally keep JSON naming aligned
-// with the existing ops dashboard frontend (backup style).
+// with the existing ops dashboard web client.
 
 const (
 	OpsAlertStatusFiring         = "firing"

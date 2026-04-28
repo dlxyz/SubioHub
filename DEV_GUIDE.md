@@ -37,7 +37,7 @@
 # golangci-lint v2.7
 go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.7
 
-# pnpm (前端包管理)
+# pnpm (Web 包管理)
 npm install -g pnpm
 ```
 
@@ -54,7 +54,7 @@ npm install -g pnpm
 ### CI 要求
 
 - Go 版本必须是 **1.25.7**
-- 前端使用 `pnpm install --frozen-lockfile`，必须提交 `pnpm-lock.yaml`
+- Web 端使用 `pnpm install --frozen-lockfile`，必须提交 `pnpm-lock.yaml`
 
 ### 本地测试命令
 
@@ -209,10 +209,10 @@ git add ent/       # 生成的文件也要提交
 
 ---
 
-### 坑 10：前端测试看似正常，但后端调用失败（模型映射被批量误改）
+### 坑 10：Web 端测试看似正常，但后端调用失败（模型映射被批量误改）
 
 **典型现象**：
-- 前端按钮点测看起来正常；
+- Web 端按钮点测看起来正常；
 - 实际通过 API/客户端调用时返回 `Service temporarily unavailable` 或提示无可用账号；
 - 常见于 OpenAI 账号（例如 Codex 模型）在批量修改后突然不可用。
 

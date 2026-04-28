@@ -32,7 +32,7 @@ type OpsEmailReportConfig struct {
 }
 
 // OpsEmailNotificationConfigUpdateRequest allows partial updates, while the
-// frontend can still send the full config shape.
+// web client can still send the full config shape.
 type OpsEmailNotificationConfigUpdateRequest struct {
 	Alert  *OpsEmailAlertConfig  `json:"alert"`
 	Report *OpsEmailReportConfig `json:"report"`

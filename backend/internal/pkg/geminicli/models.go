@@ -1,7 +1,7 @@
 package geminicli
 
 // Model represents a selectable Gemini model for UI/testing purposes.
-// Keep JSON fields consistent with existing frontend expectations.
+// Keep JSON fields consistent with existing web client expectations.
 type Model struct {
 	ID          string `json:"id"`
 	Type        string `json:"type"`

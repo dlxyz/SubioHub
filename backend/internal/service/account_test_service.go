@@ -756,7 +756,7 @@ func (s *AccountTestService) buildCodeAssistRequest(ctx context.Context, accessT
 }
 
 // createGeminiTestPayload creates a minimal test payload for Gemini API.
-// Image models use the image-generation path so the frontend can preview the returned image.
+// Image models use the image-generation path so the web client can preview the returned image.
 func createGeminiTestPayload(modelID string, prompt string) []byte {
 	if isImageGenerationModel(modelID) {
 		imagePrompt := strings.TrimSpace(prompt)

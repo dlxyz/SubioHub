@@ -38,7 +38,7 @@ SubioHub 是一个自托管的 AI API 网关平台，面向统一上游接入、
 | 组件 | 技术 |
 |------|------|
 | 后端 | Go 1.25.7, Gin, Ent |
-| 前端 | Next.js 15+, React, TailwindCSS |
+| Web | Next.js 15+, React, TailwindCSS |
 | 数据库 | PostgreSQL 15+ |
 | 缓存/队列 | Redis 7+ |
 
@@ -324,7 +324,7 @@ cd subiohub
 # 2. 安装 pnpm（如果还没有安装）
 npm install -g pnpm
 
-# 3. 编译 Next.js 前端
+# 3. 编译 Next.js Web 应用
 cd next-web
 pnpm install
 pnpm run build
@@ -577,7 +577,7 @@ subiohub/
 │   │   └── gateway/          # API 网关核心
 │   └── resources/            # 静态资源
 │
-├── next-web/                 # 主前端（Next.js）
+├── next-web/                 # 主 Web 应用（Next.js）
 │   └── src/
 │       ├── app/              # App Router 页面
 │       ├── components/       # UI 组件

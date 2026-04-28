@@ -156,7 +156,7 @@ func runSetupServer() {
 	// Register setup routes
 	setup.RegisterRoutes(r)
 
-	// Serve embedded frontend if available
+	// Serve embedded web assets if available
 	if web.HasEmbeddedFrontend() {
 		r.Use(web.ServeEmbeddedFrontend())
 	}

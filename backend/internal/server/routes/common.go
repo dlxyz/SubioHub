@@ -19,7 +19,7 @@ func RegisterCommonRoutes(r *gin.Engine) {
 	})
 
 	// Setup status endpoint (always returns needs_setup: false in normal mode)
-	// This is used by the frontend to detect when the service has restarted after setup
+	// This is used by the web app to detect when the service has restarted after setup
 	r.GET("/setup/status", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
 			"code": 0,

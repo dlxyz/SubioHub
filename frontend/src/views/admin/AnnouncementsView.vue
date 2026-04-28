@@ -521,7 +521,7 @@ function buildUpdatePayload(original: Announcement) {
 }
 
 async function handleSave() {
-  // Frontend validation for targeting (to avoid ANNOUNCEMENT_INVALID_TARGET)
+  // Client-side validation for targeting (to avoid ANNOUNCEMENT_INVALID_TARGET)
   const anyOf = form.targeting?.any_of ?? []
   if (anyOf.length > 50) {
     appStore.showError(t('admin.announcements.failedToCreate'))

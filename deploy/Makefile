@@ -6,12 +6,12 @@ wire:
 	@echo "Wire 代码生成完成"
 
 build:
-	@echo "构建后端（不嵌入前端）..."
+	@echo "构建后端（不嵌入 Web 资源）..."
 	@go build -o bin/server ./cmd/server
 	@echo "构建完成: bin/server"
 
 build-embed:
-	@echo "构建后端（嵌入前端）..."
+	@echo "构建后端（嵌入 Web 资源）..."
 	@go build -tags embed -o bin/server ./cmd/server
 	@echo "构建完成: bin/server (with embedded web assets)"
 

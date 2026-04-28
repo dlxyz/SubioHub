@@ -1,5 +1,5 @@
 /**
- * Core Type Definitions for SubioHub Frontend
+ * Core Type Definitions for SubioHub Web
  */
 
 // ==================== Common Types ====================

@@ -266,7 +266,7 @@ func (s *SettingService) GetPublicSettings(ctx context.Context) (*PublicSettings
 }
 
 // SetOnUpdateCallback sets a callback function to be called when settings are updated
-// This is used for cache invalidation (e.g., HTML cache in frontend server)
+// This is used for cache invalidation (e.g., HTML cache in the embedded web server)
 func (s *SettingService) SetOnUpdateCallback(callback func()) {
 	s.onUpdate = callback
 }
@@ -284,7 +284,7 @@ func (s *SettingService) GetPublicSettingsForInjection(ctx context.Context) (any
 		return nil, err
 	}
 
-	// Return a struct that matches the frontend's expected format
+	// Return a struct that matches the web client's expected format
 	return &struct {
 		RegistrationEnabled              bool            `json:"registration_enabled"`
 		EmailVerifyEnabled               bool            `json:"email_verify_enabled"`
@@ -1597,7 +1597,7 @@ func (s *SettingService) GetLinuxDoConnectOAuthConfig(ctx context.Context) (conf
 		return config.LinuxDoConnectConfig{}, infraerrors.InternalServer("OAUTH_CONFIG_INVALID", "oauth redirect url not configured")
 	}
 	if strings.TrimSpace(effective.FrontendRedirectURL) == "" {
-		return config.LinuxDoConnectConfig{}, infraerrors.InternalServer("OAUTH_CONFIG_INVALID", "oauth frontend redirect url not configured")
+		return config.LinuxDoConnectConfig{}, infraerrors.InternalServer("OAUTH_CONFIG_INVALID", "oauth web callback path not configured")
 	}
 
 	if err := config.ValidateAbsoluteHTTPURL(effective.AuthorizeURL); err != nil {
@@ -1613,7 +1613,7 @@ func (s *SettingService) GetLinuxDoConnectOAuthConfig(ctx context.Context) (conf
 		return config.LinuxDoConnectConfig{}, infraerrors.InternalServer("OAUTH_CONFIG_INVALID", "oauth redirect url invalid")
 	}
 	if err := config.ValidateFrontendRedirectURL(effective.FrontendRedirectURL); err != nil {
-		return config.LinuxDoConnectConfig{}, infraerrors.InternalServer("OAUTH_CONFIG_INVALID", "oauth frontend redirect url invalid")
+		return config.LinuxDoConnectConfig{}, infraerrors.InternalServer("OAUTH_CONFIG_INVALID", "oauth web callback path invalid")
 	}
 
 	method := strings.ToLower(strings.TrimSpace(effective.TokenAuthMethod))
@@ -1810,7 +1810,7 @@ func (s *SettingService) GetOIDCConnectOAuthConfig(ctx context.Context) (config.
 		return config.OIDCConnectConfig{}, infraerrors.InternalServer("OAUTH_CONFIG_INVALID", "oauth redirect url not configured")
 	}
 	if strings.TrimSpace(effective.FrontendRedirectURL) == "" {
-		return config.OIDCConnectConfig{}, infraerrors.InternalServer("OAUTH_CONFIG_INVALID", "oauth frontend redirect url not configured")
+		return config.OIDCConnectConfig{}, infraerrors.InternalServer("OAUTH_CONFIG_INVALID", "oauth web callback path not configured")
 	}
 	if !scopesContainOpenID(effective.Scopes) {
 		return config.OIDCConnectConfig{}, infraerrors.InternalServer("OAUTH_CONFIG_INVALID", "oauth scopes must contain openid")
@@ -1890,7 +1890,7 @@ func (s *SettingService) GetOIDCConnectOAuthConfig(ctx context.Context) (config.
 		return config.OIDCConnectConfig{}, infraerrors.InternalServer("OAUTH_CONFIG_INVALID", "oauth redirect url invalid")
 	}
 	if err := config.ValidateFrontendRedirectURL(effective.FrontendRedirectURL); err != nil {
-		return config.OIDCConnectConfig{}, infraerrors.InternalServer("OAUTH_CONFIG_INVALID", "oauth frontend redirect url invalid")
+		return config.OIDCConnectConfig{}, infraerrors.InternalServer("OAUTH_CONFIG_INVALID", "oauth web callback path invalid")
 	}
 
 	method := strings.ToLower(strings.TrimSpace(effective.TokenAuthMethod))

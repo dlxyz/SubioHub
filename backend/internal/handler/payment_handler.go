@@ -47,7 +47,7 @@ func (h *PaymentHandler) GetPlans(c *gin.Context) {
 		response.ErrorFrom(c, err)
 		return
 	}
-	// Enrich plans with group platform for frontend color coding
+	// Enrich plans with group platform for web client color coding
 	type planWithPlatform struct {
 		ID            int64    `json:"id"`
 		GroupID       int64    `json:"group_id"`

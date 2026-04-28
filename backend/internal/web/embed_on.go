@@ -32,7 +32,7 @@ type PublicSettingsProvider interface {
 	GetPublicSettingsForInjection(ctx context.Context) (any, error)
 }
 
-// FrontendServer serves the embedded frontend with settings injection
+// FrontendServer serves embedded web assets with settings injection
 type FrontendServer struct {
 	distFS      fs.FS
 	fileServer  http.Handler
@@ -42,7 +42,7 @@ type FrontendServer struct {
 	overrideDir string // local file override directory
 }
 
-// NewFrontendServer creates a new frontend server with settings injection
+// NewFrontendServer creates a new embedded web server with settings injection
 func NewFrontendServer(settingsProvider PublicSettingsProvider) (*FrontendServer, error) {
 	distFS, err := fs.Sub(frontendFS, "dist")
 	if err != nil {
@@ -243,7 +243,7 @@ func replaceNoncePlaceholder(html []byte, nonce string) []byte {
 	return bytes.ReplaceAll(html, []byte(NonceHTMLPlaceholder), []byte(nonce))
 }
 
-// ServeEmbeddedFrontend returns a middleware for serving embedded frontend
+// ServeEmbeddedFrontend returns a middleware for serving embedded web assets
 // This is the legacy function for backward compatibility when no settings provider is available
 func ServeEmbeddedFrontend() gin.HandlerFunc {
 	distFS, err := fs.Sub(frontendFS, "dist")

@@ -21,7 +21,7 @@ type UnwrappedApiClient = Omit<AxiosInstance, 'get' | 'post' | 'put' | 'patch' |
 
 // 基础 Axios 实例
 export const api = axios.create({
-  // 开发环境优先直连后端，兼容 Windows 前端 + WSL 后端的本地联调方式。
+  // 开发环境优先直连后端，兼容 Windows Web 端 + WSL 后端的本地联调方式。
   // 若显式配置 NEXT_PUBLIC_API_URL，则优先使用环境变量覆盖。
   baseURL:
     process.env.NEXT_PUBLIC_API_URL?.trim() ||

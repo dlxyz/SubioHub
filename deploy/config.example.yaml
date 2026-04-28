@@ -20,8 +20,8 @@ server:
   # Mode: "debug" for development, "release" for production
   # 运行模式："debug" 用于开发，"release" 用于生产环境
   mode: "release"
-  # Frontend base URL used to generate external links in emails (e.g. password reset)
-  # 用于生成邮件中的外部链接（例如：重置密码链接）的前端基础地址
+  # Site base URL used to generate external links in emails (e.g. password reset)
+  # 用于生成邮件中的外部链接（例如：重置密码链接）的站点基础地址
   # When Docker deploy uses `next-web`, set this to the public URL served by Caddy.
   # 使用 Docker + `next-web` 部署时，这里应填写 Caddy 对外提供服务的公开地址。
   # Example: "https://example.com"

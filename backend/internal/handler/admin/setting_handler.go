@@ -607,11 +607,11 @@ func (h *SettingHandler) UpdateSettings(c *gin.Context) {
 		}
 	}
 
-	// Frontend URL 验证
+	// 站点地址验证
 	req.FrontendURL = strings.TrimSpace(req.FrontendURL)
 	if req.FrontendURL != "" {
 		if err := config.ValidateAbsoluteHTTPURL(req.FrontendURL); err != nil {
-			response.BadRequest(c, "Frontend URL must be an absolute http(s) URL")
+			response.BadRequest(c, "Site URL must be an absolute http(s) URL")
 			return
 		}
 	}
