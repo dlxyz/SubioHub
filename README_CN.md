@@ -345,7 +345,7 @@ cd ../next-web
 # NEXT_SERVER_API_ORIGIN / NEXT_PUBLIC_API_URL / NEXT_PUBLIC_SITE_URL
 ```
 
-> **注意：** 当前正式 Web 架构为 `backend + next-web`。旧的“前端嵌入 Go 二进制”流程仅用于历史兼容，不建议继续作为新部署方案。
+> **注意：** 当前正式 Web 架构为 `backend + next-web`。
 
 **`config.yaml` 关键配置：**
 
@@ -585,17 +585,12 @@ subiohub/
 │       ├── lib/              # API 客户端与工具
 │       └── store/            # 客户端状态管理
 │
-├── frontend/                 # 旧版 Vue 前端（过渡保留）
-│   └── src/                  # 待迁移收尾后移除
-│
 └── deploy/                   # 部署文件
     ├── docker-compose.yml    # Docker Compose 配置
     ├── .env.example          # Docker Compose 环境变量
     ├── config.example.yaml   # 二进制部署完整配置文件
     └── install.sh            # 一键安装脚本
 ```
-
-> 当前 Web 主架构为 `next-web`。旧的 `frontend` 目录仅为迁移过渡保留，待项目收尾完成后将移除。
 
 ## 免责声明
 

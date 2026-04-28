@@ -333,7 +333,7 @@ cd ../next-web
 # NEXT_SERVER_API_ORIGIN / NEXT_PUBLIC_API_URL / NEXT_PUBLIC_SITE_URL
 ```
 
-> **Note:** The current production-oriented web architecture is `backend + next-web`. The old embedded frontend flow is legacy-only and should not be used for new deployments.
+> **Note:** The production web architecture is `backend + next-web`.
 
 **Key configuration in `config.yaml`:**
 
@@ -523,17 +523,12 @@ subiohub/
 │       ├── lib/              # API clients and helpers
 │       └── store/            # Client state stores
 │
-├── frontend/                 # Legacy Vue frontend (temporary)
-│   └── src/                  # Planned for removal after migration wrap-up
-│
 └── deploy/                   # Deployment files
     ├── docker-compose.yml    # Docker Compose configuration
     ├── .env.example          # Environment variables for Docker Compose
     ├── config.example.yaml   # Full config file for binary deployment
     └── install.sh            # One-click installation script
 ```
-
-> `next-web` is the current primary web architecture. The old `frontend` directory is kept only for transition and will be removed after the migration is fully completed.
 
 ## Disclaimer
 

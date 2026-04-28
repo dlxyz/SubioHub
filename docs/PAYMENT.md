@@ -38,7 +38,7 @@ SubioHub has a built-in payment system that enables user self-service top-up wit
 2. Enable **Payment**
 3. Configure basic parameters (amount range, timeout, etc.)
 4. Add at least one provider instance in **Provider Management**
-5. Users can now top up from the frontend
+5. Users can now top up from the web app
 
 ---
 

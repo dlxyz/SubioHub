@@ -1,4 +1,4 @@
-﻿import type { MessageTree } from '@/i18n/schema';
+﻿﻿import type { MessageTree } from '@/i18n/schema';
 
 const enUS = {
   dashboard: {

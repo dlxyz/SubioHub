@@ -11,10 +11,9 @@
 - **缓存与中间件**: **Redis** (核心组件！用于 API Key 鉴权缓存、Token 扣费缓存、高并发限流、分布式并发控制)。
 - **依赖注入**: **Wire** (Google 的编译时依赖注入工具，管理 `Handler -> Service -> Repository` 之间的复杂依赖关系)。
 
-### 1.2 前端技术栈 (现状：Vue3 + Next.js 并行)
-- **旧前端**: `frontend` 目录，技术栈为 **Vue 3** + **TypeScript** + **Vite** + **Pinia** + Vue-Router。
-- **新前端**: `next-web` 目录，技术栈为 **Next.js App Router** + **React** + **TypeScript** + **Tailwind CSS** + **Zustand**。
-- **当前状态**: 迁移采用“并行开发、逐步替换”的方式推进，用户中心与管理后台的高频页面正逐步从 Vue 迁移到 Next.js。
+### 1.2 Web 技术栈
+- **Web 应用**: `next-web` 目录，技术栈为 **Next.js App Router** + **React** + **TypeScript** + **Tailwind CSS** + **Zustand**。
+- **当前形态**: 公开站、用户中心与管理后台统一以 `next-web` 作为 Web 交付入口。
 
 ### 1.3 当前前端运行形态补充
 1. **用户端**：
@@ -22,7 +21,7 @@
    - 当前已具备左侧导航、顶部横向导航、语言切换、主题切换、余额展示、用户菜单，以及多组占位路由。
 2. **管理端**：
    - `next-web/src/app/admin/*` 已承接新的管理后台外壳。
-   - 当前已对齐 Vue 后台左侧菜单结构，并保留 `订单中心 -> 支付看板 / 订单管理 / 套餐管理` 子菜单层级。
+   - 当前管理端导航与页面层级已统一到 `next-web`。
    - `next-web/src/app/admin/ops/page.tsx` 现已承接 `运维监控` 真实页面，不再落到占位路由。
 3. **多语言**：
    - `next-web` 当前已实现一套轻量级 i18n：`zustand locale store + locales 语言包 + useI18n Hook`。
@@ -55,25 +54,20 @@
 
 ---
 
-## 3. 前端 SEO 优化改造方案 (Vue3 -> Next.js)
+## 3. Web 交付与 SEO 方案
 
-`subiohub` 目前的前端是使用 Vue3 (SPA 单页面应用) 写的。SPA 的致命缺点是：**源代码里只有一个空的 `<div id="app"></div>`，所有的页面内容都是靠 JS 在浏览器里动态渲染出来的。** 百度、谷歌的爬虫爬取时，只能看到一个空壳，这导致它的 SEO (搜索引擎优化) 极差，几乎搜不到。
+`subiohub` 当前采用 `Go API + next-web` 的分层模式交付 Web 能力。这样既能保留 Go 网关在高并发代理、计费和调度上的性能优势，也能利用 Next.js 的 SSR / SSG 能力承接公开站、SEO 与多语言页面。
 
-如果你希望这个分销系统能够通过搜索引擎获得自然流量，**强烈建议前端部分使用 Next.js 进行重构（或套壳）**。
+### 当前交付形态：Go (后端) + Next.js (Web SSR)
 
-### 改造方案设计：Go (后端) + Next.js (前端 SSR)
-
-我们不需要动 Go 语言写的任何核心网关逻辑，只需要把前端剥离出来：
-
-1. **后端剥离**：保持 `subiohub` 的 Go 后端原封不动，让它专心提供 API 接口（如 `/api/auth/login`, `/api/user/info` 等）。
-2. **Next.js 接管前端展示与 SEO**：
-   - 使用你熟悉的 Next.js (App Router) 新建一个前端项目。
-   - **首页 (Landing Page)、价格页、文章页、帮助中心**：使用 Next.js 的 **SSR (服务端渲染)** 或 **SSG (静态生成)** 技术。这样当百度爬虫访问时，Next.js 服务器会直接把渲染好、带有完整关键词 (Keywords)、描述 (Description) 和完整 HTML 结构的网页吐给爬虫，SEO 效果拉满。
-   - **用户控制台 (Dashboard) 与后台管理 (Admin)**：这些页面不需要被搜索引擎收录，可以直接在 Next.js 里使用 `"use client"`（客户端渲染），通过 `fetch` 或 `axios` 调用 Go 后端提供的 API 进行数据交互。
+1. **后端 API**：`subiohub` 的 Go 服务继续专注于鉴权、网关、调度、计费、支付和后台接口。
+2. **`next-web` 接管 Web 展示与 SEO**：
+   - **首页、价格页、文章页、帮助中心、资讯页**：使用 Next.js 的 SSR / SSG 输出完整 HTML、metadata 与 sitemap。
+   - **用户中心 (Dashboard) 与管理后台 (Admin)**：在 `next-web` 中通过客户端组件与服务端请求调用 Go API。
 3. **部署架构**：
-   - 宝塔服务器上运行 Go 编译出来的二进制文件（监听 8080 端口，作为纯 API 提供者）。
-   - 宝塔服务器上运行 Next.js 服务（监听 3000 端口，作为用户访问的入口）。
-   - 用 Nginx 配置反向代理：用户访问 `www.yourdomain.com`，Nginx 把请求转给 Next.js (3000)；用户访问 `api.yourdomain.com`，Nginx 把请求转给 Go 后端 (8080)。
+   - Go 后端监听 `8080`，作为纯 API 服务。
+   - `next-web` 监听 `3000`，作为 Web 入口。
+   - 通过 Caddy 或 Nginx 将公开页面请求转发给 `next-web`，将 `/api/*`、`/v1/*` 等接口请求转发给 Go 后端。
 
 ### 当前 Next.js 迁移补充
 
@@ -81,17 +75,17 @@
 1. **用户中心**：
    - 已实现 `/dashboard` 布局壳、横向导航、左侧导航、余额展示、语言切换和多组功能骨架页。
 2. **管理后台**：
-   - 已实现 `/admin` 布局壳和与 Vue 后台对齐的导航体系。
+   - 已实现 `/admin` 布局壳和统一的导航体系。
    - 已迁移一批真实页面，包括：管理总览、运维监控、用户管理、分组管理、渠道管理、订阅管理、账号管理、分销管理、系统设置、折扣码管理、订单管理、支付看板、套餐管理、调用记录、代理管理、卡密管理。
 3. **多语言基础设施**：
    - 已拆分为 `src/i18n/locales/zh-CN.ts`、`src/i18n/locales/en-US.ts`，并由 `src/i18n/messages.ts` 聚合导出。
    - 当前用户中心与管理后台共享同一套 locale store 与 `useI18n()` 入口。
 
-### 当前 Ops 迁移补充
+### 当前 Ops 页面补充
 
-当前 `next-web` 对运维监控模块的迁移，已经从“导航占位”进入“真实业务页”阶段：
-1. **前端承接范围**：
-   - `next-web/src/app/admin/ops/page.tsx` 当前承接 Vue `OpsDashboard.vue` 中最先需要恢复的两块能力：`运维总览` 与 `系统日志`。
+当前 `next-web` 对运维监控模块的实现，已经从“导航占位”进入“真实业务页”阶段：
+1. **Web 承接范围**：
+   - `next-web/src/app/admin/ops/page.tsx` 当前承接 `运维总览` 与 `系统日志` 两块核心能力。
    - 页面已对齐后端现有的 `dashboard/snapshot-v2`、`latency-histogram`、`error-distribution`、`settings/metric-thresholds`、`runtime/logging`、`system-logs`、`system-logs/health`、`system-logs/cleanup` 等接口。
 2. **当前已恢复能力**：
    - 运维总览已支持时间范围、平台、分组、查询模式筛选，并展示健康分、QPS/TPS、SLA、请求错误率、上游错误率、延迟分布、状态码分布、系统状态和任务心跳。
@@ -239,10 +233,10 @@ Authorization: Bearer sk-subiohub-user-key-xxx
 ### 6.1 当前工程实践补充
 1. **前后端职责划分** 依旧清晰：
    - Go 后端继续承接网关、鉴权、调度、计费、支付、日志等核心能力。
-   - Next.js 前端继续承接 SEO 页面、用户中心和管理后台 UI。
+   - `next-web` 继续承接 SEO 页面、用户中心和管理后台 UI。
 2. **二开开发建议**：
    - 新增业务优先通过 Go 后端暴露稳定 API，再由 `next-web` 页面消费。
-   - 若已有 Vue 对应页面，应优先对齐其字段、交互顺序、接口调用顺序和多语言键位，再迁入 Next.js，避免双端行为偏移。
+   - 新页面与新功能应直接落在 `next-web` 中，保持导航、接口调用顺序和多语言键位一致。
 
 ---
 

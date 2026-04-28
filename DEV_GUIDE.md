@@ -1,4 +1,4 @@
-﻿# subiohub 项目开发指南
+# subiohub 项目开发指南
 
 > 本文档记录项目环境配置、常见坑点和注意事项，供 Claude Code 和团队成员参考。
 
@@ -8,9 +8,9 @@
 |------|------|
 | **上游仓库** | dlxyz/SubioHub |
 | **Fork 仓库** | bayma888/subiohub-bmai |
-| **技术栈** | Go 后端 (Ent ORM + Gin) + Vue3 前端 (pnpm) |
+| **技术栈** | Go 后端 (Ent ORM + Gin) + Next.js Web 端 (pnpm) |
 | **数据库** | PostgreSQL 16 + Redis |
-| **包管理** | 后端: go modules, 前端: **pnpm**（不是 npm） |
+| **包管理** | 后端: go modules, `next-web`: **pnpm**（不是 npm） |
 
 ## 二、本地环境配置
 
@@ -68,8 +68,8 @@ cd backend && go test -tags=integration ./...
 # 代码质量检查
 cd backend && golangci-lint run ./...
 
-# 前端依赖安装（必须用 pnpm）
-cd frontend && pnpm install
+# next-web 依赖安装（必须用 pnpm）
+cd next-web && pnpm install
 ```
 
 ## 四、常见坑点 & 解决方案
@@ -82,7 +82,7 @@ cd frontend && pnpm install
 
 **解决**：
 ```bash
-cd frontend
+cd next-web
 pnpm install  # 更新 pnpm-lock.yaml
 git add pnpm-lock.yaml
 git commit -m "chore: update pnpm-lock.yaml"
@@ -96,7 +96,7 @@ git commit -m "chore: update pnpm-lock.yaml"
 
 **解决**：
 ```bash
-cd frontend
+cd next-web
 rm -rf node_modules  # 或 PowerShell: Remove-Item -Recurse -Force node_modules
 pnpm install
 ```
@@ -278,11 +278,11 @@ git fetch upstream
 git rebase upstream/main
 ```
 
-### 前端操作
+### next-web 操作
 
 ```bash
 # 安装依赖（必须用 pnpm）
-cd frontend
+cd next-web
 pnpm install
 
 # 开发服务器
@@ -325,12 +325,12 @@ subiohub-bmai/
 │   │   └── server/          # 服务器配置
 │   ├── migrations/          # 数据库迁移脚本
 │   └── config.yaml          # 配置文件
-├── frontend/
+├── next-web/
 │   ├── src/
-│   │   ├── api/             # API 调用
-│   │   ├── components/      # Vue 组件
-│   │   ├── views/           # 页面视图
-│   │   ├── types/           # TypeScript 类型
+│   │   ├── app/             # App Router 页面
+│   │   ├── components/      # UI 组件
+│   │   ├── lib/             # API 调用与工具
+│   │   ├── store/           # 状态管理
 │   │   └── i18n/            # 国际化
 │   ├── package.json         # 依赖配置
 │   └── pnpm-lock.yaml       # pnpm 锁文件（必须提交）
@@ -342,6 +342,6 @@ subiohub-bmai/
 
 - [上游仓库](https://github.com/dlxyz/SubioHub)
 - [Ent 文档](https://entgo.io/docs/getting-started)
-- [Vue3 文档](https://vuejs.org/)
+- [Next.js 文档](https://nextjs.org/docs)
 - [pnpm 文档](https://pnpm.io/)
 

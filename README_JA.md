@@ -1,4 +1,4 @@
-﻿# SubioHub
+﻿﻿# SubioHub
 
 <div align="center">
 
@@ -333,7 +333,7 @@ cd ../next-web
 # NEXT_SERVER_API_ORIGIN / NEXT_PUBLIC_API_URL / NEXT_PUBLIC_SITE_URL
 ```
 
-> **注意:** 現在の本番向け Web アーキテクチャは `backend + next-web` です。旧来の「フロントエンドを Go バイナリへ埋め込む」方式は互換維持のためのみに残っており、新規デプロイでは推奨しません。
+> **注意:** 現在の本番向け Web アーキテクチャは `backend + next-web` です。
 
 **`config.yaml` の主要設定:**
 
@@ -523,17 +523,12 @@ subiohub/
 │       ├── lib/              # API クライアントとヘルパー
 │       └── store/            # クライアント状態管理
 │
-├── frontend/                 # 旧 Vue フロントエンド（移行中のみ保持）
-│   └── src/                  # 移行完了後に削除予定
-│
 └── deploy/                   # デプロイファイル
     ├── docker-compose.yml    # Docker Compose 設定
     ├── .env.example          # Docker Compose 用環境変数
     ├── config.example.yaml   # バイナリデプロイ用フル設定ファイル
     └── install.sh            # ワンクリックインストールスクリプト
 ```
-
-> 現在の Web 主構成は `next-web` です。旧 `frontend` ディレクトリは移行期間中のみ保持しており、整理完了後に削除予定です。
 
 ## 免責事項
 

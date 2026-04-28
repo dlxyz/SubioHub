@@ -62,10 +62,10 @@ Recommended files:
 
 | Variable | Description |
 |----------|-------------|
-| `NEXT_PUBLIC_SITE_URL` | Public canonical URL for SSR metadata, sitemap, and frontend links |
+| `NEXT_PUBLIC_SITE_URL` | Public canonical URL for SSR metadata, sitemap, and public web links |
 | `NEXT_SERVER_API_ORIGIN` | Internal backend origin used by `next-web` in Docker |
 | `NEXT_PUBLIC_API_URL` | Optional browser API base URL; leave empty for same-origin |
-| `SERVER_FRONTEND_URL` | Public frontend URL used by backend-generated external links |
+| `SERVER_FRONTEND_URL` | Public site URL used by backend-generated external links |
 | `DATABASE_URL` | PostgreSQL connection string | Yes | - |
 | `REDIS_URL` | Redis connection string | Yes | - |
 

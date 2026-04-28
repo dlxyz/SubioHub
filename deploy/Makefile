@@ -13,7 +13,7 @@ build:
 build-embed:
 	@echo "构建后端（嵌入前端）..."
 	@go build -tags embed -o bin/server ./cmd/server
-	@echo "构建完成: bin/server (with embedded frontend)"
+	@echo "构建完成: bin/server (with embedded web assets)"
 
 test-unit:
 	@go test -tags unit ./... -count=1
