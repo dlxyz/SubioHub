@@ -392,24 +392,28 @@ cd subiohub
 # 2. 安装 pnpm（如果还没有安装）
 npm install -g pnpm
 
-# 3. 编译前端
-cd frontend
+# 3. 编译 Next.js 前端
+cd next-web
 pnpm install
 pnpm run build
-# 构建产物输出到 ../backend/internal/web/dist/
 
-# 4. 编译后端（嵌入前端）
+# 4. 编译后端 API 服务
 cd ../backend
-go build -tags embed -o subiohub ./cmd/server
+go build -o subiohub ./cmd/server
 
 # 5. 创建配置文件
 cp ../deploy/config.example.yaml ./config.yaml
 
-# 6. 编辑配置
+# 6. 编辑后端配置
 nano config.yaml
+
+# 7. 配置 next-web 环境变量
+cd ../next-web
+# 手动创建 .env.local，并按需设置：
+# NEXT_SERVER_API_ORIGIN / NEXT_PUBLIC_API_URL / NEXT_PUBLIC_SITE_URL
 ```
 
-> **注意：** `-tags embed` 参数会将前端嵌入到二进制文件中。不使用此参数编译的程序将不包含前端界面。
+> **注意：** 当前正式 Web 架构为 `backend + next-web`。旧的“前端嵌入 Go 二进制”流程仅用于历史兼容，不建议继续作为新部署方案。
 
 **`config.yaml` 关键配置：**
 
@@ -531,7 +535,7 @@ Invalid base URL: invalid url scheme: http
 - 在反向代理层移除敏感响应头
 
 ```bash
-# 6. 运行应用
+# 7. 运行后端
 ./subiohub
 ```
 
@@ -565,10 +569,15 @@ websocat -H="Sec-WebSocket-Protocol: subiohub-admin, jwt.<ADMIN_TOKEN>" ws://loc
 cd backend
 go run ./cmd/server
 
-# 前端（支持热重载）
-cd frontend
+# next-web（支持热重载）
+cd ../next-web
 pnpm run dev
 ```
+
+默认情况下：
+- 后端 API 运行在 `http://localhost:8080`
+- `next-web` 运行在 `http://localhost:3000`
+- `next-web` 推荐配置环境变量：`NEXT_SERVER_API_ORIGIN`、`NEXT_PUBLIC_API_URL`、`NEXT_PUBLIC_SITE_URL`
 
 #### 代码生成
 

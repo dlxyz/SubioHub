@@ -318,24 +318,28 @@ cd subiohub
 # 2. Install pnpm (if not already installed)
 npm install -g pnpm
 
-# 3. Build frontend
-cd frontend
+# 3. Build the Next.js web app
+cd next-web
 pnpm install
 pnpm run build
-# Output will be in ../backend/internal/web/dist/
 
-# 4. Build backend with embedded frontend
+# 4. Build backend API service
 cd ../backend
-go build -tags embed -o subiohub ./cmd/server
+go build -o subiohub ./cmd/server
 
 # 5. Create configuration file
 cp ../deploy/config.example.yaml ./config.yaml
 
-# 6. Edit configuration
+# 6. Edit backend configuration
 nano config.yaml
+
+# 7. Configure next-web environment
+cd ../next-web
+# Create .env.local manually and set:
+# NEXT_SERVER_API_ORIGIN / NEXT_PUBLIC_API_URL / NEXT_PUBLIC_SITE_URL
 ```
 
-> **Note:** The `-tags embed` flag embeds the frontend into the binary. Without this flag, the binary will not serve the frontend UI.
+> **Note:** The current production-oriented web architecture is `backend + next-web`. The old embedded frontend flow is legacy-only and should not be used for new deployments.
 
 **Key configuration in `config.yaml`:**
 
@@ -428,7 +432,7 @@ If you disable URL validation or response header filtering, harden your network 
 - Strip sensitive upstream response headers at the proxy
 
 ```bash
-# 6. Run the application
+# 7. Run the backend
 ./subiohub
 ```
 
@@ -439,10 +443,15 @@ If you disable URL validation or response header filtering, harden your network 
 cd backend
 go run ./cmd/server
 
-# Frontend (with hot reload)
-cd frontend
+# next-web (with hot reload)
+cd ../next-web
 pnpm run dev
 ```
+
+By default:
+- Backend API runs on `http://localhost:8080`
+- `next-web` runs on `http://localhost:3000`
+- Recommended env vars for `next-web`: `NEXT_SERVER_API_ORIGIN`, `NEXT_PUBLIC_API_URL`, `NEXT_PUBLIC_SITE_URL`
 
 #### Code Generation
 
