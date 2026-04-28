@@ -10,12 +10,12 @@ import (
 	"strings"
 	"time"
 
-	dbent "github.com/Wei-Shaw/sub2api/ent"
-	infraerrors "github.com/Wei-Shaw/sub2api/internal/pkg/errors"
-	"github.com/Wei-Shaw/sub2api/internal/pkg/httpclient"
-	"github.com/Wei-Shaw/sub2api/internal/pkg/logger"
-	"github.com/Wei-Shaw/sub2api/internal/pkg/pagination"
-	"github.com/Wei-Shaw/sub2api/internal/util/httputil"
+	dbent "github.com/dlxyz/SubioHub/ent"
+	infraerrors "github.com/dlxyz/SubioHub/internal/pkg/errors"
+	"github.com/dlxyz/SubioHub/internal/pkg/httpclient"
+	"github.com/dlxyz/SubioHub/internal/pkg/logger"
+	"github.com/dlxyz/SubioHub/internal/pkg/pagination"
+	"github.com/dlxyz/SubioHub/internal/util/httputil"
 )
 
 // AdminService interface defines admin management operations

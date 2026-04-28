@@ -8,8 +8,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Wei-Shaw/sub2api/internal/pkg/antigravity"
-	"github.com/Wei-Shaw/sub2api/internal/pkg/logger"
+	"github.com/dlxyz/SubioHub/internal/pkg/antigravity"
+	"github.com/dlxyz/SubioHub/internal/pkg/logger"
 )
 
 const (
@@ -173,9 +173,6 @@ func (s *AntigravityGatewayService) attemptCreditsOveragesRetry(
 	p antigravityRetryLoopParams,
 	baseURL string,
 	modelName string,
-	waitDuration time.Duration,
-	originalStatusCode int,
-	respBody []byte,
 ) *creditsOveragesRetryResult {
 	creditsBody := injectEnabledCreditTypes(p.body)
 	if creditsBody == nil {

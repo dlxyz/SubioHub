@@ -3,14 +3,15 @@ package logger
 import (
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"time"
 )
 
 const (
 	// DefaultContainerLogPath 为容器内默认日志文件路径。
-	DefaultContainerLogPath = "/app/data/logs/sub2api.log"
-	defaultLogFilename      = "sub2api.log"
+	DefaultContainerLogPath = "/app/data/logs/subiohub.log"
+	defaultLogFilename      = "subiohub.log"
 )
 
 type InitOptions struct {
@@ -57,7 +58,7 @@ func (o InitOptions) normalized() InitOptions {
 	}
 	out.ServiceName = strings.TrimSpace(out.ServiceName)
 	if out.ServiceName == "" {
-		out.ServiceName = "sub2api"
+		out.ServiceName = "subiohub"
 	}
 	out.Environment = strings.TrimSpace(out.Environment)
 	if out.Environment == "" {
@@ -100,6 +101,19 @@ func resolveLogFilePath(explicit string) string {
 	if dataDir != "" {
 		return filepath.Join(dataDir, "logs", defaultLogFilename)
 	}
+
+	wd, err := os.Getwd()
+	if err == nil && strings.TrimSpace(wd) != "" {
+		cleanWD := filepath.Clean(wd)
+		// Docker image uses WORKDIR /app, so the relative default still resolves
+		// to /app/data/logs/subiohub.log inside containers while staying writable
+		// for local development on Windows/macOS/Linux.
+		return filepath.Join(cleanWD, "data", "logs", defaultLogFilename)
+	}
+
+	if runtime.GOOS == "windows" {
+		return filepath.Join("data", "logs", defaultLogFilename)
+	}
 	return DefaultContainerLogPath
 }
 
@@ -107,7 +121,7 @@ func bootstrapOptions() InitOptions {
 	return InitOptions{
 		Level:       "info",
 		Format:      "console",
-		ServiceName: "sub2api",
+		ServiceName: "subiohub",
 		Environment: "bootstrap",
 		Output: OutputOptions{
 			ToStdout: true,

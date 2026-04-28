@@ -6,8 +6,8 @@ import (
 	"testing"
 	"time"
 
-	infraerrors "github.com/Wei-Shaw/sub2api/internal/pkg/errors"
-	"github.com/Wei-Shaw/sub2api/internal/pkg/pagination"
+	infraerrors "github.com/dlxyz/SubioHub/internal/pkg/errors"
+	"github.com/dlxyz/SubioHub/internal/pkg/pagination"
 	"github.com/stretchr/testify/require"
 )
 

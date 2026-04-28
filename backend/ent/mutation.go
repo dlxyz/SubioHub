@@ -12,34 +12,35 @@ import (
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
-	"github.com/Wei-Shaw/sub2api/ent/account"
-	"github.com/Wei-Shaw/sub2api/ent/accountgroup"
-	"github.com/Wei-Shaw/sub2api/ent/announcement"
-	"github.com/Wei-Shaw/sub2api/ent/announcementread"
-	"github.com/Wei-Shaw/sub2api/ent/apikey"
-	"github.com/Wei-Shaw/sub2api/ent/errorpassthroughrule"
-	"github.com/Wei-Shaw/sub2api/ent/group"
-	"github.com/Wei-Shaw/sub2api/ent/idempotencyrecord"
-	"github.com/Wei-Shaw/sub2api/ent/paymentauditlog"
-	"github.com/Wei-Shaw/sub2api/ent/paymentorder"
-	"github.com/Wei-Shaw/sub2api/ent/paymentproviderinstance"
-	"github.com/Wei-Shaw/sub2api/ent/predicate"
-	"github.com/Wei-Shaw/sub2api/ent/promocode"
-	"github.com/Wei-Shaw/sub2api/ent/promocodeusage"
-	"github.com/Wei-Shaw/sub2api/ent/proxy"
-	"github.com/Wei-Shaw/sub2api/ent/redeemcode"
-	"github.com/Wei-Shaw/sub2api/ent/securitysecret"
-	"github.com/Wei-Shaw/sub2api/ent/setting"
-	"github.com/Wei-Shaw/sub2api/ent/subscriptionplan"
-	"github.com/Wei-Shaw/sub2api/ent/tlsfingerprintprofile"
-	"github.com/Wei-Shaw/sub2api/ent/usagecleanuptask"
-	"github.com/Wei-Shaw/sub2api/ent/usagelog"
-	"github.com/Wei-Shaw/sub2api/ent/user"
-	"github.com/Wei-Shaw/sub2api/ent/userallowedgroup"
-	"github.com/Wei-Shaw/sub2api/ent/userattributedefinition"
-	"github.com/Wei-Shaw/sub2api/ent/userattributevalue"
-	"github.com/Wei-Shaw/sub2api/ent/usersubscription"
-	"github.com/Wei-Shaw/sub2api/internal/domain"
+	"github.com/dlxyz/SubioHub/ent/account"
+	"github.com/dlxyz/SubioHub/ent/accountgroup"
+	"github.com/dlxyz/SubioHub/ent/announcement"
+	"github.com/dlxyz/SubioHub/ent/announcementread"
+	"github.com/dlxyz/SubioHub/ent/apikey"
+	"github.com/dlxyz/SubioHub/ent/commissionlog"
+	"github.com/dlxyz/SubioHub/ent/errorpassthroughrule"
+	"github.com/dlxyz/SubioHub/ent/group"
+	"github.com/dlxyz/SubioHub/ent/idempotencyrecord"
+	"github.com/dlxyz/SubioHub/ent/paymentauditlog"
+	"github.com/dlxyz/SubioHub/ent/paymentorder"
+	"github.com/dlxyz/SubioHub/ent/paymentproviderinstance"
+	"github.com/dlxyz/SubioHub/ent/predicate"
+	"github.com/dlxyz/SubioHub/ent/promocode"
+	"github.com/dlxyz/SubioHub/ent/promocodeusage"
+	"github.com/dlxyz/SubioHub/ent/proxy"
+	"github.com/dlxyz/SubioHub/ent/redeemcode"
+	"github.com/dlxyz/SubioHub/ent/securitysecret"
+	"github.com/dlxyz/SubioHub/ent/setting"
+	"github.com/dlxyz/SubioHub/ent/subscriptionplan"
+	"github.com/dlxyz/SubioHub/ent/tlsfingerprintprofile"
+	"github.com/dlxyz/SubioHub/ent/usagecleanuptask"
+	"github.com/dlxyz/SubioHub/ent/usagelog"
+	"github.com/dlxyz/SubioHub/ent/user"
+	"github.com/dlxyz/SubioHub/ent/userallowedgroup"
+	"github.com/dlxyz/SubioHub/ent/userattributedefinition"
+	"github.com/dlxyz/SubioHub/ent/userattributevalue"
+	"github.com/dlxyz/SubioHub/ent/usersubscription"
+	"github.com/dlxyz/SubioHub/internal/domain"
 )
 
 const (
@@ -56,6 +57,7 @@ const (
 	TypeAccountGroup            = "AccountGroup"
 	TypeAnnouncement            = "Announcement"
 	TypeAnnouncementRead        = "AnnouncementRead"
+	TypeCommissionLog           = "CommissionLog"
 	TypeErrorPassthroughRule    = "ErrorPassthroughRule"
 	TypeGroup                   = "Group"
 	TypeIdempotencyRecord       = "IdempotencyRecord"
@@ -6887,6 +6889,946 @@ func (m *AnnouncementReadMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown AnnouncementRead edge %s", name)
 }
 
+// CommissionLogMutation represents an operation that mutates the CommissionLog nodes in the graph.
+type CommissionLogMutation struct {
+	config
+	op                   Op
+	typ                  string
+	id                   *int64
+	created_at           *time.Time
+	updated_at           *time.Time
+	amount               *float64
+	addamount            *float64
+	status               *string
+	reason               *string
+	clearedFields        map[string]struct{}
+	user                 *int64
+	cleareduser          bool
+	invitee              *int64
+	clearedinvitee       bool
+	payment_order        *int64
+	clearedpayment_order bool
+	done                 bool
+	oldValue             func(context.Context) (*CommissionLog, error)
+	predicates           []predicate.CommissionLog
+}
+
+var _ ent.Mutation = (*CommissionLogMutation)(nil)
+
+// commissionlogOption allows management of the mutation configuration using functional options.
+type commissionlogOption func(*CommissionLogMutation)
+
+// newCommissionLogMutation creates new mutation for the CommissionLog entity.
+func newCommissionLogMutation(c config, op Op, opts ...commissionlogOption) *CommissionLogMutation {
+	m := &CommissionLogMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeCommissionLog,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withCommissionLogID sets the ID field of the mutation.
+func withCommissionLogID(id int64) commissionlogOption {
+	return func(m *CommissionLogMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *CommissionLog
+		)
+		m.oldValue = func(ctx context.Context) (*CommissionLog, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().CommissionLog.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withCommissionLog sets the old CommissionLog of the mutation.
+func withCommissionLog(node *CommissionLog) commissionlogOption {
+	return func(m *CommissionLogMutation) {
+		m.oldValue = func(context.Context) (*CommissionLog, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m CommissionLogMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m CommissionLogMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *CommissionLogMutation) ID() (id int64, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *CommissionLogMutation) IDs(ctx context.Context) ([]int64, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int64{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().CommissionLog.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *CommissionLogMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *CommissionLogMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the CommissionLog entity.
+// If the CommissionLog object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CommissionLogMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *CommissionLogMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *CommissionLogMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *CommissionLogMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the CommissionLog entity.
+// If the CommissionLog object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CommissionLogMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *CommissionLogMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+}
+
+// SetUserID sets the "user_id" field.
+func (m *CommissionLogMutation) SetUserID(i int64) {
+	m.user = &i
+}
+
+// UserID returns the value of the "user_id" field in the mutation.
+func (m *CommissionLogMutation) UserID() (r int64, exists bool) {
+	v := m.user
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUserID returns the old "user_id" field's value of the CommissionLog entity.
+// If the CommissionLog object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CommissionLogMutation) OldUserID(ctx context.Context) (v int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUserID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUserID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUserID: %w", err)
+	}
+	return oldValue.UserID, nil
+}
+
+// ResetUserID resets all changes to the "user_id" field.
+func (m *CommissionLogMutation) ResetUserID() {
+	m.user = nil
+}
+
+// SetInviteeID sets the "invitee_id" field.
+func (m *CommissionLogMutation) SetInviteeID(i int64) {
+	m.invitee = &i
+}
+
+// InviteeID returns the value of the "invitee_id" field in the mutation.
+func (m *CommissionLogMutation) InviteeID() (r int64, exists bool) {
+	v := m.invitee
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldInviteeID returns the old "invitee_id" field's value of the CommissionLog entity.
+// If the CommissionLog object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CommissionLogMutation) OldInviteeID(ctx context.Context) (v *int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldInviteeID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldInviteeID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldInviteeID: %w", err)
+	}
+	return oldValue.InviteeID, nil
+}
+
+// ClearInviteeID clears the value of the "invitee_id" field.
+func (m *CommissionLogMutation) ClearInviteeID() {
+	m.invitee = nil
+	m.clearedFields[commissionlog.FieldInviteeID] = struct{}{}
+}
+
+// InviteeIDCleared returns if the "invitee_id" field was cleared in this mutation.
+func (m *CommissionLogMutation) InviteeIDCleared() bool {
+	_, ok := m.clearedFields[commissionlog.FieldInviteeID]
+	return ok
+}
+
+// ResetInviteeID resets all changes to the "invitee_id" field.
+func (m *CommissionLogMutation) ResetInviteeID() {
+	m.invitee = nil
+	delete(m.clearedFields, commissionlog.FieldInviteeID)
+}
+
+// SetOrderID sets the "order_id" field.
+func (m *CommissionLogMutation) SetOrderID(i int64) {
+	m.payment_order = &i
+}
+
+// OrderID returns the value of the "order_id" field in the mutation.
+func (m *CommissionLogMutation) OrderID() (r int64, exists bool) {
+	v := m.payment_order
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldOrderID returns the old "order_id" field's value of the CommissionLog entity.
+// If the CommissionLog object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CommissionLogMutation) OldOrderID(ctx context.Context) (v *int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldOrderID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldOrderID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldOrderID: %w", err)
+	}
+	return oldValue.OrderID, nil
+}
+
+// ClearOrderID clears the value of the "order_id" field.
+func (m *CommissionLogMutation) ClearOrderID() {
+	m.payment_order = nil
+	m.clearedFields[commissionlog.FieldOrderID] = struct{}{}
+}
+
+// OrderIDCleared returns if the "order_id" field was cleared in this mutation.
+func (m *CommissionLogMutation) OrderIDCleared() bool {
+	_, ok := m.clearedFields[commissionlog.FieldOrderID]
+	return ok
+}
+
+// ResetOrderID resets all changes to the "order_id" field.
+func (m *CommissionLogMutation) ResetOrderID() {
+	m.payment_order = nil
+	delete(m.clearedFields, commissionlog.FieldOrderID)
+}
+
+// SetAmount sets the "amount" field.
+func (m *CommissionLogMutation) SetAmount(f float64) {
+	m.amount = &f
+	m.addamount = nil
+}
+
+// Amount returns the value of the "amount" field in the mutation.
+func (m *CommissionLogMutation) Amount() (r float64, exists bool) {
+	v := m.amount
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAmount returns the old "amount" field's value of the CommissionLog entity.
+// If the CommissionLog object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CommissionLogMutation) OldAmount(ctx context.Context) (v float64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAmount is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAmount requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAmount: %w", err)
+	}
+	return oldValue.Amount, nil
+}
+
+// AddAmount adds f to the "amount" field.
+func (m *CommissionLogMutation) AddAmount(f float64) {
+	if m.addamount != nil {
+		*m.addamount += f
+	} else {
+		m.addamount = &f
+	}
+}
+
+// AddedAmount returns the value that was added to the "amount" field in this mutation.
+func (m *CommissionLogMutation) AddedAmount() (r float64, exists bool) {
+	v := m.addamount
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetAmount resets all changes to the "amount" field.
+func (m *CommissionLogMutation) ResetAmount() {
+	m.amount = nil
+	m.addamount = nil
+}
+
+// SetStatus sets the "status" field.
+func (m *CommissionLogMutation) SetStatus(s string) {
+	m.status = &s
+}
+
+// Status returns the value of the "status" field in the mutation.
+func (m *CommissionLogMutation) Status() (r string, exists bool) {
+	v := m.status
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldStatus returns the old "status" field's value of the CommissionLog entity.
+// If the CommissionLog object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CommissionLogMutation) OldStatus(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldStatus is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldStatus requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldStatus: %w", err)
+	}
+	return oldValue.Status, nil
+}
+
+// ResetStatus resets all changes to the "status" field.
+func (m *CommissionLogMutation) ResetStatus() {
+	m.status = nil
+}
+
+// SetReason sets the "reason" field.
+func (m *CommissionLogMutation) SetReason(s string) {
+	m.reason = &s
+}
+
+// Reason returns the value of the "reason" field in the mutation.
+func (m *CommissionLogMutation) Reason() (r string, exists bool) {
+	v := m.reason
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldReason returns the old "reason" field's value of the CommissionLog entity.
+// If the CommissionLog object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CommissionLogMutation) OldReason(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldReason is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldReason requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldReason: %w", err)
+	}
+	return oldValue.Reason, nil
+}
+
+// ResetReason resets all changes to the "reason" field.
+func (m *CommissionLogMutation) ResetReason() {
+	m.reason = nil
+}
+
+// ClearUser clears the "user" edge to the User entity.
+func (m *CommissionLogMutation) ClearUser() {
+	m.cleareduser = true
+	m.clearedFields[commissionlog.FieldUserID] = struct{}{}
+}
+
+// UserCleared reports if the "user" edge to the User entity was cleared.
+func (m *CommissionLogMutation) UserCleared() bool {
+	return m.cleareduser
+}
+
+// UserIDs returns the "user" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// UserID instead. It exists only for internal usage by the builders.
+func (m *CommissionLogMutation) UserIDs() (ids []int64) {
+	if id := m.user; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetUser resets all changes to the "user" edge.
+func (m *CommissionLogMutation) ResetUser() {
+	m.user = nil
+	m.cleareduser = false
+}
+
+// ClearInvitee clears the "invitee" edge to the User entity.
+func (m *CommissionLogMutation) ClearInvitee() {
+	m.clearedinvitee = true
+	m.clearedFields[commissionlog.FieldInviteeID] = struct{}{}
+}
+
+// InviteeCleared reports if the "invitee" edge to the User entity was cleared.
+func (m *CommissionLogMutation) InviteeCleared() bool {
+	return m.InviteeIDCleared() || m.clearedinvitee
+}
+
+// InviteeIDs returns the "invitee" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// InviteeID instead. It exists only for internal usage by the builders.
+func (m *CommissionLogMutation) InviteeIDs() (ids []int64) {
+	if id := m.invitee; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetInvitee resets all changes to the "invitee" edge.
+func (m *CommissionLogMutation) ResetInvitee() {
+	m.invitee = nil
+	m.clearedinvitee = false
+}
+
+// SetPaymentOrderID sets the "payment_order" edge to the PaymentOrder entity by id.
+func (m *CommissionLogMutation) SetPaymentOrderID(id int64) {
+	m.payment_order = &id
+}
+
+// ClearPaymentOrder clears the "payment_order" edge to the PaymentOrder entity.
+func (m *CommissionLogMutation) ClearPaymentOrder() {
+	m.clearedpayment_order = true
+	m.clearedFields[commissionlog.FieldOrderID] = struct{}{}
+}
+
+// PaymentOrderCleared reports if the "payment_order" edge to the PaymentOrder entity was cleared.
+func (m *CommissionLogMutation) PaymentOrderCleared() bool {
+	return m.OrderIDCleared() || m.clearedpayment_order
+}
+
+// PaymentOrderID returns the "payment_order" edge ID in the mutation.
+func (m *CommissionLogMutation) PaymentOrderID() (id int64, exists bool) {
+	if m.payment_order != nil {
+		return *m.payment_order, true
+	}
+	return
+}
+
+// PaymentOrderIDs returns the "payment_order" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// PaymentOrderID instead. It exists only for internal usage by the builders.
+func (m *CommissionLogMutation) PaymentOrderIDs() (ids []int64) {
+	if id := m.payment_order; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetPaymentOrder resets all changes to the "payment_order" edge.
+func (m *CommissionLogMutation) ResetPaymentOrder() {
+	m.payment_order = nil
+	m.clearedpayment_order = false
+}
+
+// Where appends a list predicates to the CommissionLogMutation builder.
+func (m *CommissionLogMutation) Where(ps ...predicate.CommissionLog) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the CommissionLogMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *CommissionLogMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.CommissionLog, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *CommissionLogMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *CommissionLogMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (CommissionLog).
+func (m *CommissionLogMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *CommissionLogMutation) Fields() []string {
+	fields := make([]string, 0, 8)
+	if m.created_at != nil {
+		fields = append(fields, commissionlog.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, commissionlog.FieldUpdatedAt)
+	}
+	if m.user != nil {
+		fields = append(fields, commissionlog.FieldUserID)
+	}
+	if m.invitee != nil {
+		fields = append(fields, commissionlog.FieldInviteeID)
+	}
+	if m.payment_order != nil {
+		fields = append(fields, commissionlog.FieldOrderID)
+	}
+	if m.amount != nil {
+		fields = append(fields, commissionlog.FieldAmount)
+	}
+	if m.status != nil {
+		fields = append(fields, commissionlog.FieldStatus)
+	}
+	if m.reason != nil {
+		fields = append(fields, commissionlog.FieldReason)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *CommissionLogMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case commissionlog.FieldCreatedAt:
+		return m.CreatedAt()
+	case commissionlog.FieldUpdatedAt:
+		return m.UpdatedAt()
+	case commissionlog.FieldUserID:
+		return m.UserID()
+	case commissionlog.FieldInviteeID:
+		return m.InviteeID()
+	case commissionlog.FieldOrderID:
+		return m.OrderID()
+	case commissionlog.FieldAmount:
+		return m.Amount()
+	case commissionlog.FieldStatus:
+		return m.Status()
+	case commissionlog.FieldReason:
+		return m.Reason()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *CommissionLogMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case commissionlog.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case commissionlog.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
+	case commissionlog.FieldUserID:
+		return m.OldUserID(ctx)
+	case commissionlog.FieldInviteeID:
+		return m.OldInviteeID(ctx)
+	case commissionlog.FieldOrderID:
+		return m.OldOrderID(ctx)
+	case commissionlog.FieldAmount:
+		return m.OldAmount(ctx)
+	case commissionlog.FieldStatus:
+		return m.OldStatus(ctx)
+	case commissionlog.FieldReason:
+		return m.OldReason(ctx)
+	}
+	return nil, fmt.Errorf("unknown CommissionLog field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *CommissionLogMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case commissionlog.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case commissionlog.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
+	case commissionlog.FieldUserID:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUserID(v)
+		return nil
+	case commissionlog.FieldInviteeID:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetInviteeID(v)
+		return nil
+	case commissionlog.FieldOrderID:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetOrderID(v)
+		return nil
+	case commissionlog.FieldAmount:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAmount(v)
+		return nil
+	case commissionlog.FieldStatus:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetStatus(v)
+		return nil
+	case commissionlog.FieldReason:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetReason(v)
+		return nil
+	}
+	return fmt.Errorf("unknown CommissionLog field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *CommissionLogMutation) AddedFields() []string {
+	var fields []string
+	if m.addamount != nil {
+		fields = append(fields, commissionlog.FieldAmount)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *CommissionLogMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case commissionlog.FieldAmount:
+		return m.AddedAmount()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *CommissionLogMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case commissionlog.FieldAmount:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddAmount(v)
+		return nil
+	}
+	return fmt.Errorf("unknown CommissionLog numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *CommissionLogMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(commissionlog.FieldInviteeID) {
+		fields = append(fields, commissionlog.FieldInviteeID)
+	}
+	if m.FieldCleared(commissionlog.FieldOrderID) {
+		fields = append(fields, commissionlog.FieldOrderID)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *CommissionLogMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *CommissionLogMutation) ClearField(name string) error {
+	switch name {
+	case commissionlog.FieldInviteeID:
+		m.ClearInviteeID()
+		return nil
+	case commissionlog.FieldOrderID:
+		m.ClearOrderID()
+		return nil
+	}
+	return fmt.Errorf("unknown CommissionLog nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *CommissionLogMutation) ResetField(name string) error {
+	switch name {
+	case commissionlog.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case commissionlog.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
+	case commissionlog.FieldUserID:
+		m.ResetUserID()
+		return nil
+	case commissionlog.FieldInviteeID:
+		m.ResetInviteeID()
+		return nil
+	case commissionlog.FieldOrderID:
+		m.ResetOrderID()
+		return nil
+	case commissionlog.FieldAmount:
+		m.ResetAmount()
+		return nil
+	case commissionlog.FieldStatus:
+		m.ResetStatus()
+		return nil
+	case commissionlog.FieldReason:
+		m.ResetReason()
+		return nil
+	}
+	return fmt.Errorf("unknown CommissionLog field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *CommissionLogMutation) AddedEdges() []string {
+	edges := make([]string, 0, 3)
+	if m.user != nil {
+		edges = append(edges, commissionlog.EdgeUser)
+	}
+	if m.invitee != nil {
+		edges = append(edges, commissionlog.EdgeInvitee)
+	}
+	if m.payment_order != nil {
+		edges = append(edges, commissionlog.EdgePaymentOrder)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *CommissionLogMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case commissionlog.EdgeUser:
+		if id := m.user; id != nil {
+			return []ent.Value{*id}
+		}
+	case commissionlog.EdgeInvitee:
+		if id := m.invitee; id != nil {
+			return []ent.Value{*id}
+		}
+	case commissionlog.EdgePaymentOrder:
+		if id := m.payment_order; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *CommissionLogMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 3)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *CommissionLogMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *CommissionLogMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 3)
+	if m.cleareduser {
+		edges = append(edges, commissionlog.EdgeUser)
+	}
+	if m.clearedinvitee {
+		edges = append(edges, commissionlog.EdgeInvitee)
+	}
+	if m.clearedpayment_order {
+		edges = append(edges, commissionlog.EdgePaymentOrder)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *CommissionLogMutation) EdgeCleared(name string) bool {
+	switch name {
+	case commissionlog.EdgeUser:
+		return m.cleareduser
+	case commissionlog.EdgeInvitee:
+		return m.clearedinvitee
+	case commissionlog.EdgePaymentOrder:
+		return m.clearedpayment_order
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *CommissionLogMutation) ClearEdge(name string) error {
+	switch name {
+	case commissionlog.EdgeUser:
+		m.ClearUser()
+		return nil
+	case commissionlog.EdgeInvitee:
+		m.ClearInvitee()
+		return nil
+	case commissionlog.EdgePaymentOrder:
+		m.ClearPaymentOrder()
+		return nil
+	}
+	return fmt.Errorf("unknown CommissionLog unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *CommissionLogMutation) ResetEdge(name string) error {
+	switch name {
+	case commissionlog.EdgeUser:
+		m.ResetUser()
+		return nil
+	case commissionlog.EdgeInvitee:
+		m.ResetInvitee()
+		return nil
+	case commissionlog.EdgePaymentOrder:
+		m.ResetPaymentOrder()
+		return nil
+	}
+	return fmt.Errorf("unknown CommissionLog edge %s", name)
+}
+
 // ErrorPassthroughRuleMutation represents an operation that mutates the ErrorPassthroughRule nodes in the graph.
 type ErrorPassthroughRuleMutation struct {
 	config
@@ -12785,6 +13727,9 @@ type PaymentOrderMutation struct {
 	clearedFields            map[string]struct{}
 	user                     *int64
 	cleareduser              bool
+	commission_logs          map[int64]struct{}
+	removedcommission_logs   map[int64]struct{}
+	clearedcommission_logs   bool
 	done                     bool
 	oldValue                 func(context.Context) (*PaymentOrder, error)
 	predicates               []predicate.PaymentOrder
@@ -14624,6 +15569,60 @@ func (m *PaymentOrderMutation) ResetUser() {
 	m.cleareduser = false
 }
 
+// AddCommissionLogIDs adds the "commission_logs" edge to the CommissionLog entity by ids.
+func (m *PaymentOrderMutation) AddCommissionLogIDs(ids ...int64) {
+	if m.commission_logs == nil {
+		m.commission_logs = make(map[int64]struct{})
+	}
+	for i := range ids {
+		m.commission_logs[ids[i]] = struct{}{}
+	}
+}
+
+// ClearCommissionLogs clears the "commission_logs" edge to the CommissionLog entity.
+func (m *PaymentOrderMutation) ClearCommissionLogs() {
+	m.clearedcommission_logs = true
+}
+
+// CommissionLogsCleared reports if the "commission_logs" edge to the CommissionLog entity was cleared.
+func (m *PaymentOrderMutation) CommissionLogsCleared() bool {
+	return m.clearedcommission_logs
+}
+
+// RemoveCommissionLogIDs removes the "commission_logs" edge to the CommissionLog entity by IDs.
+func (m *PaymentOrderMutation) RemoveCommissionLogIDs(ids ...int64) {
+	if m.removedcommission_logs == nil {
+		m.removedcommission_logs = make(map[int64]struct{})
+	}
+	for i := range ids {
+		delete(m.commission_logs, ids[i])
+		m.removedcommission_logs[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedCommissionLogs returns the removed IDs of the "commission_logs" edge to the CommissionLog entity.
+func (m *PaymentOrderMutation) RemovedCommissionLogsIDs() (ids []int64) {
+	for id := range m.removedcommission_logs {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// CommissionLogsIDs returns the "commission_logs" edge IDs in the mutation.
+func (m *PaymentOrderMutation) CommissionLogsIDs() (ids []int64) {
+	for id := range m.commission_logs {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetCommissionLogs resets all changes to the "commission_logs" edge.
+func (m *PaymentOrderMutation) ResetCommissionLogs() {
+	m.commission_logs = nil
+	m.clearedcommission_logs = false
+	m.removedcommission_logs = nil
+}
+
 // Where appends a list predicates to the PaymentOrderMutation builder.
 func (m *PaymentOrderMutation) Where(ps ...predicate.PaymentOrder) {
 	m.predicates = append(m.predicates, ps...)
@@ -15567,9 +16566,12 @@ func (m *PaymentOrderMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *PaymentOrderMutation) AddedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
 	if m.user != nil {
 		edges = append(edges, paymentorder.EdgeUser)
+	}
+	if m.commission_logs != nil {
+		edges = append(edges, paymentorder.EdgeCommissionLogs)
 	}
 	return edges
 }
@@ -15582,27 +16584,47 @@ func (m *PaymentOrderMutation) AddedIDs(name string) []ent.Value {
 		if id := m.user; id != nil {
 			return []ent.Value{*id}
 		}
+	case paymentorder.EdgeCommissionLogs:
+		ids := make([]ent.Value, 0, len(m.commission_logs))
+		for id := range m.commission_logs {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *PaymentOrderMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
+	if m.removedcommission_logs != nil {
+		edges = append(edges, paymentorder.EdgeCommissionLogs)
+	}
 	return edges
 }
 
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
 func (m *PaymentOrderMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case paymentorder.EdgeCommissionLogs:
+		ids := make([]ent.Value, 0, len(m.removedcommission_logs))
+		for id := range m.removedcommission_logs {
+			ids = append(ids, id)
+		}
+		return ids
+	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *PaymentOrderMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
 	if m.cleareduser {
 		edges = append(edges, paymentorder.EdgeUser)
+	}
+	if m.clearedcommission_logs {
+		edges = append(edges, paymentorder.EdgeCommissionLogs)
 	}
 	return edges
 }
@@ -15613,6 +16635,8 @@ func (m *PaymentOrderMutation) EdgeCleared(name string) bool {
 	switch name {
 	case paymentorder.EdgeUser:
 		return m.cleareduser
+	case paymentorder.EdgeCommissionLogs:
+		return m.clearedcommission_logs
 	}
 	return false
 }
@@ -15634,6 +16658,9 @@ func (m *PaymentOrderMutation) ResetEdge(name string) error {
 	switch name {
 	case paymentorder.EdgeUser:
 		m.ResetUser()
+		return nil
+	case paymentorder.EdgeCommissionLogs:
+		m.ResetCommissionLogs()
 		return nil
 	}
 	return fmt.Errorf("unknown PaymentOrder edge %s", name)
@@ -28271,7 +29298,22 @@ type UserMutation struct {
 	balance_notify_extra_emails   *string
 	total_recharged               *float64
 	addtotal_recharged            *float64
+	invite_code                   *string
+	commission_rate               *float64
+	addcommission_rate            *float64
+	commission_balance            *float64
+	addcommission_balance         *float64
+	total_commission_earned       *float64
+	addtotal_commission_earned    *float64
 	clearedFields                 map[string]struct{}
+	inviter                       *int64
+	clearedinviter                bool
+	invitees                      map[int64]struct{}
+	removedinvitees               map[int64]struct{}
+	clearedinvitees               bool
+	commission_logs               map[int64]struct{}
+	removedcommission_logs        map[int64]struct{}
+	clearedcommission_logs        bool
 	api_keys                      map[int64]struct{}
 	removedapi_keys               map[int64]struct{}
 	clearedapi_keys               bool
@@ -29222,6 +30264,407 @@ func (m *UserMutation) ResetTotalRecharged() {
 	m.addtotal_recharged = nil
 }
 
+// SetInviterID sets the "inviter_id" field.
+func (m *UserMutation) SetInviterID(i int64) {
+	m.inviter = &i
+}
+
+// InviterID returns the value of the "inviter_id" field in the mutation.
+func (m *UserMutation) InviterID() (r int64, exists bool) {
+	v := m.inviter
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldInviterID returns the old "inviter_id" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldInviterID(ctx context.Context) (v *int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldInviterID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldInviterID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldInviterID: %w", err)
+	}
+	return oldValue.InviterID, nil
+}
+
+// ClearInviterID clears the value of the "inviter_id" field.
+func (m *UserMutation) ClearInviterID() {
+	m.inviter = nil
+	m.clearedFields[user.FieldInviterID] = struct{}{}
+}
+
+// InviterIDCleared returns if the "inviter_id" field was cleared in this mutation.
+func (m *UserMutation) InviterIDCleared() bool {
+	_, ok := m.clearedFields[user.FieldInviterID]
+	return ok
+}
+
+// ResetInviterID resets all changes to the "inviter_id" field.
+func (m *UserMutation) ResetInviterID() {
+	m.inviter = nil
+	delete(m.clearedFields, user.FieldInviterID)
+}
+
+// SetInviteCode sets the "invite_code" field.
+func (m *UserMutation) SetInviteCode(s string) {
+	m.invite_code = &s
+}
+
+// InviteCode returns the value of the "invite_code" field in the mutation.
+func (m *UserMutation) InviteCode() (r string, exists bool) {
+	v := m.invite_code
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldInviteCode returns the old "invite_code" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldInviteCode(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldInviteCode is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldInviteCode requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldInviteCode: %w", err)
+	}
+	return oldValue.InviteCode, nil
+}
+
+// ClearInviteCode clears the value of the "invite_code" field.
+func (m *UserMutation) ClearInviteCode() {
+	m.invite_code = nil
+	m.clearedFields[user.FieldInviteCode] = struct{}{}
+}
+
+// InviteCodeCleared returns if the "invite_code" field was cleared in this mutation.
+func (m *UserMutation) InviteCodeCleared() bool {
+	_, ok := m.clearedFields[user.FieldInviteCode]
+	return ok
+}
+
+// ResetInviteCode resets all changes to the "invite_code" field.
+func (m *UserMutation) ResetInviteCode() {
+	m.invite_code = nil
+	delete(m.clearedFields, user.FieldInviteCode)
+}
+
+// SetCommissionRate sets the "commission_rate" field.
+func (m *UserMutation) SetCommissionRate(f float64) {
+	m.commission_rate = &f
+	m.addcommission_rate = nil
+}
+
+// CommissionRate returns the value of the "commission_rate" field in the mutation.
+func (m *UserMutation) CommissionRate() (r float64, exists bool) {
+	v := m.commission_rate
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCommissionRate returns the old "commission_rate" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldCommissionRate(ctx context.Context) (v float64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCommissionRate is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCommissionRate requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCommissionRate: %w", err)
+	}
+	return oldValue.CommissionRate, nil
+}
+
+// AddCommissionRate adds f to the "commission_rate" field.
+func (m *UserMutation) AddCommissionRate(f float64) {
+	if m.addcommission_rate != nil {
+		*m.addcommission_rate += f
+	} else {
+		m.addcommission_rate = &f
+	}
+}
+
+// AddedCommissionRate returns the value that was added to the "commission_rate" field in this mutation.
+func (m *UserMutation) AddedCommissionRate() (r float64, exists bool) {
+	v := m.addcommission_rate
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetCommissionRate resets all changes to the "commission_rate" field.
+func (m *UserMutation) ResetCommissionRate() {
+	m.commission_rate = nil
+	m.addcommission_rate = nil
+}
+
+// SetCommissionBalance sets the "commission_balance" field.
+func (m *UserMutation) SetCommissionBalance(f float64) {
+	m.commission_balance = &f
+	m.addcommission_balance = nil
+}
+
+// CommissionBalance returns the value of the "commission_balance" field in the mutation.
+func (m *UserMutation) CommissionBalance() (r float64, exists bool) {
+	v := m.commission_balance
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCommissionBalance returns the old "commission_balance" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldCommissionBalance(ctx context.Context) (v float64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCommissionBalance is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCommissionBalance requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCommissionBalance: %w", err)
+	}
+	return oldValue.CommissionBalance, nil
+}
+
+// AddCommissionBalance adds f to the "commission_balance" field.
+func (m *UserMutation) AddCommissionBalance(f float64) {
+	if m.addcommission_balance != nil {
+		*m.addcommission_balance += f
+	} else {
+		m.addcommission_balance = &f
+	}
+}
+
+// AddedCommissionBalance returns the value that was added to the "commission_balance" field in this mutation.
+func (m *UserMutation) AddedCommissionBalance() (r float64, exists bool) {
+	v := m.addcommission_balance
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetCommissionBalance resets all changes to the "commission_balance" field.
+func (m *UserMutation) ResetCommissionBalance() {
+	m.commission_balance = nil
+	m.addcommission_balance = nil
+}
+
+// SetTotalCommissionEarned sets the "total_commission_earned" field.
+func (m *UserMutation) SetTotalCommissionEarned(f float64) {
+	m.total_commission_earned = &f
+	m.addtotal_commission_earned = nil
+}
+
+// TotalCommissionEarned returns the value of the "total_commission_earned" field in the mutation.
+func (m *UserMutation) TotalCommissionEarned() (r float64, exists bool) {
+	v := m.total_commission_earned
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTotalCommissionEarned returns the old "total_commission_earned" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldTotalCommissionEarned(ctx context.Context) (v float64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTotalCommissionEarned is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTotalCommissionEarned requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTotalCommissionEarned: %w", err)
+	}
+	return oldValue.TotalCommissionEarned, nil
+}
+
+// AddTotalCommissionEarned adds f to the "total_commission_earned" field.
+func (m *UserMutation) AddTotalCommissionEarned(f float64) {
+	if m.addtotal_commission_earned != nil {
+		*m.addtotal_commission_earned += f
+	} else {
+		m.addtotal_commission_earned = &f
+	}
+}
+
+// AddedTotalCommissionEarned returns the value that was added to the "total_commission_earned" field in this mutation.
+func (m *UserMutation) AddedTotalCommissionEarned() (r float64, exists bool) {
+	v := m.addtotal_commission_earned
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetTotalCommissionEarned resets all changes to the "total_commission_earned" field.
+func (m *UserMutation) ResetTotalCommissionEarned() {
+	m.total_commission_earned = nil
+	m.addtotal_commission_earned = nil
+}
+
+// ClearInviter clears the "inviter" edge to the User entity.
+func (m *UserMutation) ClearInviter() {
+	m.clearedinviter = true
+	m.clearedFields[user.FieldInviterID] = struct{}{}
+}
+
+// InviterCleared reports if the "inviter" edge to the User entity was cleared.
+func (m *UserMutation) InviterCleared() bool {
+	return m.InviterIDCleared() || m.clearedinviter
+}
+
+// InviterIDs returns the "inviter" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// InviterID instead. It exists only for internal usage by the builders.
+func (m *UserMutation) InviterIDs() (ids []int64) {
+	if id := m.inviter; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetInviter resets all changes to the "inviter" edge.
+func (m *UserMutation) ResetInviter() {
+	m.inviter = nil
+	m.clearedinviter = false
+}
+
+// AddInviteeIDs adds the "invitees" edge to the User entity by ids.
+func (m *UserMutation) AddInviteeIDs(ids ...int64) {
+	if m.invitees == nil {
+		m.invitees = make(map[int64]struct{})
+	}
+	for i := range ids {
+		m.invitees[ids[i]] = struct{}{}
+	}
+}
+
+// ClearInvitees clears the "invitees" edge to the User entity.
+func (m *UserMutation) ClearInvitees() {
+	m.clearedinvitees = true
+}
+
+// InviteesCleared reports if the "invitees" edge to the User entity was cleared.
+func (m *UserMutation) InviteesCleared() bool {
+	return m.clearedinvitees
+}
+
+// RemoveInviteeIDs removes the "invitees" edge to the User entity by IDs.
+func (m *UserMutation) RemoveInviteeIDs(ids ...int64) {
+	if m.removedinvitees == nil {
+		m.removedinvitees = make(map[int64]struct{})
+	}
+	for i := range ids {
+		delete(m.invitees, ids[i])
+		m.removedinvitees[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedInvitees returns the removed IDs of the "invitees" edge to the User entity.
+func (m *UserMutation) RemovedInviteesIDs() (ids []int64) {
+	for id := range m.removedinvitees {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// InviteesIDs returns the "invitees" edge IDs in the mutation.
+func (m *UserMutation) InviteesIDs() (ids []int64) {
+	for id := range m.invitees {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetInvitees resets all changes to the "invitees" edge.
+func (m *UserMutation) ResetInvitees() {
+	m.invitees = nil
+	m.clearedinvitees = false
+	m.removedinvitees = nil
+}
+
+// AddCommissionLogIDs adds the "commission_logs" edge to the CommissionLog entity by ids.
+func (m *UserMutation) AddCommissionLogIDs(ids ...int64) {
+	if m.commission_logs == nil {
+		m.commission_logs = make(map[int64]struct{})
+	}
+	for i := range ids {
+		m.commission_logs[ids[i]] = struct{}{}
+	}
+}
+
+// ClearCommissionLogs clears the "commission_logs" edge to the CommissionLog entity.
+func (m *UserMutation) ClearCommissionLogs() {
+	m.clearedcommission_logs = true
+}
+
+// CommissionLogsCleared reports if the "commission_logs" edge to the CommissionLog entity was cleared.
+func (m *UserMutation) CommissionLogsCleared() bool {
+	return m.clearedcommission_logs
+}
+
+// RemoveCommissionLogIDs removes the "commission_logs" edge to the CommissionLog entity by IDs.
+func (m *UserMutation) RemoveCommissionLogIDs(ids ...int64) {
+	if m.removedcommission_logs == nil {
+		m.removedcommission_logs = make(map[int64]struct{})
+	}
+	for i := range ids {
+		delete(m.commission_logs, ids[i])
+		m.removedcommission_logs[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedCommissionLogs returns the removed IDs of the "commission_logs" edge to the CommissionLog entity.
+func (m *UserMutation) RemovedCommissionLogsIDs() (ids []int64) {
+	for id := range m.removedcommission_logs {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// CommissionLogsIDs returns the "commission_logs" edge IDs in the mutation.
+func (m *UserMutation) CommissionLogsIDs() (ids []int64) {
+	for id := range m.commission_logs {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetCommissionLogs resets all changes to the "commission_logs" edge.
+func (m *UserMutation) ResetCommissionLogs() {
+	m.commission_logs = nil
+	m.clearedcommission_logs = false
+	m.removedcommission_logs = nil
+}
+
 // AddAPIKeyIDs adds the "api_keys" edge to the APIKey entity by ids.
 func (m *UserMutation) AddAPIKeyIDs(ids ...int64) {
 	if m.api_keys == nil {
@@ -29796,7 +31239,7 @@ func (m *UserMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *UserMutation) Fields() []string {
-	fields := make([]string, 0, 19)
+	fields := make([]string, 0, 24)
 	if m.created_at != nil {
 		fields = append(fields, user.FieldCreatedAt)
 	}
@@ -29854,6 +31297,21 @@ func (m *UserMutation) Fields() []string {
 	if m.total_recharged != nil {
 		fields = append(fields, user.FieldTotalRecharged)
 	}
+	if m.inviter != nil {
+		fields = append(fields, user.FieldInviterID)
+	}
+	if m.invite_code != nil {
+		fields = append(fields, user.FieldInviteCode)
+	}
+	if m.commission_rate != nil {
+		fields = append(fields, user.FieldCommissionRate)
+	}
+	if m.commission_balance != nil {
+		fields = append(fields, user.FieldCommissionBalance)
+	}
+	if m.total_commission_earned != nil {
+		fields = append(fields, user.FieldTotalCommissionEarned)
+	}
 	return fields
 }
 
@@ -29900,6 +31358,16 @@ func (m *UserMutation) Field(name string) (ent.Value, bool) {
 		return m.BalanceNotifyExtraEmails()
 	case user.FieldTotalRecharged:
 		return m.TotalRecharged()
+	case user.FieldInviterID:
+		return m.InviterID()
+	case user.FieldInviteCode:
+		return m.InviteCode()
+	case user.FieldCommissionRate:
+		return m.CommissionRate()
+	case user.FieldCommissionBalance:
+		return m.CommissionBalance()
+	case user.FieldTotalCommissionEarned:
+		return m.TotalCommissionEarned()
 	}
 	return nil, false
 }
@@ -29947,6 +31415,16 @@ func (m *UserMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldBalanceNotifyExtraEmails(ctx)
 	case user.FieldTotalRecharged:
 		return m.OldTotalRecharged(ctx)
+	case user.FieldInviterID:
+		return m.OldInviterID(ctx)
+	case user.FieldInviteCode:
+		return m.OldInviteCode(ctx)
+	case user.FieldCommissionRate:
+		return m.OldCommissionRate(ctx)
+	case user.FieldCommissionBalance:
+		return m.OldCommissionBalance(ctx)
+	case user.FieldTotalCommissionEarned:
+		return m.OldTotalCommissionEarned(ctx)
 	}
 	return nil, fmt.Errorf("unknown User field %s", name)
 }
@@ -30089,6 +31567,41 @@ func (m *UserMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetTotalRecharged(v)
 		return nil
+	case user.FieldInviterID:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetInviterID(v)
+		return nil
+	case user.FieldInviteCode:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetInviteCode(v)
+		return nil
+	case user.FieldCommissionRate:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCommissionRate(v)
+		return nil
+	case user.FieldCommissionBalance:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCommissionBalance(v)
+		return nil
+	case user.FieldTotalCommissionEarned:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTotalCommissionEarned(v)
+		return nil
 	}
 	return fmt.Errorf("unknown User field %s", name)
 }
@@ -30109,6 +31622,15 @@ func (m *UserMutation) AddedFields() []string {
 	if m.addtotal_recharged != nil {
 		fields = append(fields, user.FieldTotalRecharged)
 	}
+	if m.addcommission_rate != nil {
+		fields = append(fields, user.FieldCommissionRate)
+	}
+	if m.addcommission_balance != nil {
+		fields = append(fields, user.FieldCommissionBalance)
+	}
+	if m.addtotal_commission_earned != nil {
+		fields = append(fields, user.FieldTotalCommissionEarned)
+	}
 	return fields
 }
 
@@ -30125,6 +31647,12 @@ func (m *UserMutation) AddedField(name string) (ent.Value, bool) {
 		return m.AddedBalanceNotifyThreshold()
 	case user.FieldTotalRecharged:
 		return m.AddedTotalRecharged()
+	case user.FieldCommissionRate:
+		return m.AddedCommissionRate()
+	case user.FieldCommissionBalance:
+		return m.AddedCommissionBalance()
+	case user.FieldTotalCommissionEarned:
+		return m.AddedTotalCommissionEarned()
 	}
 	return nil, false
 }
@@ -30162,6 +31690,27 @@ func (m *UserMutation) AddField(name string, value ent.Value) error {
 		}
 		m.AddTotalRecharged(v)
 		return nil
+	case user.FieldCommissionRate:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddCommissionRate(v)
+		return nil
+	case user.FieldCommissionBalance:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddCommissionBalance(v)
+		return nil
+	case user.FieldTotalCommissionEarned:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddTotalCommissionEarned(v)
+		return nil
 	}
 	return fmt.Errorf("unknown User numeric field %s", name)
 }
@@ -30181,6 +31730,12 @@ func (m *UserMutation) ClearedFields() []string {
 	}
 	if m.FieldCleared(user.FieldBalanceNotifyThreshold) {
 		fields = append(fields, user.FieldBalanceNotifyThreshold)
+	}
+	if m.FieldCleared(user.FieldInviterID) {
+		fields = append(fields, user.FieldInviterID)
+	}
+	if m.FieldCleared(user.FieldInviteCode) {
+		fields = append(fields, user.FieldInviteCode)
 	}
 	return fields
 }
@@ -30207,6 +31762,12 @@ func (m *UserMutation) ClearField(name string) error {
 		return nil
 	case user.FieldBalanceNotifyThreshold:
 		m.ClearBalanceNotifyThreshold()
+		return nil
+	case user.FieldInviterID:
+		m.ClearInviterID()
+		return nil
+	case user.FieldInviteCode:
+		m.ClearInviteCode()
 		return nil
 	}
 	return fmt.Errorf("unknown User nullable field %s", name)
@@ -30273,13 +31834,37 @@ func (m *UserMutation) ResetField(name string) error {
 	case user.FieldTotalRecharged:
 		m.ResetTotalRecharged()
 		return nil
+	case user.FieldInviterID:
+		m.ResetInviterID()
+		return nil
+	case user.FieldInviteCode:
+		m.ResetInviteCode()
+		return nil
+	case user.FieldCommissionRate:
+		m.ResetCommissionRate()
+		return nil
+	case user.FieldCommissionBalance:
+		m.ResetCommissionBalance()
+		return nil
+	case user.FieldTotalCommissionEarned:
+		m.ResetTotalCommissionEarned()
+		return nil
 	}
 	return fmt.Errorf("unknown User field %s", name)
 }
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *UserMutation) AddedEdges() []string {
-	edges := make([]string, 0, 10)
+	edges := make([]string, 0, 13)
+	if m.inviter != nil {
+		edges = append(edges, user.EdgeInviter)
+	}
+	if m.invitees != nil {
+		edges = append(edges, user.EdgeInvitees)
+	}
+	if m.commission_logs != nil {
+		edges = append(edges, user.EdgeCommissionLogs)
+	}
 	if m.api_keys != nil {
 		edges = append(edges, user.EdgeAPIKeys)
 	}
@@ -30317,6 +31902,22 @@ func (m *UserMutation) AddedEdges() []string {
 // name in this mutation.
 func (m *UserMutation) AddedIDs(name string) []ent.Value {
 	switch name {
+	case user.EdgeInviter:
+		if id := m.inviter; id != nil {
+			return []ent.Value{*id}
+		}
+	case user.EdgeInvitees:
+		ids := make([]ent.Value, 0, len(m.invitees))
+		for id := range m.invitees {
+			ids = append(ids, id)
+		}
+		return ids
+	case user.EdgeCommissionLogs:
+		ids := make([]ent.Value, 0, len(m.commission_logs))
+		for id := range m.commission_logs {
+			ids = append(ids, id)
+		}
+		return ids
 	case user.EdgeAPIKeys:
 		ids := make([]ent.Value, 0, len(m.api_keys))
 		for id := range m.api_keys {
@@ -30383,7 +31984,13 @@ func (m *UserMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *UserMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 10)
+	edges := make([]string, 0, 13)
+	if m.removedinvitees != nil {
+		edges = append(edges, user.EdgeInvitees)
+	}
+	if m.removedcommission_logs != nil {
+		edges = append(edges, user.EdgeCommissionLogs)
+	}
 	if m.removedapi_keys != nil {
 		edges = append(edges, user.EdgeAPIKeys)
 	}
@@ -30421,6 +32028,18 @@ func (m *UserMutation) RemovedEdges() []string {
 // the given name in this mutation.
 func (m *UserMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
+	case user.EdgeInvitees:
+		ids := make([]ent.Value, 0, len(m.removedinvitees))
+		for id := range m.removedinvitees {
+			ids = append(ids, id)
+		}
+		return ids
+	case user.EdgeCommissionLogs:
+		ids := make([]ent.Value, 0, len(m.removedcommission_logs))
+		for id := range m.removedcommission_logs {
+			ids = append(ids, id)
+		}
+		return ids
 	case user.EdgeAPIKeys:
 		ids := make([]ent.Value, 0, len(m.removedapi_keys))
 		for id := range m.removedapi_keys {
@@ -30487,7 +32106,16 @@ func (m *UserMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *UserMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 10)
+	edges := make([]string, 0, 13)
+	if m.clearedinviter {
+		edges = append(edges, user.EdgeInviter)
+	}
+	if m.clearedinvitees {
+		edges = append(edges, user.EdgeInvitees)
+	}
+	if m.clearedcommission_logs {
+		edges = append(edges, user.EdgeCommissionLogs)
+	}
 	if m.clearedapi_keys {
 		edges = append(edges, user.EdgeAPIKeys)
 	}
@@ -30525,6 +32153,12 @@ func (m *UserMutation) ClearedEdges() []string {
 // was cleared in this mutation.
 func (m *UserMutation) EdgeCleared(name string) bool {
 	switch name {
+	case user.EdgeInviter:
+		return m.clearedinviter
+	case user.EdgeInvitees:
+		return m.clearedinvitees
+	case user.EdgeCommissionLogs:
+		return m.clearedcommission_logs
 	case user.EdgeAPIKeys:
 		return m.clearedapi_keys
 	case user.EdgeRedeemCodes:
@@ -30553,6 +32187,9 @@ func (m *UserMutation) EdgeCleared(name string) bool {
 // if that edge is not defined in the schema.
 func (m *UserMutation) ClearEdge(name string) error {
 	switch name {
+	case user.EdgeInviter:
+		m.ClearInviter()
+		return nil
 	}
 	return fmt.Errorf("unknown User unique edge %s", name)
 }
@@ -30561,6 +32198,15 @@ func (m *UserMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *UserMutation) ResetEdge(name string) error {
 	switch name {
+	case user.EdgeInviter:
+		m.ResetInviter()
+		return nil
+	case user.EdgeInvitees:
+		m.ResetInvitees()
+		return nil
+	case user.EdgeCommissionLogs:
+		m.ResetCommissionLogs()
+		return nil
 	case user.EdgeAPIKeys:
 		m.ResetAPIKeys()
 		return nil

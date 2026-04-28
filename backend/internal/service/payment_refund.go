@@ -10,10 +10,10 @@ import (
 	"strings"
 	"time"
 
-	dbent "github.com/Wei-Shaw/sub2api/ent"
-	"github.com/Wei-Shaw/sub2api/ent/paymentorder"
-	"github.com/Wei-Shaw/sub2api/internal/payment"
-	infraerrors "github.com/Wei-Shaw/sub2api/internal/pkg/errors"
+	dbent "github.com/dlxyz/SubioHub/ent"
+	"github.com/dlxyz/SubioHub/ent/paymentorder"
+	"github.com/dlxyz/SubioHub/internal/payment"
+	infraerrors "github.com/dlxyz/SubioHub/internal/pkg/errors"
 )
 
 // --- Refund Flow ---

@@ -8,11 +8,11 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/Wei-Shaw/sub2api/internal/config"
-	"github.com/Wei-Shaw/sub2api/internal/handler"
-	"github.com/Wei-Shaw/sub2api/internal/pkg/websearch"
-	middleware2 "github.com/Wei-Shaw/sub2api/internal/server/middleware"
-	"github.com/Wei-Shaw/sub2api/internal/service"
+	"github.com/dlxyz/SubioHub/internal/config"
+	"github.com/dlxyz/SubioHub/internal/handler"
+	"github.com/dlxyz/SubioHub/internal/pkg/websearch"
+	middleware2 "github.com/dlxyz/SubioHub/internal/server/middleware"
+	"github.com/dlxyz/SubioHub/internal/service"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/wire"

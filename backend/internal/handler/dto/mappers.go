@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/Wei-Shaw/sub2api/internal/service"
+	"github.com/dlxyz/SubioHub/internal/service"
 )
 
 func UserFromServiceShallow(u *service.User) *User {
@@ -16,6 +16,7 @@ func UserFromServiceShallow(u *service.User) *User {
 		ID:                         u.ID,
 		Email:                      u.Email,
 		Username:                   u.Username,
+		InviteCode:                 u.InviteCode,
 		Role:                       u.Role,
 		Balance:                    u.Balance,
 		Concurrency:                u.Concurrency,

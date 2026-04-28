@@ -76,6 +76,7 @@ type Config struct {
 	Dashboard               DashboardCacheConfig          `mapstructure:"dashboard_cache"`
 	DashboardAgg            DashboardAggregationConfig    `mapstructure:"dashboard_aggregation"`
 	UsageCleanup            UsageCleanupConfig            `mapstructure:"usage_cleanup"`
+	Affiliate               AffiliateConfig               `mapstructure:"affiliate"`
 	Concurrency             ConcurrencyConfig             `mapstructure:"concurrency"`
 	TokenRefresh            TokenRefreshConfig            `mapstructure:"token_refresh"`
 	RunMode                 string                        `mapstructure:"run_mode" yaml:"run_mode"`
@@ -929,6 +930,20 @@ type UsageCleanupConfig struct {
 	TaskTimeoutSeconds int `mapstructure:"task_timeout_seconds"`
 }
 
+// AffiliateConfig 分销系统后台任务配置
+type AffiliateConfig struct {
+	// AutoSettlementEnabled: 是否启用待结算佣金自动结算
+	AutoSettlementEnabled bool `mapstructure:"auto_settlement_enabled"`
+	// SettlementFreezeHours: 佣金冻结期（小时），超过后才允许自动结算
+	SettlementFreezeHours int `mapstructure:"settlement_freeze_hours"`
+	// SettlementWorkerIntervalSeconds: 轮询待结算佣金的间隔（秒）
+	SettlementWorkerIntervalSeconds int `mapstructure:"settlement_worker_interval_seconds"`
+	// SettlementBatchSize: 单次最多处理多少条待结算佣金
+	SettlementBatchSize int `mapstructure:"settlement_batch_size"`
+	// SettlementTaskTimeoutSeconds: 单次结算任务的超时时间（秒）
+	SettlementTaskTimeoutSeconds int `mapstructure:"settlement_task_timeout_seconds"`
+}
+
 func NormalizeRunMode(value string) string {
 	normalized := strings.ToLower(strings.TrimSpace(value))
 	switch normalized {
@@ -967,7 +982,7 @@ func load(allowMissingJWTSecret bool) (*Config, error) {
 	// 4. Config subdirectory
 	viper.AddConfigPath("./config")
 	// 5. System config directory
-	viper.AddConfigPath("/etc/sub2api")
+	viper.AddConfigPath("/etc/subiohub")
 
 	// 环境变量支持
 	viper.AutomaticEnv()
@@ -1129,7 +1144,7 @@ func setDefaults() {
 	// Log
 	viper.SetDefault("log.level", "info")
 	viper.SetDefault("log.format", "console")
-	viper.SetDefault("log.service_name", "sub2api")
+	viper.SetDefault("log.service_name", "subiohub")
 	viper.SetDefault("log.env", "production")
 	viper.SetDefault("log.caller", true)
 	viper.SetDefault("log.stacktrace_level", "error")
@@ -1231,7 +1246,7 @@ func setDefaults() {
 	viper.SetDefault("database.port", 5432)
 	viper.SetDefault("database.user", "postgres")
 	viper.SetDefault("database.password", "postgres")
-	viper.SetDefault("database.dbname", "sub2api")
+	viper.SetDefault("database.dbname", "subiohub")
 	viper.SetDefault("database.sslmode", "prefer")
 	viper.SetDefault("database.max_open_conns", 256)
 	viper.SetDefault("database.max_idle_conns", 128)
@@ -1314,7 +1329,7 @@ func setDefaults() {
 
 	// Dashboard cache
 	viper.SetDefault("dashboard_cache.enabled", true)
-	viper.SetDefault("dashboard_cache.key_prefix", "sub2api:")
+	viper.SetDefault("dashboard_cache.key_prefix", "subiohub:")
 	viper.SetDefault("dashboard_cache.stats_fresh_ttl_seconds", 15)
 	viper.SetDefault("dashboard_cache.stats_ttl_seconds", 30)
 	viper.SetDefault("dashboard_cache.stats_refresh_timeout_seconds", 30)
@@ -1337,6 +1352,12 @@ func setDefaults() {
 	viper.SetDefault("usage_cleanup.batch_size", 5000)
 	viper.SetDefault("usage_cleanup.worker_interval_seconds", 10)
 	viper.SetDefault("usage_cleanup.task_timeout_seconds", 1800)
+
+	viper.SetDefault("affiliate.auto_settlement_enabled", true)
+	viper.SetDefault("affiliate.settlement_freeze_hours", 168)
+	viper.SetDefault("affiliate.settlement_worker_interval_seconds", 60)
+	viper.SetDefault("affiliate.settlement_batch_size", 100)
+	viper.SetDefault("affiliate.settlement_task_timeout_seconds", 30)
 
 	// Idempotency
 	viper.SetDefault("idempotency.observe_only", true)
@@ -1900,6 +1921,33 @@ func (c *Config) Validate() error {
 			return fmt.Errorf("usage_cleanup.task_timeout_seconds must be non-negative")
 		}
 	}
+	if c.Affiliate.AutoSettlementEnabled {
+		if c.Affiliate.SettlementFreezeHours <= 0 {
+			return fmt.Errorf("affiliate.settlement_freeze_hours must be positive")
+		}
+		if c.Affiliate.SettlementWorkerIntervalSeconds <= 0 {
+			return fmt.Errorf("affiliate.settlement_worker_interval_seconds must be positive")
+		}
+		if c.Affiliate.SettlementBatchSize <= 0 {
+			return fmt.Errorf("affiliate.settlement_batch_size must be positive")
+		}
+		if c.Affiliate.SettlementTaskTimeoutSeconds <= 0 {
+			return fmt.Errorf("affiliate.settlement_task_timeout_seconds must be positive")
+		}
+	} else {
+		if c.Affiliate.SettlementFreezeHours < 0 {
+			return fmt.Errorf("affiliate.settlement_freeze_hours must be non-negative")
+		}
+		if c.Affiliate.SettlementWorkerIntervalSeconds < 0 {
+			return fmt.Errorf("affiliate.settlement_worker_interval_seconds must be non-negative")
+		}
+		if c.Affiliate.SettlementBatchSize < 0 {
+			return fmt.Errorf("affiliate.settlement_batch_size must be non-negative")
+		}
+		if c.Affiliate.SettlementTaskTimeoutSeconds < 0 {
+			return fmt.Errorf("affiliate.settlement_task_timeout_seconds must be non-negative")
+		}
+	}
 	if c.Idempotency.DefaultTTLSeconds <= 0 {
 		return fmt.Errorf("idempotency.default_ttl_seconds must be positive")
 	}
@@ -2286,7 +2334,7 @@ func GetServerAddress() string {
 	v.SetConfigType("yaml")
 	v.AddConfigPath(".")
 	v.AddConfigPath("./config")
-	v.AddConfigPath("/etc/sub2api")
+	v.AddConfigPath("/etc/subiohub")
 
 	// Support SERVER_HOST and SERVER_PORT environment variables
 	v.AutomaticEnv()

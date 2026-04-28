@@ -11,7 +11,7 @@ import (
 
 	"github.com/pquerna/otp/totp"
 
-	infraerrors "github.com/Wei-Shaw/sub2api/internal/pkg/errors"
+	infraerrors "github.com/dlxyz/SubioHub/internal/pkg/errors"
 )
 
 var (
@@ -81,9 +81,8 @@ type TotpSetupResponse struct {
 const (
 	totpSetupTTL    = 5 * time.Minute
 	totpLoginTTL    = 5 * time.Minute
-	totpAttemptsTTL = 15 * time.Minute
 	maxTotpAttempts = 5
-	totpIssuer      = "Sub2API"
+	totpIssuer      = "SubioHub"
 )
 
 // TotpService handles TOTP operations

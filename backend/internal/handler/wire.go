@@ -1,8 +1,8 @@
 package handler
 
 import (
-	"github.com/Wei-Shaw/sub2api/internal/handler/admin"
-	"github.com/Wei-Shaw/sub2api/internal/service"
+	"github.com/dlxyz/SubioHub/internal/handler/admin"
+	"github.com/dlxyz/SubioHub/internal/service"
 
 	"github.com/google/wire"
 )
@@ -35,6 +35,7 @@ func ProvideAdminHandlers(
 	scheduledTestHandler *admin.ScheduledTestHandler,
 	channelHandler *admin.ChannelHandler,
 	paymentHandler *admin.PaymentHandler,
+	affiliateHandler *admin.AffiliateHandler,
 ) *AdminHandlers {
 	return &AdminHandlers{
 		Dashboard:             dashboardHandler,
@@ -63,6 +64,7 @@ func ProvideAdminHandlers(
 		ScheduledTest:         scheduledTestHandler,
 		Channel:               channelHandler,
 		Payment:               paymentHandler,
+		Affiliate:             affiliateHandler,
 	}
 }
 
@@ -72,8 +74,14 @@ func ProvideSystemHandler(updateService *service.UpdateService, lockService *ser
 }
 
 // ProvideSettingHandler creates SettingHandler with version from BuildInfo
-func ProvideSettingHandler(settingService *service.SettingService, buildInfo BuildInfo) *SettingHandler {
-	return NewSettingHandler(settingService, buildInfo.Version)
+func ProvideSettingHandler(
+	settingService *service.SettingService,
+	gatewayService *service.GatewayService,
+	pricingService *service.PricingService,
+	billingService *service.BillingService,
+	buildInfo BuildInfo,
+) *SettingHandler {
+	return NewSettingHandler(settingService, gatewayService, pricingService, billingService, buildInfo.Version)
 }
 
 // ProvideHandlers creates the Handlers struct
@@ -86,6 +94,7 @@ func ProvideHandlers(
 	subscriptionHandler *SubscriptionHandler,
 	announcementHandler *AnnouncementHandler,
 	adminHandlers *AdminHandlers,
+	affiliateHandler *AffiliateHandler,
 	gatewayHandler *GatewayHandler,
 	openaiGatewayHandler *OpenAIGatewayHandler,
 	settingHandler *SettingHandler,
@@ -104,6 +113,7 @@ func ProvideHandlers(
 		Subscription:   subscriptionHandler,
 		Announcement:   announcementHandler,
 		Admin:          adminHandlers,
+		Affiliate:      affiliateHandler,
 		Gateway:        gatewayHandler,
 		OpenAIGateway:  openaiGatewayHandler,
 		Setting:        settingHandler,
@@ -129,6 +139,7 @@ var ProviderSet = wire.NewSet(
 	ProvideSettingHandler,
 	NewPaymentHandler,
 	NewPaymentWebhookHandler,
+	NewAffiliateHandler,
 
 	// Admin handlers
 	admin.NewDashboardHandler,
@@ -157,6 +168,7 @@ var ProviderSet = wire.NewSet(
 	admin.NewScheduledTestHandler,
 	admin.NewChannelHandler,
 	admin.NewPaymentHandler,
+	admin.NewAffiliateHandler,
 
 	// AdminHandlers and Handlers constructors
 	ProvideAdminHandlers,

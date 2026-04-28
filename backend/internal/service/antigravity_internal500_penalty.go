@@ -33,7 +33,7 @@ func isAntigravityInternalServerError(statusCode int, body []byte) bool {
 // count=2: temp_unschedulable 10 小时
 // count>=3: SetError 永久禁用
 func (s *AntigravityGatewayService) applyInternal500Penalty(
-	ctx context.Context, prefix string, account *Account, count int64,
+	ctx context.Context, _ string, account *Account, count int64,
 ) {
 	switch {
 	case count >= int64(internal500PenaltyTier3Threshold):

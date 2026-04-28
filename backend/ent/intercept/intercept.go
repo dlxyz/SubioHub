@@ -7,34 +7,35 @@ import (
 	"fmt"
 
 	"entgo.io/ent/dialect/sql"
-	"github.com/Wei-Shaw/sub2api/ent"
-	"github.com/Wei-Shaw/sub2api/ent/account"
-	"github.com/Wei-Shaw/sub2api/ent/accountgroup"
-	"github.com/Wei-Shaw/sub2api/ent/announcement"
-	"github.com/Wei-Shaw/sub2api/ent/announcementread"
-	"github.com/Wei-Shaw/sub2api/ent/apikey"
-	"github.com/Wei-Shaw/sub2api/ent/errorpassthroughrule"
-	"github.com/Wei-Shaw/sub2api/ent/group"
-	"github.com/Wei-Shaw/sub2api/ent/idempotencyrecord"
-	"github.com/Wei-Shaw/sub2api/ent/paymentauditlog"
-	"github.com/Wei-Shaw/sub2api/ent/paymentorder"
-	"github.com/Wei-Shaw/sub2api/ent/paymentproviderinstance"
-	"github.com/Wei-Shaw/sub2api/ent/predicate"
-	"github.com/Wei-Shaw/sub2api/ent/promocode"
-	"github.com/Wei-Shaw/sub2api/ent/promocodeusage"
-	"github.com/Wei-Shaw/sub2api/ent/proxy"
-	"github.com/Wei-Shaw/sub2api/ent/redeemcode"
-	"github.com/Wei-Shaw/sub2api/ent/securitysecret"
-	"github.com/Wei-Shaw/sub2api/ent/setting"
-	"github.com/Wei-Shaw/sub2api/ent/subscriptionplan"
-	"github.com/Wei-Shaw/sub2api/ent/tlsfingerprintprofile"
-	"github.com/Wei-Shaw/sub2api/ent/usagecleanuptask"
-	"github.com/Wei-Shaw/sub2api/ent/usagelog"
-	"github.com/Wei-Shaw/sub2api/ent/user"
-	"github.com/Wei-Shaw/sub2api/ent/userallowedgroup"
-	"github.com/Wei-Shaw/sub2api/ent/userattributedefinition"
-	"github.com/Wei-Shaw/sub2api/ent/userattributevalue"
-	"github.com/Wei-Shaw/sub2api/ent/usersubscription"
+	"github.com/dlxyz/SubioHub/ent"
+	"github.com/dlxyz/SubioHub/ent/account"
+	"github.com/dlxyz/SubioHub/ent/accountgroup"
+	"github.com/dlxyz/SubioHub/ent/announcement"
+	"github.com/dlxyz/SubioHub/ent/announcementread"
+	"github.com/dlxyz/SubioHub/ent/apikey"
+	"github.com/dlxyz/SubioHub/ent/commissionlog"
+	"github.com/dlxyz/SubioHub/ent/errorpassthroughrule"
+	"github.com/dlxyz/SubioHub/ent/group"
+	"github.com/dlxyz/SubioHub/ent/idempotencyrecord"
+	"github.com/dlxyz/SubioHub/ent/paymentauditlog"
+	"github.com/dlxyz/SubioHub/ent/paymentorder"
+	"github.com/dlxyz/SubioHub/ent/paymentproviderinstance"
+	"github.com/dlxyz/SubioHub/ent/predicate"
+	"github.com/dlxyz/SubioHub/ent/promocode"
+	"github.com/dlxyz/SubioHub/ent/promocodeusage"
+	"github.com/dlxyz/SubioHub/ent/proxy"
+	"github.com/dlxyz/SubioHub/ent/redeemcode"
+	"github.com/dlxyz/SubioHub/ent/securitysecret"
+	"github.com/dlxyz/SubioHub/ent/setting"
+	"github.com/dlxyz/SubioHub/ent/subscriptionplan"
+	"github.com/dlxyz/SubioHub/ent/tlsfingerprintprofile"
+	"github.com/dlxyz/SubioHub/ent/usagecleanuptask"
+	"github.com/dlxyz/SubioHub/ent/usagelog"
+	"github.com/dlxyz/SubioHub/ent/user"
+	"github.com/dlxyz/SubioHub/ent/userallowedgroup"
+	"github.com/dlxyz/SubioHub/ent/userattributedefinition"
+	"github.com/dlxyz/SubioHub/ent/userattributevalue"
+	"github.com/dlxyz/SubioHub/ent/usersubscription"
 )
 
 // The Query interface represents an operation that queries a graph.
@@ -226,6 +227,33 @@ func (f TraverseAnnouncementRead) Traverse(ctx context.Context, q ent.Query) err
 		return f(ctx, q)
 	}
 	return fmt.Errorf("unexpected query type %T. expect *ent.AnnouncementReadQuery", q)
+}
+
+// The CommissionLogFunc type is an adapter to allow the use of ordinary function as a Querier.
+type CommissionLogFunc func(context.Context, *ent.CommissionLogQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f CommissionLogFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.CommissionLogQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.CommissionLogQuery", q)
+}
+
+// The TraverseCommissionLog type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseCommissionLog func(context.Context, *ent.CommissionLogQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseCommissionLog) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseCommissionLog) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.CommissionLogQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.CommissionLogQuery", q)
 }
 
 // The ErrorPassthroughRuleFunc type is an adapter to allow the use of ordinary function as a Querier.
@@ -808,6 +836,8 @@ func NewQuery(q ent.Query) (Query, error) {
 		return &query[*ent.AnnouncementQuery, predicate.Announcement, announcement.OrderOption]{typ: ent.TypeAnnouncement, tq: q}, nil
 	case *ent.AnnouncementReadQuery:
 		return &query[*ent.AnnouncementReadQuery, predicate.AnnouncementRead, announcementread.OrderOption]{typ: ent.TypeAnnouncementRead, tq: q}, nil
+	case *ent.CommissionLogQuery:
+		return &query[*ent.CommissionLogQuery, predicate.CommissionLog, commissionlog.OrderOption]{typ: ent.TypeCommissionLog, tq: q}, nil
 	case *ent.ErrorPassthroughRuleQuery:
 		return &query[*ent.ErrorPassthroughRuleQuery, predicate.ErrorPassthroughRule, errorpassthroughrule.OrderOption]{typ: ent.TypeErrorPassthroughRule, tq: q}, nil
 	case *ent.GroupQuery:

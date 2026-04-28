@@ -6,7 +6,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/Wei-Shaw/sub2api/ent"
+	"github.com/dlxyz/SubioHub/ent"
 )
 
 // The APIKeyFunc type is an adapter to allow the use of ordinary
@@ -67,6 +67,18 @@ func (f AnnouncementReadFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.V
 		return f(ctx, mv)
 	}
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AnnouncementReadMutation", m)
+}
+
+// The CommissionLogFunc type is an adapter to allow the use of ordinary
+// function as CommissionLog mutator.
+type CommissionLogFunc func(context.Context, *ent.CommissionLogMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f CommissionLogFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.CommissionLogMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.CommissionLogMutation", m)
 }
 
 // The ErrorPassthroughRuleFunc type is an adapter to allow the use of ordinary

@@ -2,8 +2,8 @@
 package routes
 
 import (
-	"github.com/Wei-Shaw/sub2api/internal/handler"
-	"github.com/Wei-Shaw/sub2api/internal/server/middleware"
+	"github.com/dlxyz/SubioHub/internal/handler"
+	"github.com/dlxyz/SubioHub/internal/server/middleware"
 
 	"github.com/gin-gonic/gin"
 )
@@ -88,6 +88,9 @@ func RegisterAdminRoutes(
 
 		// 渠道管理
 		registerChannelRoutes(admin, h)
+
+		// 分销与佣金系统管理
+		registerAffiliateRoutes(admin, h)
 	}
 }
 
@@ -561,5 +564,14 @@ func registerChannelRoutes(admin *gin.RouterGroup, h *handler.Handlers) {
 		channels.POST("", h.Admin.Channel.Create)
 		channels.PUT("/:id", h.Admin.Channel.Update)
 		channels.DELETE("/:id", h.Admin.Channel.Delete)
+	}
+}
+
+func registerAffiliateRoutes(admin *gin.RouterGroup, h *handler.Handlers) {
+	affiliate := admin.Group("/affiliate")
+	{
+		affiliate.GET("/commissions", h.Admin.Affiliate.ListCommissions)
+		affiliate.POST("/commissions/:id/settle", h.Admin.Affiliate.SettleCommission)
+		affiliate.POST("/users/:id/rate", h.Admin.Affiliate.SetUserCommissionRate)
 	}
 }

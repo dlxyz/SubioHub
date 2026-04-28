@@ -9,14 +9,14 @@ import (
 	"strings"
 	"time"
 
-	dbent "github.com/Wei-Shaw/sub2api/ent"
-	"github.com/Wei-Shaw/sub2api/ent/apikey"
-	dbgroup "github.com/Wei-Shaw/sub2api/ent/group"
-	dbuser "github.com/Wei-Shaw/sub2api/ent/user"
-	"github.com/Wei-Shaw/sub2api/ent/userallowedgroup"
-	"github.com/Wei-Shaw/sub2api/ent/usersubscription"
-	"github.com/Wei-Shaw/sub2api/internal/pkg/pagination"
-	"github.com/Wei-Shaw/sub2api/internal/service"
+	dbent "github.com/dlxyz/SubioHub/ent"
+	"github.com/dlxyz/SubioHub/ent/apikey"
+	dbgroup "github.com/dlxyz/SubioHub/ent/group"
+	dbuser "github.com/dlxyz/SubioHub/ent/user"
+	"github.com/dlxyz/SubioHub/ent/userallowedgroup"
+	"github.com/dlxyz/SubioHub/ent/usersubscription"
+	"github.com/dlxyz/SubioHub/internal/pkg/pagination"
+	"github.com/dlxyz/SubioHub/internal/service"
 
 	entsql "entgo.io/ent/dialect/sql"
 )
@@ -55,18 +55,42 @@ func (r *userRepository) Create(ctx context.Context, userIn *service.User) error
 		txClient = r.client
 	}
 
-	created, err := txClient.User.Create().
-		SetEmail(userIn.Email).
-		SetUsername(userIn.Username).
-		SetNotes(userIn.Notes).
-		SetPasswordHash(userIn.PasswordHash).
-		SetRole(userIn.Role).
-		SetBalance(userIn.Balance).
-		SetConcurrency(userIn.Concurrency).
-		SetStatus(userIn.Status).
-		Save(ctx)
-	if err != nil {
-		return translatePersistenceError(err, nil, service.ErrEmailExists)
+	var (
+		created   *dbent.User
+		createErr error
+	)
+	for attempt := 0; attempt < 5; attempt++ {
+		inviteCode := strings.ToUpper(strings.TrimSpace(userIn.InviteCode))
+		if inviteCode == "" {
+			inviteCode, createErr = service.NewInviteCode()
+			if createErr != nil {
+				return createErr
+			}
+		}
+
+		createOp := txClient.User.Create().
+			SetEmail(userIn.Email).
+			SetUsername(userIn.Username).
+			SetNotes(userIn.Notes).
+			SetPasswordHash(userIn.PasswordHash).
+			SetRole(userIn.Role).
+			SetBalance(userIn.Balance).
+			SetConcurrency(userIn.Concurrency).
+			SetStatus(userIn.Status).
+			SetInviteCode(inviteCode).
+			SetNillableInviterID(userIn.InviterID)
+		created, createErr = createOp.Save(ctx)
+		if createErr == nil {
+			userIn.InviteCode = inviteCode
+			break
+		}
+		if isInviteCodeConstraintError(createErr) && strings.TrimSpace(userIn.InviteCode) == "" {
+			continue
+		}
+		return translatePersistenceError(createErr, nil, service.ErrEmailExists)
+	}
+	if createErr != nil {
+		return translatePersistenceError(createErr, nil, service.ErrEmailExists)
 	}
 
 	if err := r.syncUserAllowedGroupsWithClient(ctx, txClient, created.ID, userIn.AllowedGroups); err != nil {
@@ -151,6 +175,14 @@ func (r *userRepository) Update(ctx context.Context, userIn *service.User) error
 		SetNillableBalanceNotifyThreshold(userIn.BalanceNotifyThreshold).
 		SetBalanceNotifyExtraEmails(marshalExtraEmails(userIn.BalanceNotifyExtraEmails)).
 		SetTotalRecharged(userIn.TotalRecharged)
+	if userIn.InviterID != nil {
+		updateOp = updateOp.SetInviterID(*userIn.InviterID)
+	} else {
+		updateOp = updateOp.ClearInviterID()
+	}
+	if inviteCode := strings.ToUpper(strings.TrimSpace(userIn.InviteCode)); inviteCode != "" {
+		updateOp = updateOp.SetInviteCode(inviteCode)
+	}
 	if userIn.BalanceNotifyThreshold == nil {
 		updateOp = updateOp.ClearBalanceNotifyThreshold()
 	}
@@ -423,6 +455,22 @@ func (r *userRepository) DeductBalance(ctx context.Context, id int64, amount flo
 	return nil
 }
 
+func (r *userRepository) UpdateCommissionBalance(ctx context.Context, id int64, amount float64) error {
+	client := clientFromContext(ctx, r.client)
+	update := client.User.Update().Where(dbuser.IDEQ(id)).AddCommissionBalance(amount)
+	if amount > 0 {
+		update = update.AddTotalCommissionEarned(amount)
+	}
+	n, err := update.Save(ctx)
+	if err != nil {
+		return translatePersistenceError(err, service.ErrUserNotFound, nil)
+	}
+	if n == 0 {
+		return service.ErrUserNotFound
+	}
+	return nil
+}
+
 func (r *userRepository) UpdateConcurrency(ctx context.Context, id int64, amount int) error {
 	client := clientFromContext(ctx, r.client)
 	n, err := client.User.Update().Where(dbuser.IDEQ(id)).AddConcurrency(amount).Save(ctx)
@@ -558,8 +606,20 @@ func applyUserEntityToService(dst *service.User, src *dbent.User) {
 		return
 	}
 	dst.ID = src.ID
+	dst.InviterID = src.InviterID
+	dst.InviteCode = src.InviteCode
+	dst.CommissionRate = src.CommissionRate
+	dst.CommissionBalance = src.CommissionBalance
+	dst.TotalCommissionEarned = src.TotalCommissionEarned
 	dst.CreatedAt = src.CreatedAt
 	dst.UpdatedAt = src.UpdatedAt
+}
+
+func isInviteCodeConstraintError(err error) bool {
+	if err == nil {
+		return false
+	}
+	return isUniqueConstraintViolation(err) && strings.Contains(strings.ToLower(err.Error()), "invite_code")
 }
 
 // marshalExtraEmails serializes notify email entries to JSON for storage.

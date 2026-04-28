@@ -7,7 +7,7 @@ import (
 	"log"
 	"time"
 
-	infraerrors "github.com/Wei-Shaw/sub2api/internal/pkg/errors"
+	infraerrors "github.com/dlxyz/SubioHub/internal/pkg/errors"
 )
 
 func (s *OpsService) GetDashboardOverview(ctx context.Context, filter *OpsDashboardFilter) (*OpsDashboardOverview, error) {
@@ -46,7 +46,7 @@ func (s *OpsService) GetDashboardOverview(ctx context.Context, filter *OpsDashbo
 	if metrics, err := s.opsRepo.GetLatestSystemMetrics(ctx, 1); err == nil {
 		// Attach config-derived limits so the UI can show "current / max" for connection pools.
 		// These are best-effort and should never block the dashboard rendering.
-		if s != nil && s.cfg != nil {
+		if s.cfg != nil {
 			if s.cfg.Database.MaxOpenConns > 0 {
 				metrics.DBMaxOpenConns = intPtr(s.cfg.Database.MaxOpenConns)
 			}

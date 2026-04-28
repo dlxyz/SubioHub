@@ -115,6 +115,10 @@ type SystemSettings struct {
 	BalanceLowNotifyThreshold   float64
 	BalanceLowNotifyRechargeURL string
 
+	// Affiliate settlement
+	AffiliateAutoSettlementEnabled         bool
+	AffiliateManualPayoutSettlementEnabled bool
+
 	// Account quota notification
 	AccountQuotaNotifyEnabled bool
 	AccountQuotaNotifyEmails  []NotifyEmailEntry

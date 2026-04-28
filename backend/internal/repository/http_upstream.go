@@ -17,12 +17,12 @@ import (
 
 	"github.com/andybalholm/brotli"
 
-	"github.com/Wei-Shaw/sub2api/internal/config"
-	"github.com/Wei-Shaw/sub2api/internal/pkg/proxyurl"
-	"github.com/Wei-Shaw/sub2api/internal/pkg/proxyutil"
-	"github.com/Wei-Shaw/sub2api/internal/pkg/tlsfingerprint"
-	"github.com/Wei-Shaw/sub2api/internal/service"
-	"github.com/Wei-Shaw/sub2api/internal/util/urlvalidator"
+	"github.com/dlxyz/SubioHub/internal/config"
+	"github.com/dlxyz/SubioHub/internal/pkg/proxyurl"
+	"github.com/dlxyz/SubioHub/internal/pkg/proxyutil"
+	"github.com/dlxyz/SubioHub/internal/pkg/tlsfingerprint"
+	"github.com/dlxyz/SubioHub/internal/service"
+	"github.com/dlxyz/SubioHub/internal/util/urlvalidator"
 )
 
 // 默认配置常量

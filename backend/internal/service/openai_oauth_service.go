@@ -8,8 +8,8 @@ import (
 	"strings"
 	"time"
 
-	infraerrors "github.com/Wei-Shaw/sub2api/internal/pkg/errors"
-	"github.com/Wei-Shaw/sub2api/internal/pkg/openai"
+	infraerrors "github.com/dlxyz/SubioHub/internal/pkg/errors"
+	"github.com/dlxyz/SubioHub/internal/pkg/openai"
 )
 
 // OpenAIOAuthService handles OpenAI OAuth authentication flows
@@ -374,6 +374,6 @@ func (s *OpenAIOAuthService) Stop() {
 	s.sessionStore.Stop()
 }
 
-func normalizeOpenAIOAuthPlatform(platform string) string {
+func normalizeOpenAIOAuthPlatform(_ string) string {
 	return openai.OAuthPlatformOpenAI
 }

@@ -1,6 +1,6 @@
 # 支付系统配置指南
 
-Sub2API 内置支付系统，支持用户自助充值，无需部署独立的支付服务。
+SubioHub 内置支付系统，支持用户自助充值，无需部署独立的支付服务。
 
 ---
 
@@ -13,7 +13,7 @@ Sub2API 内置支付系统，支持用户自助充值，无需部署独立的支
 - [服务商实例管理](#服务商实例管理)
 - [Webhook 配置](#webhook-配置)
 - [支付流程](#支付流程)
-- [从 Sub2ApiPay 迁移](#从-sub2apipay-迁移)
+- [从 Sub2ApiPay 迁移](#从-subiohubpay-迁移)
 
 ---
 
@@ -28,7 +28,7 @@ Sub2API 内置支付系统，支持用户自助充值，无需部署独立的支
 
 > 支付宝官方 / 微信官方与 EasyPay 可以共存。官方渠道直接对接 API，资金直达商户账户，手续费更低；EasyPay 通过第三方平台聚合，接入门槛更低。
 
-> **EasyPay 推荐**：个人推荐 [ZPay](https://z-pay.cn/?uid=23808)（`https://z-pay.cn/?uid=23808`）作为 EasyPay 服务商（链接含 [Sub2ApiPay](https://github.com/touwaeriol/sub2apipay) 原作者 [@touwaeriol](https://github.com/touwaeriol) 的邀请码，介意可去掉）。ZPay 支持**个人用户**（无营业执照）每日 1 万元以内交易；拥有营业执照则无限额。支付渠道的安全性、稳定性及合规性请自行鉴别，本项目不对任何第三方支付服务商做担保或背书。
+> **EasyPay 推荐**：个人推荐 [ZPay](https://z-pay.cn/?uid=23808)（`https://z-pay.cn/?uid=23808`）作为 EasyPay 服务商（链接含 [Sub2ApiPay](https://github.com/touwaeriol/subiohubpay) 原作者 [@touwaeriol](https://github.com/touwaeriol) 的邀请码，介意可去掉）。ZPay 支持**个人用户**（无营业执照）每日 1 万元以内交易；拥有营业执照则无限额。支付渠道的安全性、稳定性及合规性请自行鉴别，本项目不对任何第三方支付服务商做担保或背书。
 
 ---
 
@@ -250,23 +250,23 @@ Sub2API 内置支付系统，支持用户自助充值，无需部署独立的支
 
 ## 从 Sub2ApiPay 迁移
 
-如果你之前使用 [Sub2ApiPay](https://github.com/touwaeriol/sub2apipay) 作为外部支付系统，现在可以迁移到内置支付：
+如果你之前使用 [Sub2ApiPay](https://github.com/touwaeriol/subiohubpay) 作为外部支付系统，现在可以迁移到内置支付：
 
 ### 主要差异
 
 | 对比项 | Sub2ApiPay | 内置支付 |
 |--------|-----------|---------|
-| 部署方式 | 独立服务（Next.js + PostgreSQL） | 内置于 Sub2API，无需额外部署 |
+| 部署方式 | 独立服务（Next.js + PostgreSQL） | 内置于 SubioHub，无需额外部署 |
 | 支付方式 | EasyPay、支付宝、微信、Stripe | 相同 |
-| 配置方式 | 环境变量 + 独立管理后台 | Sub2API 管理后台内统一配置 |
+| 配置方式 | 环境变量 + 独立管理后台 | SubioHub 管理后台内统一配置 |
 | 充值对接 | 通过 Admin API 回调 | 内部直接处理，更可靠 |
 | 订阅套餐 | 支持 | 暂不支持（计划中） |
-| 订单管理 | 独立管理界面 | 集成在 Sub2API 管理后台 |
+| 订单管理 | 独立管理界面 | 集成在 SubioHub 管理后台 |
 
 ### 迁移步骤
 
-1. 在 Sub2API 管理后台启用支付并配置服务商（使用相同的支付凭证）
-2. 更新 Webhook 回调地址为 Sub2API 的回调地址
+1. 在 SubioHub 管理后台启用支付并配置服务商（使用相同的支付凭证）
+2. 更新 Webhook 回调地址为 SubioHub 的回调地址
 3. 确认新订单通过内置支付正常处理
 4. 停用 Sub2ApiPay 服务
 

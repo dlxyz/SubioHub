@@ -3,7 +3,7 @@ package service
 import (
 	"testing"
 
-	"github.com/Wei-Shaw/sub2api/internal/payment"
+	"github.com/dlxyz/SubioHub/internal/payment"
 )
 
 func TestPcParseFloat(t *testing.T) {

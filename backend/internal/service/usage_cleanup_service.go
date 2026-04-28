@@ -12,10 +12,10 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/Wei-Shaw/sub2api/internal/config"
-	infraerrors "github.com/Wei-Shaw/sub2api/internal/pkg/errors"
-	"github.com/Wei-Shaw/sub2api/internal/pkg/logger"
-	"github.com/Wei-Shaw/sub2api/internal/pkg/pagination"
+	"github.com/dlxyz/SubioHub/internal/config"
+	infraerrors "github.com/dlxyz/SubioHub/internal/pkg/errors"
+	"github.com/dlxyz/SubioHub/internal/pkg/logger"
+	"github.com/dlxyz/SubioHub/internal/pkg/pagination"
 )
 
 const (
@@ -269,7 +269,7 @@ func (s *UsageCleanupService) markTaskFailed(taskID int64, deletedRows int64, er
 	}
 }
 
-func (s *UsageCleanupService) isTaskCanceled(ctx context.Context, taskID int64) (bool, error) {
+func (s *UsageCleanupService) isTaskCanceled(_ context.Context, taskID int64) (bool, error) {
 	if s == nil || s.repo == nil {
 		return false, fmt.Errorf("cleanup service not ready")
 	}

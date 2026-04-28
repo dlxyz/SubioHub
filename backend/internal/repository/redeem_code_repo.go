@@ -5,11 +5,11 @@ import (
 	"strings"
 	"time"
 
-	dbent "github.com/Wei-Shaw/sub2api/ent"
-	"github.com/Wei-Shaw/sub2api/ent/redeemcode"
-	"github.com/Wei-Shaw/sub2api/ent/user"
-	"github.com/Wei-Shaw/sub2api/internal/pkg/pagination"
-	"github.com/Wei-Shaw/sub2api/internal/service"
+	dbent "github.com/dlxyz/SubioHub/ent"
+	"github.com/dlxyz/SubioHub/ent/redeemcode"
+	"github.com/dlxyz/SubioHub/ent/user"
+	"github.com/dlxyz/SubioHub/internal/pkg/pagination"
+	"github.com/dlxyz/SubioHub/internal/service"
 
 	entsql "entgo.io/ent/dialect/sql"
 )

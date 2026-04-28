@@ -4,10 +4,10 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/Wei-Shaw/sub2api/internal/handler/dto"
-	"github.com/Wei-Shaw/sub2api/internal/pkg/response"
-	middleware2 "github.com/Wei-Shaw/sub2api/internal/server/middleware"
-	"github.com/Wei-Shaw/sub2api/internal/service"
+	"github.com/dlxyz/SubioHub/internal/handler/dto"
+	"github.com/dlxyz/SubioHub/internal/pkg/response"
+	middleware2 "github.com/dlxyz/SubioHub/internal/server/middleware"
+	"github.com/dlxyz/SubioHub/internal/service"
 
 	"github.com/gin-gonic/gin"
 )
@@ -46,6 +46,40 @@ func (h *AnnouncementHandler) List(c *gin.Context) {
 		out = append(out, *dto.UserAnnouncementFromService(&items[i]))
 	}
 	response.Success(c, out)
+}
+
+// ListPublic handles listing announcements visible on the public site
+// GET /api/v1/news
+func (h *AnnouncementHandler) ListPublic(c *gin.Context) {
+	items, err := h.announcementService.ListPublic(c.Request.Context())
+	if err != nil {
+		response.ErrorFrom(c, err)
+		return
+	}
+
+	out := make([]dto.PublicAnnouncement, 0, len(items))
+	for i := range items {
+		out = append(out, *dto.PublicAnnouncementFromService(&items[i]))
+	}
+	response.Success(c, out)
+}
+
+// GetPublic handles getting a public announcement by id
+// GET /api/v1/news/:id
+func (h *AnnouncementHandler) GetPublic(c *gin.Context) {
+	announcementID, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil || announcementID <= 0 {
+		response.BadRequest(c, "Invalid announcement ID")
+		return
+	}
+
+	item, err := h.announcementService.GetPublicByID(c.Request.Context(), announcementID)
+	if err != nil {
+		response.ErrorFrom(c, err)
+		return
+	}
+
+	response.Success(c, dto.PublicAnnouncementFromService(item))
 }
 
 // MarkRead marks an announcement as read for current user

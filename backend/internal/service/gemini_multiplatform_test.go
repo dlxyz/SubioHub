@@ -8,8 +8,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Wei-Shaw/sub2api/internal/pkg/ctxkey"
-	"github.com/Wei-Shaw/sub2api/internal/pkg/pagination"
+	"github.com/dlxyz/SubioHub/internal/pkg/ctxkey"
+	"github.com/dlxyz/SubioHub/internal/pkg/pagination"
 	"github.com/stretchr/testify/require"
 )
 

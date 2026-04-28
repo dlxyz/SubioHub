@@ -7,10 +7,10 @@ import (
 	"log"
 	"time"
 
-	_ "github.com/Wei-Shaw/sub2api/ent/runtime"
-	"github.com/Wei-Shaw/sub2api/internal/config"
-	"github.com/Wei-Shaw/sub2api/internal/repository"
-	"github.com/Wei-Shaw/sub2api/internal/service"
+	_ "github.com/dlxyz/SubioHub/ent/runtime"
+	"github.com/dlxyz/SubioHub/internal/config"
+	"github.com/dlxyz/SubioHub/internal/repository"
+	"github.com/dlxyz/SubioHub/internal/service"
 )
 
 func main() {

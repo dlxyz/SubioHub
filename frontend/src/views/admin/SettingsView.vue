@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <AppLayout>
     <div class="mx-auto max-w-4xl space-y-6">
       <!-- Loading State -->
@@ -2348,7 +2348,7 @@
             <h2 class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('admin.settings.payment.title') }}</h2>
             <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
               {{ t('admin.settings.payment.description') }}
-              <a :href="locale === 'zh' ? 'https://github.com/Wei-Shaw/sub2api/blob/main/docs/PAYMENT_CN.md' : 'https://github.com/Wei-Shaw/sub2api/blob/main/docs/PAYMENT.md'" target="_blank" rel="noopener noreferrer" class="ml-2 inline-flex items-center text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300">
+              <a :href="locale === 'zh' ? 'https://github.com/dlxyz/SubioHub/blob/main/docs/PAYMENT_CN.md' : 'https://github.com/dlxyz/SubioHub/blob/main/docs/PAYMENT.md'" target="_blank" rel="noopener noreferrer" class="ml-2 inline-flex items-center text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300">
                 <svg class="mr-0.5 h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
                 {{ t('admin.settings.payment.configGuide') }}
               </a>
@@ -2366,9 +2366,9 @@
             <template v-if="form.payment_enabled">
               <!-- Row 1: Product name -->
               <div class="grid grid-cols-3 gap-3">
-                <div><label class="input-label">{{ t('admin.settings.payment.productNamePrefix') }}</label><input v-model="form.payment_product_name_prefix" type="text" class="input" placeholder="Sub2API" /></div>
+                <div><label class="input-label">{{ t('admin.settings.payment.productNamePrefix') }}</label><input v-model="form.payment_product_name_prefix" type="text" class="input" placeholder="SubioHub" /></div>
                 <div><label class="input-label">{{ t('admin.settings.payment.productNameSuffix') }}</label><input v-model="form.payment_product_name_suffix" type="text" class="input" placeholder="CNY" /></div>
-                <div><label class="input-label">{{ t('admin.settings.payment.preview') }}</label><div class="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-600 dark:border-dark-600 dark:bg-dark-800 dark:text-gray-300">{{ (form.payment_product_name_prefix || 'Sub2API') + ' 100 ' + (form.payment_product_name_suffix || 'CNY') }}</div></div>
+                <div><label class="input-label">{{ t('admin.settings.payment.preview') }}</label><div class="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-600 dark:border-dark-600 dark:bg-dark-800 dark:text-gray-300">{{ (form.payment_product_name_prefix || 'SubioHub') + ' 100 ' + (form.payment_product_name_suffix || 'CNY') }}</div></div>
               </div>
               <!-- Row 2: Balance toggle + amounts -->
               <div class="grid grid-cols-2 gap-3 sm:grid-cols-5">
@@ -2425,7 +2425,7 @@
                   </div>
                 </div>
               </div>
-              <!-- Row 4: Enabled payment types (provider badges like sub2apipay) -->
+              <!-- Row 4: Enabled payment types (provider badges like subiohubpay) -->
               <div>
                 <label class="input-label">{{ t('admin.settings.payment.enabledPaymentTypes') }}</label>
                 <div class="mt-1.5 flex flex-wrap gap-2">
@@ -2444,7 +2444,7 @@
                 </div>
                 <p class="mt-2 text-xs text-gray-400 dark:text-gray-500">
                   {{ t('admin.settings.payment.enabledPaymentTypesHint') }}
-                  <a :href="locale === 'zh' ? 'https://github.com/Wei-Shaw/sub2api/blob/main/docs/PAYMENT_CN.md#%E6%94%AF%E6%8C%81%E7%9A%84%E6%94%AF%E4%BB%98%E6%96%B9%E5%BC%8F' : 'https://github.com/Wei-Shaw/sub2api/blob/main/docs/PAYMENT.md#supported-payment-methods'" target="_blank" rel="noopener noreferrer" class="ml-1 text-primary-500 hover:text-primary-600 dark:text-primary-400 dark:hover:text-primary-300">
+                  <a :href="locale === 'zh' ? 'https://github.com/dlxyz/SubioHub/blob/main/docs/PAYMENT_CN.md#%E6%94%AF%E6%8C%81%E7%9A%84%E6%94%AF%E4%BB%98%E6%96%B9%E5%BC%8F' : 'https://github.com/dlxyz/SubioHub/blob/main/docs/PAYMENT.md#supported-payment-methods'" target="_blank" rel="noopener noreferrer" class="ml-1 text-primary-500 hover:text-primary-600 dark:text-primary-400 dark:hover:text-primary-300">
                     {{ t('admin.settings.payment.findProvider') }}
                     <svg class="mb-0.5 ml-0.5 inline h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
                   </a>
@@ -2974,7 +2974,7 @@ const form = reactive<SettingsForm>({
   default_balance: 0,
   default_concurrency: 1,
   default_subscriptions: [],
-  site_name: 'Sub2API',
+  site_name: 'SubioHub',
   site_logo: '',
   site_subtitle: 'Subscription to API Conversion Platform',
   api_base_url: '',
@@ -4294,3 +4294,4 @@ onMounted(() => {
          dark:bg-primary-400/15 dark:text-primary-400;
 }
 </style>
+

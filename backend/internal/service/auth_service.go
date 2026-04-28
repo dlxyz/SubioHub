@@ -12,10 +12,11 @@ import (
 	"strings"
 	"time"
 
-	dbent "github.com/Wei-Shaw/sub2api/ent"
-	"github.com/Wei-Shaw/sub2api/internal/config"
-	infraerrors "github.com/Wei-Shaw/sub2api/internal/pkg/errors"
-	"github.com/Wei-Shaw/sub2api/internal/pkg/logger"
+	dbent "github.com/dlxyz/SubioHub/ent"
+	dbuser "github.com/dlxyz/SubioHub/ent/user"
+	"github.com/dlxyz/SubioHub/internal/config"
+	infraerrors "github.com/dlxyz/SubioHub/internal/pkg/errors"
+	"github.com/dlxyz/SubioHub/internal/pkg/logger"
 
 	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
@@ -108,11 +109,11 @@ func NewAuthService(
 
 // Register 用户注册，返回token和用户
 func (s *AuthService) Register(ctx context.Context, email, password string) (string, *User, error) {
-	return s.RegisterWithVerification(ctx, email, password, "", "", "")
+	return s.RegisterWithVerification(ctx, email, password, "", "", "", "")
 }
 
 // RegisterWithVerification 用户注册（支持邮件验证、优惠码和邀请码），返回token和用户
-func (s *AuthService) RegisterWithVerification(ctx context.Context, email, password, verifyCode, promoCode, invitationCode string) (string, *User, error) {
+func (s *AuthService) RegisterWithVerification(ctx context.Context, email, password, verifyCode, promoCode, invitationCode string, affiliateCode string) (string, *User, error) {
 	// 检查是否开放注册（默认关闭：settingService 未配置时不允许注册）
 	if s.settingService == nil || !s.settingService.IsRegistrationEnabled(ctx) {
 		return "", nil, ErrRegDisabled
@@ -187,6 +188,9 @@ func (s *AuthService) RegisterWithVerification(ctx context.Context, email, passw
 		defaultConcurrency = s.settingService.GetDefaultConcurrency(ctx)
 	}
 
+	// 解析分销邀请码 (affiliateCode)
+	inviterID := s.resolveAffiliateInviterID(ctx, affiliateCode)
+
 	// 创建用户
 	user := &User{
 		Email:        email,
@@ -195,6 +199,7 @@ func (s *AuthService) RegisterWithVerification(ctx context.Context, email, passw
 		Balance:      defaultBalance,
 		Concurrency:  defaultConcurrency,
 		Status:       StatusActive,
+		InviterID:    inviterID,
 	}
 
 	if err := s.userRepo.Create(ctx, user); err != nil {
@@ -271,7 +276,7 @@ func (s *AuthService) SendVerifyCode(ctx context.Context, email string) error {
 	}
 
 	// 获取网站名称
-	siteName := "Sub2API"
+	siteName := "SubioHub"
 	if s.settingService != nil {
 		siteName = s.settingService.GetSiteName(ctx)
 	}
@@ -314,7 +319,7 @@ func (s *AuthService) SendVerifyCodeAsync(ctx context.Context, email string) (*S
 	}
 
 	// 获取网站名称
-	siteName := "Sub2API"
+	siteName := "SubioHub"
 	if s.settingService != nil {
 		siteName = s.settingService.GetSiteName(ctx)
 	}
@@ -678,6 +683,36 @@ func (s *AuthService) LoginOrRegisterOAuthWithTokenPair(ctx context.Context, ema
 	return tokenPair, user, nil
 }
 
+func (s *AuthService) resolveAffiliateInviterID(ctx context.Context, affiliateCode string) *int64 {
+	code := strings.ToUpper(strings.TrimSpace(affiliateCode))
+	if code == "" {
+		return nil
+	}
+
+	if s.entClient != nil {
+		inviter, err := s.entClient.User.Query().
+			Where(dbuser.InviteCodeEQ(code)).
+			Only(ctx)
+		if err == nil {
+			return &inviter.ID
+		}
+		if !dbent.IsNotFound(err) {
+			logger.LegacyPrintf("service.auth", "[Auth] Failed to resolve invite code %s: %v", code, err)
+		}
+	}
+
+	// Backward compatibility: existing links may still pass the inviter's user ID.
+	if id, err := strconv.ParseInt(code, 10, 64); err == nil && id > 0 {
+		if _, getErr := s.userRepo.GetByID(ctx, id); getErr == nil {
+			return &id
+		} else {
+			logger.LegacyPrintf("service.auth", "[Auth] Inviter ID %d not found or error: %v", id, getErr)
+		}
+	}
+
+	return nil
+}
+
 // pendingOAuthTokenTTL is the validity period for pending OAuth tokens.
 const pendingOAuthTokenTTL = 10 * time.Minute
 
@@ -963,7 +998,7 @@ func (s *AuthService) preparePasswordReset(ctx context.Context, email, frontendB
 	}
 
 	// Get site name
-	siteName := "Sub2API"
+	siteName := "SubioHub"
 	if s.settingService != nil {
 		siteName = s.settingService.GetSiteName(ctx)
 	}

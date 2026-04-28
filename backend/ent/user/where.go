@@ -7,7 +7,7 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
-	"github.com/Wei-Shaw/sub2api/ent/predicate"
+	"github.com/dlxyz/SubioHub/ent/predicate"
 )
 
 // ID filters vertices based on their ID field.
@@ -148,6 +148,31 @@ func BalanceNotifyExtraEmails(v string) predicate.User {
 // TotalRecharged applies equality check predicate on the "total_recharged" field. It's identical to TotalRechargedEQ.
 func TotalRecharged(v float64) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldTotalRecharged, v))
+}
+
+// InviterID applies equality check predicate on the "inviter_id" field. It's identical to InviterIDEQ.
+func InviterID(v int64) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldInviterID, v))
+}
+
+// InviteCode applies equality check predicate on the "invite_code" field. It's identical to InviteCodeEQ.
+func InviteCode(v string) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldInviteCode, v))
+}
+
+// CommissionRate applies equality check predicate on the "commission_rate" field. It's identical to CommissionRateEQ.
+func CommissionRate(v float64) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldCommissionRate, v))
+}
+
+// CommissionBalance applies equality check predicate on the "commission_balance" field. It's identical to CommissionBalanceEQ.
+func CommissionBalance(v float64) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldCommissionBalance, v))
+}
+
+// TotalCommissionEarned applies equality check predicate on the "total_commission_earned" field. It's identical to TotalCommissionEarnedEQ.
+func TotalCommissionEarned(v float64) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldTotalCommissionEarned, v))
 }
 
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.
@@ -1113,6 +1138,300 @@ func TotalRechargedLT(v float64) predicate.User {
 // TotalRechargedLTE applies the LTE predicate on the "total_recharged" field.
 func TotalRechargedLTE(v float64) predicate.User {
 	return predicate.User(sql.FieldLTE(FieldTotalRecharged, v))
+}
+
+// InviterIDEQ applies the EQ predicate on the "inviter_id" field.
+func InviterIDEQ(v int64) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldInviterID, v))
+}
+
+// InviterIDNEQ applies the NEQ predicate on the "inviter_id" field.
+func InviterIDNEQ(v int64) predicate.User {
+	return predicate.User(sql.FieldNEQ(FieldInviterID, v))
+}
+
+// InviterIDIn applies the In predicate on the "inviter_id" field.
+func InviterIDIn(vs ...int64) predicate.User {
+	return predicate.User(sql.FieldIn(FieldInviterID, vs...))
+}
+
+// InviterIDNotIn applies the NotIn predicate on the "inviter_id" field.
+func InviterIDNotIn(vs ...int64) predicate.User {
+	return predicate.User(sql.FieldNotIn(FieldInviterID, vs...))
+}
+
+// InviterIDIsNil applies the IsNil predicate on the "inviter_id" field.
+func InviterIDIsNil() predicate.User {
+	return predicate.User(sql.FieldIsNull(FieldInviterID))
+}
+
+// InviterIDNotNil applies the NotNil predicate on the "inviter_id" field.
+func InviterIDNotNil() predicate.User {
+	return predicate.User(sql.FieldNotNull(FieldInviterID))
+}
+
+// InviteCodeEQ applies the EQ predicate on the "invite_code" field.
+func InviteCodeEQ(v string) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldInviteCode, v))
+}
+
+// InviteCodeNEQ applies the NEQ predicate on the "invite_code" field.
+func InviteCodeNEQ(v string) predicate.User {
+	return predicate.User(sql.FieldNEQ(FieldInviteCode, v))
+}
+
+// InviteCodeIn applies the In predicate on the "invite_code" field.
+func InviteCodeIn(vs ...string) predicate.User {
+	return predicate.User(sql.FieldIn(FieldInviteCode, vs...))
+}
+
+// InviteCodeNotIn applies the NotIn predicate on the "invite_code" field.
+func InviteCodeNotIn(vs ...string) predicate.User {
+	return predicate.User(sql.FieldNotIn(FieldInviteCode, vs...))
+}
+
+// InviteCodeGT applies the GT predicate on the "invite_code" field.
+func InviteCodeGT(v string) predicate.User {
+	return predicate.User(sql.FieldGT(FieldInviteCode, v))
+}
+
+// InviteCodeGTE applies the GTE predicate on the "invite_code" field.
+func InviteCodeGTE(v string) predicate.User {
+	return predicate.User(sql.FieldGTE(FieldInviteCode, v))
+}
+
+// InviteCodeLT applies the LT predicate on the "invite_code" field.
+func InviteCodeLT(v string) predicate.User {
+	return predicate.User(sql.FieldLT(FieldInviteCode, v))
+}
+
+// InviteCodeLTE applies the LTE predicate on the "invite_code" field.
+func InviteCodeLTE(v string) predicate.User {
+	return predicate.User(sql.FieldLTE(FieldInviteCode, v))
+}
+
+// InviteCodeContains applies the Contains predicate on the "invite_code" field.
+func InviteCodeContains(v string) predicate.User {
+	return predicate.User(sql.FieldContains(FieldInviteCode, v))
+}
+
+// InviteCodeHasPrefix applies the HasPrefix predicate on the "invite_code" field.
+func InviteCodeHasPrefix(v string) predicate.User {
+	return predicate.User(sql.FieldHasPrefix(FieldInviteCode, v))
+}
+
+// InviteCodeHasSuffix applies the HasSuffix predicate on the "invite_code" field.
+func InviteCodeHasSuffix(v string) predicate.User {
+	return predicate.User(sql.FieldHasSuffix(FieldInviteCode, v))
+}
+
+// InviteCodeIsNil applies the IsNil predicate on the "invite_code" field.
+func InviteCodeIsNil() predicate.User {
+	return predicate.User(sql.FieldIsNull(FieldInviteCode))
+}
+
+// InviteCodeNotNil applies the NotNil predicate on the "invite_code" field.
+func InviteCodeNotNil() predicate.User {
+	return predicate.User(sql.FieldNotNull(FieldInviteCode))
+}
+
+// InviteCodeEqualFold applies the EqualFold predicate on the "invite_code" field.
+func InviteCodeEqualFold(v string) predicate.User {
+	return predicate.User(sql.FieldEqualFold(FieldInviteCode, v))
+}
+
+// InviteCodeContainsFold applies the ContainsFold predicate on the "invite_code" field.
+func InviteCodeContainsFold(v string) predicate.User {
+	return predicate.User(sql.FieldContainsFold(FieldInviteCode, v))
+}
+
+// CommissionRateEQ applies the EQ predicate on the "commission_rate" field.
+func CommissionRateEQ(v float64) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldCommissionRate, v))
+}
+
+// CommissionRateNEQ applies the NEQ predicate on the "commission_rate" field.
+func CommissionRateNEQ(v float64) predicate.User {
+	return predicate.User(sql.FieldNEQ(FieldCommissionRate, v))
+}
+
+// CommissionRateIn applies the In predicate on the "commission_rate" field.
+func CommissionRateIn(vs ...float64) predicate.User {
+	return predicate.User(sql.FieldIn(FieldCommissionRate, vs...))
+}
+
+// CommissionRateNotIn applies the NotIn predicate on the "commission_rate" field.
+func CommissionRateNotIn(vs ...float64) predicate.User {
+	return predicate.User(sql.FieldNotIn(FieldCommissionRate, vs...))
+}
+
+// CommissionRateGT applies the GT predicate on the "commission_rate" field.
+func CommissionRateGT(v float64) predicate.User {
+	return predicate.User(sql.FieldGT(FieldCommissionRate, v))
+}
+
+// CommissionRateGTE applies the GTE predicate on the "commission_rate" field.
+func CommissionRateGTE(v float64) predicate.User {
+	return predicate.User(sql.FieldGTE(FieldCommissionRate, v))
+}
+
+// CommissionRateLT applies the LT predicate on the "commission_rate" field.
+func CommissionRateLT(v float64) predicate.User {
+	return predicate.User(sql.FieldLT(FieldCommissionRate, v))
+}
+
+// CommissionRateLTE applies the LTE predicate on the "commission_rate" field.
+func CommissionRateLTE(v float64) predicate.User {
+	return predicate.User(sql.FieldLTE(FieldCommissionRate, v))
+}
+
+// CommissionBalanceEQ applies the EQ predicate on the "commission_balance" field.
+func CommissionBalanceEQ(v float64) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldCommissionBalance, v))
+}
+
+// CommissionBalanceNEQ applies the NEQ predicate on the "commission_balance" field.
+func CommissionBalanceNEQ(v float64) predicate.User {
+	return predicate.User(sql.FieldNEQ(FieldCommissionBalance, v))
+}
+
+// CommissionBalanceIn applies the In predicate on the "commission_balance" field.
+func CommissionBalanceIn(vs ...float64) predicate.User {
+	return predicate.User(sql.FieldIn(FieldCommissionBalance, vs...))
+}
+
+// CommissionBalanceNotIn applies the NotIn predicate on the "commission_balance" field.
+func CommissionBalanceNotIn(vs ...float64) predicate.User {
+	return predicate.User(sql.FieldNotIn(FieldCommissionBalance, vs...))
+}
+
+// CommissionBalanceGT applies the GT predicate on the "commission_balance" field.
+func CommissionBalanceGT(v float64) predicate.User {
+	return predicate.User(sql.FieldGT(FieldCommissionBalance, v))
+}
+
+// CommissionBalanceGTE applies the GTE predicate on the "commission_balance" field.
+func CommissionBalanceGTE(v float64) predicate.User {
+	return predicate.User(sql.FieldGTE(FieldCommissionBalance, v))
+}
+
+// CommissionBalanceLT applies the LT predicate on the "commission_balance" field.
+func CommissionBalanceLT(v float64) predicate.User {
+	return predicate.User(sql.FieldLT(FieldCommissionBalance, v))
+}
+
+// CommissionBalanceLTE applies the LTE predicate on the "commission_balance" field.
+func CommissionBalanceLTE(v float64) predicate.User {
+	return predicate.User(sql.FieldLTE(FieldCommissionBalance, v))
+}
+
+// TotalCommissionEarnedEQ applies the EQ predicate on the "total_commission_earned" field.
+func TotalCommissionEarnedEQ(v float64) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldTotalCommissionEarned, v))
+}
+
+// TotalCommissionEarnedNEQ applies the NEQ predicate on the "total_commission_earned" field.
+func TotalCommissionEarnedNEQ(v float64) predicate.User {
+	return predicate.User(sql.FieldNEQ(FieldTotalCommissionEarned, v))
+}
+
+// TotalCommissionEarnedIn applies the In predicate on the "total_commission_earned" field.
+func TotalCommissionEarnedIn(vs ...float64) predicate.User {
+	return predicate.User(sql.FieldIn(FieldTotalCommissionEarned, vs...))
+}
+
+// TotalCommissionEarnedNotIn applies the NotIn predicate on the "total_commission_earned" field.
+func TotalCommissionEarnedNotIn(vs ...float64) predicate.User {
+	return predicate.User(sql.FieldNotIn(FieldTotalCommissionEarned, vs...))
+}
+
+// TotalCommissionEarnedGT applies the GT predicate on the "total_commission_earned" field.
+func TotalCommissionEarnedGT(v float64) predicate.User {
+	return predicate.User(sql.FieldGT(FieldTotalCommissionEarned, v))
+}
+
+// TotalCommissionEarnedGTE applies the GTE predicate on the "total_commission_earned" field.
+func TotalCommissionEarnedGTE(v float64) predicate.User {
+	return predicate.User(sql.FieldGTE(FieldTotalCommissionEarned, v))
+}
+
+// TotalCommissionEarnedLT applies the LT predicate on the "total_commission_earned" field.
+func TotalCommissionEarnedLT(v float64) predicate.User {
+	return predicate.User(sql.FieldLT(FieldTotalCommissionEarned, v))
+}
+
+// TotalCommissionEarnedLTE applies the LTE predicate on the "total_commission_earned" field.
+func TotalCommissionEarnedLTE(v float64) predicate.User {
+	return predicate.User(sql.FieldLTE(FieldTotalCommissionEarned, v))
+}
+
+// HasInviter applies the HasEdge predicate on the "inviter" edge.
+func HasInviter() predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, InviterTable, InviterColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasInviterWith applies the HasEdge predicate on the "inviter" edge with a given conditions (other predicates).
+func HasInviterWith(preds ...predicate.User) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := newInviterStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasInvitees applies the HasEdge predicate on the "invitees" edge.
+func HasInvitees() predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, InviteesTable, InviteesColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasInviteesWith applies the HasEdge predicate on the "invitees" edge with a given conditions (other predicates).
+func HasInviteesWith(preds ...predicate.User) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := newInviteesStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasCommissionLogs applies the HasEdge predicate on the "commission_logs" edge.
+func HasCommissionLogs() predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, CommissionLogsTable, CommissionLogsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasCommissionLogsWith applies the HasEdge predicate on the "commission_logs" edge with a given conditions (other predicates).
+func HasCommissionLogsWith(preds ...predicate.CommissionLog) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := newCommissionLogsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
 }
 
 // HasAPIKeys applies the HasEdge predicate on the "api_keys" edge.

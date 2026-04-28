@@ -1,10 +1,10 @@
 package routes
 
 import (
-	"github.com/Wei-Shaw/sub2api/internal/handler"
-	"github.com/Wei-Shaw/sub2api/internal/handler/admin"
-	"github.com/Wei-Shaw/sub2api/internal/server/middleware"
-	"github.com/Wei-Shaw/sub2api/internal/service"
+	"github.com/dlxyz/SubioHub/internal/handler"
+	"github.com/dlxyz/SubioHub/internal/handler/admin"
+	"github.com/dlxyz/SubioHub/internal/server/middleware"
+	"github.com/dlxyz/SubioHub/internal/service"
 
 	"github.com/gin-gonic/gin"
 )

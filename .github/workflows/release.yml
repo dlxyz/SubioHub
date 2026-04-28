@@ -51,41 +51,32 @@ jobs:
           path: backend/cmd/server/VERSION
           retention-days: 1
 
-  build-frontend:
+  build-next-web:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v6
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 9
-
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: '20'
-          cache: 'pnpm'
-          cache-dependency-path: frontend/pnpm-lock.yaml
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: next-web/package-lock.json
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-        working-directory: frontend
+        run: npm ci
+        working-directory: next-web
 
-      - name: Build frontend
-        run: pnpm run build
-        working-directory: frontend
-
-      - name: Upload frontend artifact
-        uses: actions/upload-artifact@v7
-        with:
-          name: frontend-dist
-          path: backend/internal/web/dist/
-          retention-days: 1
+      - name: Build next-web
+        env:
+          NEXT_PUBLIC_SITE_URL: https://example.com
+          NEXT_SERVER_API_ORIGIN: http://127.0.0.1:8080
+        run: npm run build
+        working-directory: next-web
 
   release:
-    needs: [update-version, build-frontend]
+    needs: [update-version, build-next-web]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -99,12 +90,6 @@ jobs:
         with:
           name: version-file
           path: backend/cmd/server/
-
-      - name: Download frontend artifact
-        uses: actions/download-artifact@v8
-        with:
-          name: frontend-dist
-          path: backend/internal/web/dist/
 
       - name: Setup Go
         uses: actions/setup-go@v6
@@ -172,6 +157,78 @@ jobs:
         id: lowercase
         run: echo "owner=$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
 
+      - name: Prepare release variables
+        id: release_vars
+        env:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            TAG_NAME=${{ github.event.inputs.tag }}
+          else
+            TAG_NAME=${GITHUB_REF#refs/tags/}
+          fi
+
+          VERSION=${TAG_NAME#v}
+          if [ "${{ env.SIMPLE_RELEASE }}" = "true" ]; then
+            PLATFORMS="linux/amd64"
+          else
+            PLATFORMS="linux/amd64,linux/arm64"
+          fi
+
+          {
+            echo "tag_name=${TAG_NAME}"
+            echo "version=${VERSION}"
+            echo "platforms=${PLATFORMS}"
+          } >> "$GITHUB_OUTPUT"
+
+          {
+            echo "ghcr_image=ghcr.io/${{ steps.lowercase.outputs.owner }}/subiohub-next-web"
+            if [ -n "$DOCKERHUB_USERNAME" ]; then
+              echo "dockerhub_image=${DOCKERHUB_USERNAME}/subiohub-next-web"
+            else
+              echo "dockerhub_image="
+            fi
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Prepare next-web image tags
+        id: next_web_tags
+        env:
+          SIMPLE_RELEASE: ${{ env.SIMPLE_RELEASE }}
+          DOCKERHUB_IMAGE: ${{ steps.release_vars.outputs.dockerhub_image }}
+          GHCR_IMAGE: ${{ steps.release_vars.outputs.ghcr_image }}
+          VERSION: ${{ steps.release_vars.outputs.version }}
+        run: |
+          TAGS="${GHCR_IMAGE}:${VERSION}"$'\n'"${GHCR_IMAGE}:latest"
+
+          if [ "$SIMPLE_RELEASE" != "true" ]; then
+            TAGS+=$'\n'"${GHCR_IMAGE}:$(echo "$VERSION" | cut -d. -f1).$(echo "$VERSION" | cut -d. -f2)"
+            TAGS+=$'\n'"${GHCR_IMAGE}:$(echo "$VERSION" | cut -d. -f1)"
+          fi
+
+          if [ -n "$DOCKERHUB_IMAGE" ] && [ "$SIMPLE_RELEASE" != "true" ]; then
+            TAGS+=$'\n'"${DOCKERHUB_IMAGE}:${VERSION}"
+            TAGS+=$'\n'"${DOCKERHUB_IMAGE}:latest"
+            TAGS+=$'\n'"${DOCKERHUB_IMAGE}:$(echo "$VERSION" | cut -d. -f1).$(echo "$VERSION" | cut -d. -f2)"
+            TAGS+=$'\n'"${DOCKERHUB_IMAGE}:$(echo "$VERSION" | cut -d. -f1)"
+          fi
+
+          echo "tags<<EOF" >> "$GITHUB_OUTPUT"
+          echo "$TAGS" >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
+
+      - name: Build and push next-web image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: next-web/Dockerfile
+          push: true
+          platforms: ${{ steps.release_vars.outputs.platforms }}
+          tags: ${{ steps.next_web_tags.outputs.tags }}
+          build-args: |
+            NODE_IMAGE=node:22-alpine
+          cache-from: type=gha,scope=next-web-release
+          cache-to: type=gha,scope=next-web-release,mode=max
+
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v7
         with:
@@ -194,8 +251,8 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-          repository: ${{ secrets.DOCKERHUB_USERNAME }}/sub2api
-          short-description: "Sub2API - AI API Gateway Platform"
+          repository: ${{ secrets.DOCKERHUB_USERNAME }}/subiohub
+          short-description: "SubioHub - AI API Gateway Platform"
           readme-filepath: ./deploy/DOCKER.md
 
       # Send Telegram notification
@@ -232,7 +289,7 @@ jobs:
           fi
 
           # 构建消息内容
-          MESSAGE="🚀 *Sub2API 新版本发布！*"$'\n'$'\n'
+          MESSAGE="🚀 *SubioHub 新版本发布！*"$'\n'$'\n'
           MESSAGE+="📦 版本号: \`${VERSION}\`"$'\n'$'\n'
 
           # 添加更新内容
@@ -244,7 +301,7 @@ jobs:
           MESSAGE+="\`\`\`bash"$'\n'
           # 根据是否配置 DockerHub 动态生成
           if [ -n "$DOCKERHUB_USERNAME" ]; then
-            DOCKER_IMAGE="${DOCKERHUB_USERNAME}/sub2api"
+            DOCKER_IMAGE="${DOCKERHUB_USERNAME}/subiohub"
             MESSAGE+="# Docker Hub"$'\n'
             MESSAGE+="docker pull ${DOCKER_IMAGE}:${TAG_NAME}"$'\n'
             MESSAGE+="# GitHub Container Registry"$'\n'
@@ -255,9 +312,10 @@ jobs:
           MESSAGE+="• [GitHub Release](https://github.com/${REPO}/releases/tag/${TAG_NAME})"$'\n'
           if [ -n "$DOCKERHUB_USERNAME" ]; then
             MESSAGE+="• [Docker Hub](https://hub.docker.com/r/${DOCKER_IMAGE})"$'\n'
+            MESSAGE+="• [Docker Hub Frontend](https://hub.docker.com/r/${DOCKER_IMAGE}-next-web)"$'\n'
           fi
-          MESSAGE+="• [GitHub Packages](https://github.com/${REPO}/pkgs/container/sub2api)"$'\n'$'\n'
-          MESSAGE+="#Sub2API #Release #${TAG_NAME//./_}"
+          MESSAGE+="• [GitHub Packages](https://github.com/${REPO}/pkgs/container/subiohub)"$'\n'$'\n'
+          MESSAGE+="#SubioHub #Release #${TAG_NAME//./_}"
 
           # 发送消息
           curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \

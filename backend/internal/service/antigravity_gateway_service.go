@@ -20,18 +20,17 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/Wei-Shaw/sub2api/internal/pkg/antigravity"
-	"github.com/Wei-Shaw/sub2api/internal/pkg/logger"
+	"github.com/dlxyz/SubioHub/internal/pkg/antigravity"
+	"github.com/dlxyz/SubioHub/internal/pkg/logger"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/tidwall/gjson"
 )
 
 const (
-	antigravityStickySessionTTL = time.Hour
-	antigravityMaxRetries       = 3
-	antigravityRetryBaseDelay   = 1 * time.Second
-	antigravityRetryMaxDelay    = 16 * time.Second
+	antigravityMaxRetries     = 3
+	antigravityRetryBaseDelay = 1 * time.Second
+	antigravityRetryMaxDelay  = 16 * time.Second
 
 	// 限流相关常量
 	// antigravityRateLimitThreshold 限流等待/切换阈值
@@ -202,7 +201,7 @@ func (s *AntigravityGatewayService) handleSmartRetry(p antigravityRetryLoopParam
 		category == antigravity429QuotaExhausted &&
 		p.account.IsOveragesEnabled() &&
 		!p.account.isCreditsExhausted() {
-		result := s.attemptCreditsOveragesRetry(p, baseURL, modelName, waitDuration, resp.StatusCode, respBody)
+		result := s.attemptCreditsOveragesRetry(p, baseURL, modelName)
 		if result.handled && result.resp != nil {
 			return &smartRetryResult{
 				action: smartRetryActionBreakWithResp,

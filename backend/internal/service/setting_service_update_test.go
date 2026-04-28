@@ -7,8 +7,8 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/Wei-Shaw/sub2api/internal/config"
-	infraerrors "github.com/Wei-Shaw/sub2api/internal/pkg/errors"
+	"github.com/dlxyz/SubioHub/internal/config"
+	infraerrors "github.com/dlxyz/SubioHub/internal/pkg/errors"
 	"github.com/stretchr/testify/require"
 )
 
@@ -222,4 +222,17 @@ func TestSettingService_UpdateSettings_TablePreferences(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, "1000", repo.updates[SettingKeyTableDefaultPageSize])
 	require.Equal(t, "[20,100]", repo.updates[SettingKeyTablePageSizeOptions])
+}
+
+func TestSettingService_UpdateSettings_AffiliateSettlementToggles(t *testing.T) {
+	repo := &settingUpdateRepoStub{}
+	svc := NewSettingService(repo, &config.Config{})
+
+	err := svc.UpdateSettings(context.Background(), &SystemSettings{
+		AffiliateAutoSettlementEnabled:         true,
+		AffiliateManualPayoutSettlementEnabled: false,
+	})
+	require.NoError(t, err)
+	require.Equal(t, "true", repo.updates[SettingKeyAffiliateAutoSettlementEnabled])
+	require.Equal(t, "false", repo.updates[SettingKeyAffiliateManualPayoutSettlementEnabled])
 }

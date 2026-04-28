@@ -9,8 +9,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Wei-Shaw/sub2api/internal/pkg/response"
-	"github.com/Wei-Shaw/sub2api/internal/pkg/sysutil"
+	"github.com/dlxyz/SubioHub/internal/pkg/response"
+	"github.com/dlxyz/SubioHub/internal/pkg/sysutil"
 
 	"github.com/gin-gonic/gin"
 )

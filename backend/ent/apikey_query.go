@@ -13,11 +13,11 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/Wei-Shaw/sub2api/ent/apikey"
-	"github.com/Wei-Shaw/sub2api/ent/group"
-	"github.com/Wei-Shaw/sub2api/ent/predicate"
-	"github.com/Wei-Shaw/sub2api/ent/usagelog"
-	"github.com/Wei-Shaw/sub2api/ent/user"
+	"github.com/dlxyz/SubioHub/ent/apikey"
+	"github.com/dlxyz/SubioHub/ent/group"
+	"github.com/dlxyz/SubioHub/ent/predicate"
+	"github.com/dlxyz/SubioHub/ent/usagelog"
+	"github.com/dlxyz/SubioHub/ent/user"
 )
 
 // APIKeyQuery is the builder for querying APIKey entities.

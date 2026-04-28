@@ -22,7 +22,7 @@ const (
 	quotaDimWeekly = "weekly"
 	quotaDimTotal  = "total"
 
-	defaultSiteName = "Sub2API"
+	defaultSiteName = "SubioHub"
 )
 
 // quotaDimLabels maps dimension names to display labels.
@@ -233,7 +233,7 @@ func (s *BalanceNotifyService) checkQuotaDimCrossings(account *Account, dims []q
 }
 
 // asyncSendQuotaAlert sends quota alert email in a goroutine with panic recovery.
-func (s *BalanceNotifyService) asyncSendQuotaAlert(adminEmails []string, accountID int64, accountName, platform string, dim quotaDim, newUsed, effectiveThreshold float64, siteName string) {
+func (s *BalanceNotifyService) asyncSendQuotaAlert(adminEmails []string, accountID int64, accountName, platform string, dim quotaDim, newUsed, _ float64, siteName string) {
 	go func() {
 		defer func() {
 			if r := recover(); r != nil {

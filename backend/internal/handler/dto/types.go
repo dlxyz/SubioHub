@@ -3,13 +3,14 @@ package dto
 import (
 	"time"
 
-	"github.com/Wei-Shaw/sub2api/internal/domain"
+	"github.com/dlxyz/SubioHub/internal/domain"
 )
 
 type User struct {
 	ID            int64     `json:"id"`
 	Email         string    `json:"email"`
 	Username      string    `json:"username"`
+	InviteCode    string    `json:"invite_code"`
 	Role          string    `json:"role"`
 	Balance       float64   `json:"balance"`
 	Concurrency   int       `json:"concurrency"`

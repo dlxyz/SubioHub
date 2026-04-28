@@ -7,8 +7,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Wei-Shaw/sub2api/internal/domain"
-	"github.com/Wei-Shaw/sub2api/internal/pkg/pagination"
+	"github.com/dlxyz/SubioHub/internal/domain"
+	"github.com/dlxyz/SubioHub/internal/pkg/pagination"
 )
 
 type AnnouncementService struct {
@@ -213,6 +213,49 @@ func (s *AnnouncementService) GetByID(ctx context.Context, id int64) (*Announcem
 
 func (s *AnnouncementService) List(ctx context.Context, params pagination.PaginationParams, filters AnnouncementListFilters) ([]Announcement, *pagination.PaginationResult, error) {
 	return s.announcementRepo.List(ctx, params, filters)
+}
+
+func (s *AnnouncementService) ListPublic(ctx context.Context) ([]Announcement, error) {
+	now := time.Now()
+	anns, err := s.announcementRepo.ListActive(ctx, now)
+	if err != nil {
+		return nil, fmt.Errorf("list public announcements: %w", err)
+	}
+
+	out := make([]Announcement, 0, len(anns))
+	for i := range anns {
+		a := anns[i]
+		if !a.IsActiveAt(now) {
+			continue
+		}
+		if len(a.Targeting.AnyOf) > 0 {
+			continue
+		}
+		out = append(out, a)
+	}
+
+	sort.Slice(out, func(i, j int) bool {
+		return out[i].ID > out[j].ID
+	})
+
+	return out, nil
+}
+
+func (s *AnnouncementService) GetPublicByID(ctx context.Context, id int64) (*Announcement, error) {
+	a, err := s.announcementRepo.GetByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	now := time.Now()
+	if !a.IsActiveAt(now) {
+		return nil, ErrAnnouncementNotFound
+	}
+	if len(a.Targeting.AnyOf) > 0 {
+		return nil, ErrAnnouncementNotFound
+	}
+
+	return a, nil
 }
 
 func (s *AnnouncementService) ListForUser(ctx context.Context, userID int64, unreadOnly bool) ([]UserAnnouncement, error) {

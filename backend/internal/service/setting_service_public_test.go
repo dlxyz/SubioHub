@@ -6,7 +6,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/Wei-Shaw/sub2api/internal/config"
+	"github.com/dlxyz/SubioHub/internal/config"
 	"github.com/stretchr/testify/require"
 )
 
@@ -76,4 +76,20 @@ func TestSettingService_GetPublicSettings_ExposesTablePreferences(t *testing.T) 
 	require.NoError(t, err)
 	require.Equal(t, 50, settings.TableDefaultPageSize)
 	require.Equal(t, []int{20, 50, 100}, settings.TablePageSizeOptions)
+}
+
+func TestSettingService_AffiliateSettlementSettings_DefaultAndOverride(t *testing.T) {
+	repo := &settingPublicRepoStub{
+		values: map[string]string{
+			SettingKeyAffiliateManualPayoutSettlementEnabled: "false",
+		},
+	}
+	svc := NewSettingService(repo, &config.Config{
+		Affiliate: config.AffiliateConfig{
+			AutoSettlementEnabled: true,
+		},
+	})
+
+	require.True(t, svc.IsAffiliateAutoSettlementEnabled(context.Background()))
+	require.False(t, svc.IsAffiliateManualPayoutSettlementEnabled(context.Background()))
 }

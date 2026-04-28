@@ -90,6 +90,8 @@ const (
 	FieldUpdatedAt = "updated_at"
 	// EdgeUser holds the string denoting the user edge name in mutations.
 	EdgeUser = "user"
+	// EdgeCommissionLogs holds the string denoting the commission_logs edge name in mutations.
+	EdgeCommissionLogs = "commission_logs"
 	// Table holds the table name of the paymentorder in the database.
 	Table = "payment_orders"
 	// UserTable is the table that holds the user relation/edge.
@@ -99,6 +101,13 @@ const (
 	UserInverseTable = "users"
 	// UserColumn is the table column denoting the user relation/edge.
 	UserColumn = "user_id"
+	// CommissionLogsTable is the table that holds the commission_logs relation/edge.
+	CommissionLogsTable = "commission_logs"
+	// CommissionLogsInverseTable is the table name for the CommissionLog entity.
+	// It exists in this package in order to avoid circular dependency with the "commissionlog" package.
+	CommissionLogsInverseTable = "commission_logs"
+	// CommissionLogsColumn is the table column denoting the commission_logs relation/edge.
+	CommissionLogsColumn = "order_id"
 )
 
 // Columns holds all SQL columns for paymentorder fields.
@@ -397,10 +406,31 @@ func ByUserField(field string, opts ...sql.OrderTermOption) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newUserStep(), sql.OrderByField(field, opts...))
 	}
 }
+
+// ByCommissionLogsCount orders the results by commission_logs count.
+func ByCommissionLogsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newCommissionLogsStep(), opts...)
+	}
+}
+
+// ByCommissionLogs orders the results by commission_logs terms.
+func ByCommissionLogs(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newCommissionLogsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newUserStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(UserInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, true, UserTable, UserColumn),
+	)
+}
+func newCommissionLogsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(CommissionLogsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, CommissionLogsTable, CommissionLogsColumn),
 	)
 }

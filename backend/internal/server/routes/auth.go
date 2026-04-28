@@ -3,10 +3,10 @@ package routes
 import (
 	"time"
 
-	"github.com/Wei-Shaw/sub2api/internal/handler"
-	"github.com/Wei-Shaw/sub2api/internal/middleware"
-	servermiddleware "github.com/Wei-Shaw/sub2api/internal/server/middleware"
-	"github.com/Wei-Shaw/sub2api/internal/service"
+	"github.com/dlxyz/SubioHub/internal/handler"
+	"github.com/dlxyz/SubioHub/internal/middleware"
+	servermiddleware "github.com/dlxyz/SubioHub/internal/server/middleware"
+	"github.com/dlxyz/SubioHub/internal/service"
 
 	"github.com/gin-gonic/gin"
 	"github.com/redis/go-redis/v9"
@@ -84,6 +84,13 @@ func RegisterAuthRoutes(
 	settings := v1.Group("/settings")
 	{
 		settings.GET("/public", h.Setting.GetPublicSettings)
+		settings.GET("/public/model-plaza", h.Setting.GetPublicModelPlaza)
+	}
+
+	news := v1.Group("/news")
+	{
+		news.GET("", h.Announcement.ListPublic)
+		news.GET("/:id", h.Announcement.GetPublic)
 	}
 
 	// 需要认证的当前用户信息

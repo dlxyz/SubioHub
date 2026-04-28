@@ -15,13 +15,13 @@ import (
 	"syscall"
 	"time"
 
-	_ "github.com/Wei-Shaw/sub2api/ent/runtime"
-	"github.com/Wei-Shaw/sub2api/internal/config"
-	"github.com/Wei-Shaw/sub2api/internal/handler"
-	"github.com/Wei-Shaw/sub2api/internal/pkg/logger"
-	"github.com/Wei-Shaw/sub2api/internal/server/middleware"
-	"github.com/Wei-Shaw/sub2api/internal/setup"
-	"github.com/Wei-Shaw/sub2api/internal/web"
+	_ "github.com/dlxyz/SubioHub/ent/runtime"
+	"github.com/dlxyz/SubioHub/internal/config"
+	"github.com/dlxyz/SubioHub/internal/handler"
+	"github.com/dlxyz/SubioHub/internal/pkg/logger"
+	"github.com/dlxyz/SubioHub/internal/server/middleware"
+	"github.com/dlxyz/SubioHub/internal/setup"
+	"github.com/dlxyz/SubioHub/internal/web"
 
 	"github.com/gin-gonic/gin"
 	"golang.org/x/net/http2"
@@ -55,6 +55,8 @@ func init() {
 // initLogger configures the default slog handler based on gin.Mode().
 // In non-release mode, Debug level logs are enabled.
 func main() {
+	loadDotEnvIfPresent(".env", ".env.local", "backend/.env", "backend/.env.local")
+
 	logger.InitBootstrap()
 	defer logger.Sync()
 
@@ -64,7 +66,7 @@ func main() {
 	flag.Parse()
 
 	if *showVersion {
-		log.Printf("Sub2API %s (commit: %s, built: %s)\n", Version, Commit, Date)
+		log.Printf("SubioHub %s (commit: %s, built: %s)\n", Version, Commit, Date)
 		return
 	}
 
@@ -96,6 +98,55 @@ func main() {
 	runMainServer()
 }
 
+func loadDotEnvIfPresent(paths ...string) {
+	for _, path := range paths {
+		content, err := os.ReadFile(path)
+		if err != nil {
+			if errors.Is(err, os.ErrNotExist) {
+				continue
+			}
+			log.Printf("Skip loading %s: %v", path, err)
+			continue
+		}
+
+		lines := strings.Split(string(content), "\n")
+		for idx, line := range lines {
+			line = strings.TrimSpace(line)
+			if line == "" || strings.HasPrefix(line, "#") {
+				continue
+			}
+			line = strings.TrimPrefix(line, "export ")
+
+			key, value, ok := strings.Cut(line, "=")
+			if !ok {
+				log.Printf("Skip invalid env line %s:%d", path, idx+1)
+				continue
+			}
+
+			key = strings.TrimSpace(key)
+			value = strings.TrimSpace(value)
+			if key == "" {
+				continue
+			}
+
+			if len(value) >= 2 {
+				if (strings.HasPrefix(value, "\"") && strings.HasSuffix(value, "\"")) ||
+					(strings.HasPrefix(value, "'") && strings.HasSuffix(value, "'")) {
+					value = value[1 : len(value)-1]
+				}
+			}
+
+			if _, exists := os.LookupEnv(key); exists {
+				continue
+			}
+			if err := os.Setenv(key, value); err != nil {
+				log.Printf("Skip setting env %s from %s: %v", key, path, err)
+			}
+		}
+		log.Printf("Loaded environment from %s", path)
+	}
+}
+
 func runSetupServer() {
 	r := gin.New()
 	r.Use(middleware.Recovery())
@@ -114,7 +165,7 @@ func runSetupServer() {
 	// This allows users to run setup on a different address if needed
 	addr := config.GetServerAddress()
 	log.Printf("Setup wizard available at http://%s", addr)
-	log.Println("Complete the setup wizard to configure Sub2API")
+	log.Println("Complete the setup wizard to configure SubioHub")
 
 	server := &http.Server{
 		Addr:              addr,

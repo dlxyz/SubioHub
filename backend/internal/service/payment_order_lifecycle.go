@@ -7,12 +7,12 @@ import (
 	"strconv"
 	"time"
 
-	dbent "github.com/Wei-Shaw/sub2api/ent"
-	"github.com/Wei-Shaw/sub2api/ent/paymentauditlog"
-	"github.com/Wei-Shaw/sub2api/ent/paymentorder"
-	"github.com/Wei-Shaw/sub2api/internal/payment"
-	"github.com/Wei-Shaw/sub2api/internal/payment/provider"
-	infraerrors "github.com/Wei-Shaw/sub2api/internal/pkg/errors"
+	dbent "github.com/dlxyz/SubioHub/ent"
+	"github.com/dlxyz/SubioHub/ent/paymentauditlog"
+	"github.com/dlxyz/SubioHub/ent/paymentorder"
+	"github.com/dlxyz/SubioHub/internal/payment"
+	"github.com/dlxyz/SubioHub/internal/payment/provider"
+	infraerrors "github.com/dlxyz/SubioHub/internal/pkg/errors"
 )
 
 // --- Cancel & Expire ---
@@ -21,7 +21,6 @@ import (
 const (
 	rateLimitUnitDay           = "day"
 	rateLimitUnitMinute        = "minute"
-	rateLimitUnitHour          = "hour"
 	rateLimitModeFixed         = "fixed"
 	checkPaidResultAlreadyPaid = "already_paid"
 	checkPaidResultCancelled   = "cancelled"

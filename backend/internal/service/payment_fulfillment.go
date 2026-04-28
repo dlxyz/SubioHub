@@ -9,11 +9,12 @@ import (
 	"strings"
 	"time"
 
-	dbent "github.com/Wei-Shaw/sub2api/ent"
-	"github.com/Wei-Shaw/sub2api/ent/paymentauditlog"
-	"github.com/Wei-Shaw/sub2api/ent/paymentorder"
-	"github.com/Wei-Shaw/sub2api/internal/payment"
-	infraerrors "github.com/Wei-Shaw/sub2api/internal/pkg/errors"
+	dbent "github.com/dlxyz/SubioHub/ent"
+	"github.com/dlxyz/SubioHub/ent/commissionlog"
+	"github.com/dlxyz/SubioHub/ent/paymentauditlog"
+	"github.com/dlxyz/SubioHub/ent/paymentorder"
+	"github.com/dlxyz/SubioHub/internal/payment"
+	infraerrors "github.com/dlxyz/SubioHub/internal/pkg/errors"
 )
 
 // --- Payment Notification & Fulfillment ---
@@ -210,7 +211,61 @@ func (s *PaymentService) doBalance(ctx context.Context, o *dbent.PaymentOrder) e
 	return s.markCompleted(ctx, o, "RECHARGE_SUCCESS")
 }
 
+func (s *PaymentService) recordPendingCommissionIfNeeded(ctx context.Context, o *dbent.PaymentOrder) error {
+	if o.OrderType != payment.OrderTypeBalance && o.OrderType != payment.OrderTypeSubscription {
+		return nil
+	}
+
+	invitee, err := s.userRepo.GetByID(ctx, o.UserID)
+	if err != nil || invitee.InviterID == nil {
+		return nil
+	}
+
+	inviterID := *invitee.InviterID
+	inviter, err := s.userRepo.GetByID(ctx, inviterID)
+	if err != nil || inviter == nil {
+		return nil
+	}
+
+	commissionAmount := o.Amount * inviter.CommissionRate
+	if commissionAmount <= 0 {
+		return nil
+	}
+
+	exists, err := s.entClient.CommissionLog.Query().
+		Where(
+			commissionlog.UserIDEQ(inviterID),
+			commissionlog.OrderIDEQ(o.ID),
+		).
+		Exist(ctx)
+	if err != nil {
+		return fmt.Errorf("check commission log: %w", err)
+	}
+	if exists {
+		return nil
+	}
+
+	_, err = s.entClient.CommissionLog.Create().
+		SetUserID(inviterID).
+		SetInviteeID(o.UserID).
+		SetOrderID(o.ID).
+		SetAmount(commissionAmount).
+		SetStatus("pending").
+		SetReason(fmt.Sprintf("Recharge reward from user ID %d", o.UserID)).
+		Save(ctx)
+	if err != nil {
+		return fmt.Errorf("create pending commission: %w", err)
+	}
+
+	slog.Info("recorded pending commission", "orderID", o.ID, "inviterID", inviterID, "amount", commissionAmount)
+	return nil
+}
+
 func (s *PaymentService) markCompleted(ctx context.Context, o *dbent.PaymentOrder, auditAction string) error {
+	if err := s.recordPendingCommissionIfNeeded(ctx, o); err != nil {
+		return err
+	}
+
 	now := time.Now()
 	_, err := s.entClient.PaymentOrder.Update().Where(paymentorder.IDEQ(o.ID), paymentorder.StatusEQ(OrderStatusRecharging)).SetStatus(OrderStatusCompleted).SetCompletedAt(now).Save(ctx)
 	if err != nil {
@@ -221,6 +276,7 @@ func (s *PaymentService) markCompleted(ctx context.Context, o *dbent.PaymentOrde
 		"creditedAmount": o.Amount,
 		"payAmount":      o.PayAmount,
 	})
+
 	return nil
 }
 

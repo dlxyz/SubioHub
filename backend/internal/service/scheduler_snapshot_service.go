@@ -9,8 +9,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Wei-Shaw/sub2api/internal/config"
-	"github.com/Wei-Shaw/sub2api/internal/pkg/logger"
+	"github.com/dlxyz/SubioHub/internal/config"
+	"github.com/dlxyz/SubioHub/internal/pkg/logger"
 )
 
 var (
@@ -539,7 +539,6 @@ func (s *SchedulerSnapshotService) triggerFullRebuild(reason string) error {
 	buckets, err := s.cache.ListBuckets(ctx)
 	if err != nil {
 		logger.LegacyPrintf("service.scheduler_snapshot", "[Scheduler] list buckets failed: %v", err)
-		return err
 	}
 	if len(buckets) == 0 {
 		buckets, err = s.defaultBuckets(ctx)
@@ -693,7 +692,7 @@ func (s *SchedulerSnapshotService) resolveMode(platform string, hasForcePlatform
 	return SchedulerModeSingle
 }
 
-func (s *SchedulerSnapshotService) guardFallback(ctx context.Context) error {
+func (s *SchedulerSnapshotService) guardFallback(_ context.Context) error {
 	if s.cfg == nil || s.cfg.Gateway.Scheduling.DbFallbackEnabled {
 		if s.fallbackLimit == nil || s.fallbackLimit.Allow() {
 			return nil

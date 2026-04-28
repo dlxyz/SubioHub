@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <header class="glass sticky top-0 z-30 border-b border-gray-200/50 dark:border-dark-700/50">
     <div class="flex h-16 items-center justify-between px-4 md:px-6">
       <!-- Left: Mobile Menu Toggle + Page Title -->
@@ -124,7 +124,7 @@
 
                 <a
                   v-if="authStore.isAdmin"
-                  href="https://github.com/Wei-Shaw/sub2api"
+                  href="https://github.com/dlxyz/SubioHub"
                   target="_blank"
                   rel="noopener noreferrer"
                   @click="closeDropdown"
@@ -336,3 +336,4 @@ onBeforeUnmount(() => {
   transform: scale(0.95) translateY(-4px);
 }
 </style>
+

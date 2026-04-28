@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <AuthLayout>
     <div class="space-y-6">
       <!-- Title -->
@@ -341,7 +341,7 @@ const promoCodeEnabled = ref<boolean>(true)
 const invitationCodeEnabled = ref<boolean>(false)
 const turnstileEnabled = ref<boolean>(false)
 const turnstileSiteKey = ref<string>('')
-const siteName = ref<string>('Sub2API')
+const siteName = ref<string>('SubioHub')
 const linuxdoOAuthEnabled = ref<boolean>(false)
 const oidcOAuthEnabled = ref<boolean>(false)
 const oidcOAuthProviderName = ref<string>('OIDC')
@@ -395,7 +395,7 @@ onMounted(async () => {
     invitationCodeEnabled.value = settings.invitation_code_enabled
     turnstileEnabled.value = settings.turnstile_enabled
     turnstileSiteKey.value = settings.turnstile_site_key || ''
-    siteName.value = settings.site_name || 'Sub2API'
+    siteName.value = settings.site_name || 'SubioHub'
     linuxdoOAuthEnabled.value = settings.linuxdo_oauth_enabled
     oidcOAuthEnabled.value = settings.oidc_oauth_enabled
     oidcOAuthProviderName.value = settings.oidc_oauth_provider_name || 'OIDC'
@@ -768,3 +768,4 @@ async function handleRegister(): Promise<void> {
   transform: translateY(-8px);
 }
 </style>
+

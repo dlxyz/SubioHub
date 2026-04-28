@@ -14,6 +14,21 @@ import (
 func resetViperWithJWTSecret(t *testing.T) {
 	t.Helper()
 	viper.Reset()
+	for _, key := range []string{
+		"IDEMPOTENCY_OBSERVE_ONLY",
+		"USAGE_CLEANUP_ENABLED",
+		"USAGE_CLEANUP_MAX_RANGE_DAYS",
+		"USAGE_CLEANUP_BATCH_SIZE",
+		"USAGE_CLEANUP_WORKER_INTERVAL_SECONDS",
+		"USAGE_CLEANUP_TASK_TIMEOUT_SECONDS",
+		"AFFILIATE_AUTO_SETTLEMENT_ENABLED",
+		"AFFILIATE_SETTLEMENT_FREEZE_HOURS",
+		"AFFILIATE_SETTLEMENT_WORKER_INTERVAL_SECONDS",
+		"AFFILIATE_SETTLEMENT_BATCH_SIZE",
+		"AFFILIATE_SETTLEMENT_TASK_TIMEOUT_SECONDS",
+	} {
+		require.NoError(t, os.Unsetenv(key))
+	}
 	t.Setenv("JWT_SECRET", strings.Repeat("x", 32))
 }
 
@@ -436,8 +451,8 @@ func TestLoadDefaultDashboardCacheConfig(t *testing.T) {
 	if !cfg.Dashboard.Enabled {
 		t.Fatalf("Dashboard.Enabled = false, want true")
 	}
-	if cfg.Dashboard.KeyPrefix != "sub2api:" {
-		t.Fatalf("Dashboard.KeyPrefix = %q, want %q", cfg.Dashboard.KeyPrefix, "sub2api:")
+	if cfg.Dashboard.KeyPrefix != "subiohub:" {
+		t.Fatalf("Dashboard.KeyPrefix = %q, want %q", cfg.Dashboard.KeyPrefix, "subiohub:")
 	}
 	if cfg.Dashboard.StatsFreshTTLSeconds != 15 {
 		t.Fatalf("Dashboard.StatsFreshTTLSeconds = %d, want 15", cfg.Dashboard.StatsFreshTTLSeconds)
@@ -641,7 +656,7 @@ func TestConfigAddressHelpers(t *testing.T) {
 		Port:     5432,
 		User:     "postgres",
 		Password: "",
-		DBName:   "sub2api",
+		DBName:   "subiohub",
 		SSLMode:  "disable",
 	}
 	if !strings.Contains(dbCfg.DSN(), "password=") {

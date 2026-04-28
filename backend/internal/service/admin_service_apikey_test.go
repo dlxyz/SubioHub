@@ -8,8 +8,8 @@ import (
 	"testing"
 	"time"
 
-	infraerrors "github.com/Wei-Shaw/sub2api/internal/pkg/errors"
-	"github.com/Wei-Shaw/sub2api/internal/pkg/pagination"
+	infraerrors "github.com/dlxyz/SubioHub/internal/pkg/errors"
+	"github.com/dlxyz/SubioHub/internal/pkg/pagination"
 	"github.com/stretchr/testify/require"
 )
 
@@ -54,6 +54,9 @@ func (s *userRepoStubForGroupUpdate) UpdateBalance(context.Context, int64, float
 	panic("unexpected")
 }
 func (s *userRepoStubForGroupUpdate) DeductBalance(context.Context, int64, float64) error {
+	panic("unexpected")
+}
+func (s *userRepoStubForGroupUpdate) UpdateCommissionBalance(context.Context, int64, float64) error {
 	panic("unexpected")
 }
 func (s *userRepoStubForGroupUpdate) UpdateConcurrency(context.Context, int64, int) error {

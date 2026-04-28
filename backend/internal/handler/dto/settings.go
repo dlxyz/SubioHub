@@ -157,6 +157,9 @@ type SystemSettings struct {
 	BalanceLowNotifyRechargeURL string             `json:"balance_low_notify_recharge_url"`
 	AccountQuotaNotifyEnabled   bool               `json:"account_quota_notify_enabled"`
 	AccountQuotaNotifyEmails    []NotifyEmailEntry `json:"account_quota_notify_emails"`
+
+	AffiliateAutoSettlementEnabled         bool `json:"affiliate_auto_settlement_enabled"`
+	AffiliateManualPayoutSettlementEnabled bool `json:"affiliate_manual_payout_settlement_enabled"`
 }
 
 type DefaultSubscriptionSetting struct {

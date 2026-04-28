@@ -10,7 +10,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Wei-Shaw/sub2api/internal/pkg/pagination"
+	"github.com/dlxyz/SubioHub/internal/pkg/pagination"
 	"github.com/stretchr/testify/require"
 )
 
@@ -40,6 +40,9 @@ func (m *mockUserRepo) UpdateBalance(ctx context.Context, id int64, amount float
 	return m.updateBalanceErr
 }
 func (m *mockUserRepo) DeductBalance(context.Context, int64, float64) error { return nil }
+func (m *mockUserRepo) UpdateCommissionBalance(context.Context, int64, float64) error {
+	return nil
+}
 func (m *mockUserRepo) UpdateConcurrency(context.Context, int64, int) error { return nil }
 func (m *mockUserRepo) ExistsByEmail(context.Context, string) (bool, error) { return false, nil }
 func (m *mockUserRepo) RemoveGroupFromAllowedGroups(context.Context, int64) (int64, error) {

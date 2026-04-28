@@ -3,8 +3,8 @@ package service
 import (
 	"testing"
 
-	dbent "github.com/Wei-Shaw/sub2api/ent"
-	"github.com/Wei-Shaw/sub2api/internal/payment"
+	dbent "github.com/dlxyz/SubioHub/ent"
+	"github.com/dlxyz/SubioHub/internal/payment"
 )
 
 func TestUnionFloat(t *testing.T) {

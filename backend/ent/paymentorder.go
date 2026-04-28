@@ -9,8 +9,8 @@ import (
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
-	"github.com/Wei-Shaw/sub2api/ent/paymentorder"
-	"github.com/Wei-Shaw/sub2api/ent/user"
+	"github.com/dlxyz/SubioHub/ent/paymentorder"
+	"github.com/dlxyz/SubioHub/ent/user"
 )
 
 // PaymentOrder is the model entity for the PaymentOrder schema.
@@ -102,9 +102,11 @@ type PaymentOrder struct {
 type PaymentOrderEdges struct {
 	// User holds the value of the user edge.
 	User *User `json:"user,omitempty"`
+	// CommissionLogs holds the value of the commission_logs edge.
+	CommissionLogs []*CommissionLog `json:"commission_logs,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [2]bool
 }
 
 // UserOrErr returns the User value or an error if the edge
@@ -116,6 +118,15 @@ func (e PaymentOrderEdges) UserOrErr() (*User, error) {
 		return nil, &NotFoundError{label: user.Label}
 	}
 	return nil, &NotLoadedError{edge: "user"}
+}
+
+// CommissionLogsOrErr returns the CommissionLogs value or an error if the edge
+// was not loaded in eager-loading.
+func (e PaymentOrderEdges) CommissionLogsOrErr() ([]*CommissionLog, error) {
+	if e.loadedTypes[1] {
+		return e.CommissionLogs, nil
+	}
+	return nil, &NotLoadedError{edge: "commission_logs"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -410,6 +421,11 @@ func (_m *PaymentOrder) Value(name string) (ent.Value, error) {
 // QueryUser queries the "user" edge of the PaymentOrder entity.
 func (_m *PaymentOrder) QueryUser() *UserQuery {
 	return NewPaymentOrderClient(_m.config).QueryUser(_m)
+}
+
+// QueryCommissionLogs queries the "commission_logs" edge of the PaymentOrder entity.
+func (_m *PaymentOrder) QueryCommissionLogs() *CommissionLogQuery {
+	return NewPaymentOrderClient(_m.config).QueryCommissionLogs(_m)
 }
 
 // Update returns a builder for updating this PaymentOrder.

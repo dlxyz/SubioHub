@@ -9,11 +9,11 @@ import (
 	"testing"
 	"time"
 
-	dbent "github.com/Wei-Shaw/sub2api/ent"
-	"github.com/Wei-Shaw/sub2api/ent/apikey"
-	"github.com/Wei-Shaw/sub2api/ent/schema/mixins"
-	"github.com/Wei-Shaw/sub2api/ent/usersubscription"
-	"github.com/Wei-Shaw/sub2api/internal/service"
+	dbent "github.com/dlxyz/SubioHub/ent"
+	"github.com/dlxyz/SubioHub/ent/apikey"
+	"github.com/dlxyz/SubioHub/ent/schema/mixins"
+	"github.com/dlxyz/SubioHub/ent/usersubscription"
+	"github.com/dlxyz/SubioHub/internal/service"
 	"github.com/stretchr/testify/require"
 )
 

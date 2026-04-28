@@ -15,8 +15,8 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/Wei-Shaw/sub2api/internal/config"
-	infraerrors "github.com/Wei-Shaw/sub2api/internal/pkg/errors"
+	"github.com/dlxyz/SubioHub/internal/config"
+	infraerrors "github.com/dlxyz/SubioHub/internal/pkg/errors"
 	"github.com/imroc/req/v3"
 	"golang.org/x/sync/singleflight"
 )
@@ -239,7 +239,7 @@ func (s *SettingService) GetPublicSettings(ctx context.Context) (*PublicSettings
 		TotpEnabled:                      settings[SettingKeyTotpEnabled] == "true",
 		TurnstileEnabled:                 settings[SettingKeyTurnstileEnabled] == "true",
 		TurnstileSiteKey:                 settings[SettingKeyTurnstileSiteKey],
-		SiteName:                         s.getStringOrDefault(settings, SettingKeySiteName, "Sub2API"),
+		SiteName:                         s.getStringOrDefault(settings, SettingKeySiteName, "SubioHub"),
 		SiteLogo:                         settings[SettingKeySiteLogo],
 		SiteSubtitle:                     s.getStringOrDefault(settings, SettingKeySiteSubtitle, "Subscription to API Conversion Platform"),
 		APIBaseURL:                       settings[SettingKeyAPIBaseURL],
@@ -634,6 +634,10 @@ func (s *SettingService) UpdateSettings(ctx context.Context, settings *SystemSet
 	updates[SettingKeyAccountQuotaNotifyEnabled] = strconv.FormatBool(settings.AccountQuotaNotifyEnabled)
 	updates[SettingKeyAccountQuotaNotifyEmails] = MarshalNotifyEmails(settings.AccountQuotaNotifyEmails)
 
+	// Affiliate settlement
+	updates[SettingKeyAffiliateAutoSettlementEnabled] = strconv.FormatBool(settings.AffiliateAutoSettlementEnabled)
+	updates[SettingKeyAffiliateManualPayoutSettlementEnabled] = strconv.FormatBool(settings.AffiliateManualPayoutSettlementEnabled)
+
 	err = s.settingRepo.SetMultiple(ctx, updates)
 	if err == nil {
 		// 先使 inflight singleflight 失效，再刷新缓存，缩小旧值覆盖新值的竞态窗口
@@ -881,7 +885,7 @@ func (s *SettingService) IsTotpEncryptionKeyConfigured() bool {
 func (s *SettingService) GetSiteName(ctx context.Context) string {
 	value, err := s.settingRepo.GetValue(ctx, SettingKeySiteName)
 	if err != nil || value == "" {
-		return "Sub2API"
+		return "SubioHub"
 	}
 	return value
 }
@@ -937,7 +941,7 @@ func (s *SettingService) InitializeDefaultSettings(ctx context.Context) error {
 		SettingKeyEmailVerifyEnabled:               "false",
 		SettingKeyRegistrationEmailSuffixWhitelist: "[]",
 		SettingKeyPromoCodeEnabled:                 "true", // 默认启用优惠码功能
-		SettingKeySiteName:                         "Sub2API",
+		SettingKeySiteName:                         "SubioHub",
 		SettingKeySiteLogo:                         "",
 		SettingKeyPurchaseSubscriptionEnabled:      "false",
 		SettingKeyPurchaseSubscriptionURL:          "",
@@ -1000,7 +1004,7 @@ func (s *SettingService) parseSettings(settings map[string]string) *SystemSettin
 		TurnstileEnabled:                 settings[SettingKeyTurnstileEnabled] == "true",
 		TurnstileSiteKey:                 settings[SettingKeyTurnstileSiteKey],
 		TurnstileSecretKeyConfigured:     settings[SettingKeyTurnstileSecretKey] != "",
-		SiteName:                         s.getStringOrDefault(settings, SettingKeySiteName, "Sub2API"),
+		SiteName:                         s.getStringOrDefault(settings, SettingKeySiteName, "SubioHub"),
 		SiteLogo:                         settings[SettingKeySiteLogo],
 		SiteSubtitle:                     s.getStringOrDefault(settings, SettingKeySiteSubtitle, "Subscription to API Conversion Platform"),
 		APIBaseURL:                       settings[SettingKeyAPIBaseURL],
@@ -1039,6 +1043,8 @@ func (s *SettingService) parseSettings(settings map[string]string) *SystemSettin
 		result.DefaultBalance = s.cfg.Default.UserBalance
 	}
 	result.DefaultSubscriptions = parseDefaultSubscriptions(settings[SettingKeyDefaultSubscriptions])
+	result.AffiliateAutoSettlementEnabled = s.parseAffiliateAutoSettlementEnabled(settings)
+	result.AffiliateManualPayoutSettlementEnabled = s.parseAffiliateManualPayoutSettlementEnabled(settings)
 
 	// 敏感信息直接返回，方便测试连接时使用
 	result.SMTPPassword = settings[SettingKeySMTPPassword]
@@ -1281,6 +1287,36 @@ func (s *SettingService) parseSettings(settings map[string]string) *SystemSettin
 	}
 
 	return result
+}
+
+func (s *SettingService) IsAffiliateAutoSettlementEnabled(ctx context.Context) bool {
+	settings, err := s.settingRepo.GetMultiple(ctx, []string{SettingKeyAffiliateAutoSettlementEnabled})
+	if err == nil {
+		return s.parseAffiliateAutoSettlementEnabled(settings)
+	}
+	return s.cfg != nil && s.cfg.Affiliate.AutoSettlementEnabled
+}
+
+func (s *SettingService) IsAffiliateManualPayoutSettlementEnabled(ctx context.Context) bool {
+	settings, err := s.settingRepo.GetMultiple(ctx, []string{SettingKeyAffiliateManualPayoutSettlementEnabled})
+	if err == nil {
+		return s.parseAffiliateManualPayoutSettlementEnabled(settings)
+	}
+	return true
+}
+
+func (s *SettingService) parseAffiliateAutoSettlementEnabled(settings map[string]string) bool {
+	if raw, ok := settings[SettingKeyAffiliateAutoSettlementEnabled]; ok && strings.TrimSpace(raw) != "" {
+		return raw == "true"
+	}
+	return s.cfg != nil && s.cfg.Affiliate.AutoSettlementEnabled
+}
+
+func (s *SettingService) parseAffiliateManualPayoutSettlementEnabled(settings map[string]string) bool {
+	if raw, ok := settings[SettingKeyAffiliateManualPayoutSettlementEnabled]; ok && strings.TrimSpace(raw) != "" {
+		return raw == "true"
+	}
+	return true
 }
 
 func isFalseSettingValue(value string) bool {

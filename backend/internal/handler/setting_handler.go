@@ -1,9 +1,9 @@
 package handler
 
 import (
-	"github.com/Wei-Shaw/sub2api/internal/handler/dto"
-	"github.com/Wei-Shaw/sub2api/internal/pkg/response"
-	"github.com/Wei-Shaw/sub2api/internal/service"
+	"github.com/dlxyz/SubioHub/internal/handler/dto"
+	"github.com/dlxyz/SubioHub/internal/pkg/response"
+	"github.com/dlxyz/SubioHub/internal/service"
 
 	"github.com/gin-gonic/gin"
 )
@@ -11,13 +11,25 @@ import (
 // SettingHandler 公开设置处理器（无需认证）
 type SettingHandler struct {
 	settingService *service.SettingService
+	gatewayService *service.GatewayService
+	pricingService *service.PricingService
+	billingService *service.BillingService
 	version        string
 }
 
 // NewSettingHandler 创建公开设置处理器
-func NewSettingHandler(settingService *service.SettingService, version string) *SettingHandler {
+func NewSettingHandler(
+	settingService *service.SettingService,
+	gatewayService *service.GatewayService,
+	pricingService *service.PricingService,
+	billingService *service.BillingService,
+	version string,
+) *SettingHandler {
 	return &SettingHandler{
 		settingService: settingService,
+		gatewayService: gatewayService,
+		pricingService: pricingService,
+		billingService: billingService,
 		version:        version,
 	}
 }

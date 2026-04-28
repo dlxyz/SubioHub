@@ -326,6 +326,14 @@ func buildFileCore(enc zapcore.Encoder, atomic zap.AtomicLevel, options InitOpti
 	if err := os.MkdirAll(dir, 0o755); err != nil {
 		return nil, filePath, err
 	}
+	// Validate file writability during startup so local development doesn't keep
+	// emitting runtime write errors on every request.
+	file, err := os.OpenFile(filePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o644)
+	if err != nil {
+		return nil, filePath, err
+	}
+	_ = file.Close()
+
 	lj := &lumberjack.Logger{
 		Filename:   filePath,
 		MaxSize:    options.Rotation.MaxSizeMB,

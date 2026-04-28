@@ -1,64 +1,73 @@
-# Sub2API Docker Image
+# SubioHub Docker Images
 
-Sub2API is an AI API Gateway Platform for distributing and managing AI product subscription API quotas.
+SubioHub is now released as two Docker images:
+- `dlxyz/subiohub`: API service and admin backend
+- `dlxyz/subiohub-next-web`: public Next.js web app for SSR, SEO, i18n, and news pages
 
 ## Quick Start
 
 ```bash
-docker run -d \
-  --name sub2api \
-  -p 8080:8080 \
-  -e DATABASE_URL="postgres://user:pass@host:5432/sub2api" \
-  -e REDIS_URL="redis://host:6379" \
-  weishaw/sub2api:latest
+git clone https://github.com/dlxyz/SubioHub.git
+cd subiohub/deploy
+cp .env.example .env
+docker compose -f docker-compose.local.yml up -d
 ```
 
 ## Docker Compose
 
 ```yaml
-version: '3.8'
-
 services:
-  sub2api:
-    image: weishaw/sub2api:latest
+  web:
+    image: caddy:2-alpine
     ports:
-      - "8080:8080"
-    environment:
-      - DATABASE_URL=postgres://postgres:postgres@db:5432/sub2api?sslmode=disable
-      - REDIS_URL=redis://redis:6379
+      - "8080:80"
     depends_on:
-      - db
+      - next-web
+      - subiohub
+
+  next-web:
+    image: dlxyz/subiohub-next-web:latest
+    environment:
+      - NEXT_PUBLIC_SITE_URL=https://your-domain.example
+      - NEXT_SERVER_API_ORIGIN=http://subiohub:8080
+
+  subiohub:
+    image: dlxyz/subiohub:latest
+    environment:
+      - SERVER_FRONTEND_URL=https://your-domain.example
+      - DATABASE_HOST=postgres
+      - REDIS_HOST=redis
+    depends_on:
+      - postgres
       - redis
 
-  db:
-    image: postgres:15-alpine
+  postgres:
+    image: postgres:18-alpine
     environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=sub2api
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - POSTGRES_USER=subiohub
+      - POSTGRES_PASSWORD=change-me
+      - POSTGRES_DB=subiohub
 
   redis:
-    image: redis:7-alpine
-    volumes:
-      - redis_data:/data
-
-volumes:
-  postgres_data:
-  redis_data:
+    image: redis:8-alpine
 ```
 
-## Environment Variables
+Recommended files:
+- `deploy/docker-compose.local.yml`: local directory storage, easy migration
+- `deploy/docker-compose.yml`: named volumes
+- `deploy/Caddyfile`: reverse proxy routing `web -> next-web/subiohub`
+- `deploy/.env.example`: required environment variables template
 
-| Variable | Description | Required | Default |
-|----------|-------------|----------|---------|
+## Key Variables
+
+| Variable | Description |
+|----------|-------------|
+| `NEXT_PUBLIC_SITE_URL` | Public canonical URL for SSR metadata, sitemap, and frontend links |
+| `NEXT_SERVER_API_ORIGIN` | Internal backend origin used by `next-web` in Docker |
+| `NEXT_PUBLIC_API_URL` | Optional browser API base URL; leave empty for same-origin |
+| `SERVER_FRONTEND_URL` | Public frontend URL used by backend-generated external links |
 | `DATABASE_URL` | PostgreSQL connection string | Yes | - |
 | `REDIS_URL` | Redis connection string | Yes | - |
-| `PORT` | Server port | No | `8080` |
-| `GIN_MODE` | Gin framework mode (`debug`/`release`) | No | `release` |
-
-## Supported Architectures
 
 - `linux/amd64`
 - `linux/arm64`
@@ -72,5 +81,5 @@ volumes:
 
 ## Links
 
-- [GitHub Repository](https://github.com/weishaw/sub2api)
-- [Documentation](https://github.com/weishaw/sub2api#readme)
+- [GitHub Repository](https://github.com/dlxyz/SubioHub)
+- [Documentation](https://github.com/dlxyz/SubioHub#readme)

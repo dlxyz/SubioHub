@@ -1,9 +1,9 @@
 package routes
 
 import (
-	"github.com/Wei-Shaw/sub2api/internal/handler"
-	"github.com/Wei-Shaw/sub2api/internal/server/middleware"
-	"github.com/Wei-Shaw/sub2api/internal/service"
+	"github.com/dlxyz/SubioHub/internal/handler"
+	"github.com/dlxyz/SubioHub/internal/server/middleware"
+	"github.com/dlxyz/SubioHub/internal/service"
 
 	"github.com/gin-gonic/gin"
 )
@@ -98,6 +98,14 @@ func RegisterUserRoutes(
 			subscriptions.GET("/active", h.Subscription.GetActive)
 			subscriptions.GET("/progress", h.Subscription.GetProgress)
 			subscriptions.GET("/summary", h.Subscription.GetSummary)
+		}
+
+		// 分销系统
+		affiliate := authenticated.Group("/affiliate")
+		{
+			affiliate.GET("/info", h.Affiliate.GetAffiliateInfo)
+			affiliate.GET("/logs", h.Affiliate.GetCommissionLogs)
+			affiliate.POST("/transfer", h.Affiliate.TransferCommissionToBalance)
 		}
 	}
 }

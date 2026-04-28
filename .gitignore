@@ -11,7 +11,7 @@ docs/claude-relay-service/
 *.dylib
 backend/bin/
 backend/server
-backend/sub2api
+backend/subiohub
 backend/main
 
 # Go 测试二进制

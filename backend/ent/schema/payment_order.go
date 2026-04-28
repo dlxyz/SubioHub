@@ -170,9 +170,11 @@ func (PaymentOrder) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.From("user", User.Type).
 			Ref("payment_orders").
-			Field("user_id").
 			Unique().
+			Field("user_id").
 			Required(),
+		edge.From("commission_logs", CommissionLog.Type).
+			Ref("payment_order"),
 	}
 }
 

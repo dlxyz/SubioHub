@@ -9,7 +9,7 @@ import (
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
-	"github.com/Wei-Shaw/sub2api/ent/user"
+	"github.com/dlxyz/SubioHub/ent/user"
 )
 
 // User is the model entity for the User schema.
@@ -55,6 +55,16 @@ type User struct {
 	BalanceNotifyExtraEmails string `json:"balance_notify_extra_emails,omitempty"`
 	// TotalRecharged holds the value of the "total_recharged" field.
 	TotalRecharged float64 `json:"total_recharged,omitempty"`
+	// 邀请人的 User ID
+	InviterID *int64 `json:"inviter_id,omitempty"`
+	// 用户专属邀请码
+	InviteCode string `json:"invite_code,omitempty"`
+	// 专属返佣比例 (默认 0.10 即 10%)
+	CommissionRate float64 `json:"commission_rate,omitempty"`
+	// 当前可提现或划转的佣金余额
+	CommissionBalance float64 `json:"commission_balance,omitempty"`
+	// 历史累计赚取的总佣金
+	TotalCommissionEarned float64 `json:"total_commission_earned,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the UserQuery when eager-loading is set.
 	Edges        UserEdges `json:"edges"`
@@ -63,6 +73,12 @@ type User struct {
 
 // UserEdges holds the relations/edges for other nodes in the graph.
 type UserEdges struct {
+	// Inviter holds the value of the inviter edge.
+	Inviter *User `json:"inviter,omitempty"`
+	// Invitees holds the value of the invitees edge.
+	Invitees []*User `json:"invitees,omitempty"`
+	// CommissionLogs holds the value of the commission_logs edge.
+	CommissionLogs []*CommissionLog `json:"commission_logs,omitempty"`
 	// APIKeys holds the value of the api_keys edge.
 	APIKeys []*APIKey `json:"api_keys,omitempty"`
 	// RedeemCodes holds the value of the redeem_codes edge.
@@ -87,13 +103,42 @@ type UserEdges struct {
 	UserAllowedGroups []*UserAllowedGroup `json:"user_allowed_groups,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [11]bool
+	loadedTypes [14]bool
+}
+
+// InviterOrErr returns the Inviter value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e UserEdges) InviterOrErr() (*User, error) {
+	if e.Inviter != nil {
+		return e.Inviter, nil
+	} else if e.loadedTypes[0] {
+		return nil, &NotFoundError{label: user.Label}
+	}
+	return nil, &NotLoadedError{edge: "inviter"}
+}
+
+// InviteesOrErr returns the Invitees value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) InviteesOrErr() ([]*User, error) {
+	if e.loadedTypes[1] {
+		return e.Invitees, nil
+	}
+	return nil, &NotLoadedError{edge: "invitees"}
+}
+
+// CommissionLogsOrErr returns the CommissionLogs value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) CommissionLogsOrErr() ([]*CommissionLog, error) {
+	if e.loadedTypes[2] {
+		return e.CommissionLogs, nil
+	}
+	return nil, &NotLoadedError{edge: "commission_logs"}
 }
 
 // APIKeysOrErr returns the APIKeys value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) APIKeysOrErr() ([]*APIKey, error) {
-	if e.loadedTypes[0] {
+	if e.loadedTypes[3] {
 		return e.APIKeys, nil
 	}
 	return nil, &NotLoadedError{edge: "api_keys"}
@@ -102,7 +147,7 @@ func (e UserEdges) APIKeysOrErr() ([]*APIKey, error) {
 // RedeemCodesOrErr returns the RedeemCodes value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) RedeemCodesOrErr() ([]*RedeemCode, error) {
-	if e.loadedTypes[1] {
+	if e.loadedTypes[4] {
 		return e.RedeemCodes, nil
 	}
 	return nil, &NotLoadedError{edge: "redeem_codes"}
@@ -111,7 +156,7 @@ func (e UserEdges) RedeemCodesOrErr() ([]*RedeemCode, error) {
 // SubscriptionsOrErr returns the Subscriptions value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) SubscriptionsOrErr() ([]*UserSubscription, error) {
-	if e.loadedTypes[2] {
+	if e.loadedTypes[5] {
 		return e.Subscriptions, nil
 	}
 	return nil, &NotLoadedError{edge: "subscriptions"}
@@ -120,7 +165,7 @@ func (e UserEdges) SubscriptionsOrErr() ([]*UserSubscription, error) {
 // AssignedSubscriptionsOrErr returns the AssignedSubscriptions value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) AssignedSubscriptionsOrErr() ([]*UserSubscription, error) {
-	if e.loadedTypes[3] {
+	if e.loadedTypes[6] {
 		return e.AssignedSubscriptions, nil
 	}
 	return nil, &NotLoadedError{edge: "assigned_subscriptions"}
@@ -129,7 +174,7 @@ func (e UserEdges) AssignedSubscriptionsOrErr() ([]*UserSubscription, error) {
 // AnnouncementReadsOrErr returns the AnnouncementReads value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) AnnouncementReadsOrErr() ([]*AnnouncementRead, error) {
-	if e.loadedTypes[4] {
+	if e.loadedTypes[7] {
 		return e.AnnouncementReads, nil
 	}
 	return nil, &NotLoadedError{edge: "announcement_reads"}
@@ -138,7 +183,7 @@ func (e UserEdges) AnnouncementReadsOrErr() ([]*AnnouncementRead, error) {
 // AllowedGroupsOrErr returns the AllowedGroups value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) AllowedGroupsOrErr() ([]*Group, error) {
-	if e.loadedTypes[5] {
+	if e.loadedTypes[8] {
 		return e.AllowedGroups, nil
 	}
 	return nil, &NotLoadedError{edge: "allowed_groups"}
@@ -147,7 +192,7 @@ func (e UserEdges) AllowedGroupsOrErr() ([]*Group, error) {
 // UsageLogsOrErr returns the UsageLogs value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) UsageLogsOrErr() ([]*UsageLog, error) {
-	if e.loadedTypes[6] {
+	if e.loadedTypes[9] {
 		return e.UsageLogs, nil
 	}
 	return nil, &NotLoadedError{edge: "usage_logs"}
@@ -156,7 +201,7 @@ func (e UserEdges) UsageLogsOrErr() ([]*UsageLog, error) {
 // AttributeValuesOrErr returns the AttributeValues value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) AttributeValuesOrErr() ([]*UserAttributeValue, error) {
-	if e.loadedTypes[7] {
+	if e.loadedTypes[10] {
 		return e.AttributeValues, nil
 	}
 	return nil, &NotLoadedError{edge: "attribute_values"}
@@ -165,7 +210,7 @@ func (e UserEdges) AttributeValuesOrErr() ([]*UserAttributeValue, error) {
 // PromoCodeUsagesOrErr returns the PromoCodeUsages value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) PromoCodeUsagesOrErr() ([]*PromoCodeUsage, error) {
-	if e.loadedTypes[8] {
+	if e.loadedTypes[11] {
 		return e.PromoCodeUsages, nil
 	}
 	return nil, &NotLoadedError{edge: "promo_code_usages"}
@@ -174,7 +219,7 @@ func (e UserEdges) PromoCodeUsagesOrErr() ([]*PromoCodeUsage, error) {
 // PaymentOrdersOrErr returns the PaymentOrders value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) PaymentOrdersOrErr() ([]*PaymentOrder, error) {
-	if e.loadedTypes[9] {
+	if e.loadedTypes[12] {
 		return e.PaymentOrders, nil
 	}
 	return nil, &NotLoadedError{edge: "payment_orders"}
@@ -183,7 +228,7 @@ func (e UserEdges) PaymentOrdersOrErr() ([]*PaymentOrder, error) {
 // UserAllowedGroupsOrErr returns the UserAllowedGroups value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) UserAllowedGroupsOrErr() ([]*UserAllowedGroup, error) {
-	if e.loadedTypes[10] {
+	if e.loadedTypes[13] {
 		return e.UserAllowedGroups, nil
 	}
 	return nil, &NotLoadedError{edge: "user_allowed_groups"}
@@ -196,11 +241,11 @@ func (*User) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case user.FieldTotpEnabled, user.FieldBalanceNotifyEnabled:
 			values[i] = new(sql.NullBool)
-		case user.FieldBalance, user.FieldBalanceNotifyThreshold, user.FieldTotalRecharged:
+		case user.FieldBalance, user.FieldBalanceNotifyThreshold, user.FieldTotalRecharged, user.FieldCommissionRate, user.FieldCommissionBalance, user.FieldTotalCommissionEarned:
 			values[i] = new(sql.NullFloat64)
-		case user.FieldID, user.FieldConcurrency:
+		case user.FieldID, user.FieldConcurrency, user.FieldInviterID:
 			values[i] = new(sql.NullInt64)
-		case user.FieldEmail, user.FieldPasswordHash, user.FieldRole, user.FieldStatus, user.FieldUsername, user.FieldNotes, user.FieldTotpSecretEncrypted, user.FieldBalanceNotifyThresholdType, user.FieldBalanceNotifyExtraEmails:
+		case user.FieldEmail, user.FieldPasswordHash, user.FieldRole, user.FieldStatus, user.FieldUsername, user.FieldNotes, user.FieldTotpSecretEncrypted, user.FieldBalanceNotifyThresholdType, user.FieldBalanceNotifyExtraEmails, user.FieldInviteCode:
 			values[i] = new(sql.NullString)
 		case user.FieldCreatedAt, user.FieldUpdatedAt, user.FieldDeletedAt, user.FieldTotpEnabledAt:
 			values[i] = new(sql.NullTime)
@@ -343,6 +388,37 @@ func (_m *User) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.TotalRecharged = value.Float64
 			}
+		case user.FieldInviterID:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field inviter_id", values[i])
+			} else if value.Valid {
+				_m.InviterID = new(int64)
+				*_m.InviterID = value.Int64
+			}
+		case user.FieldInviteCode:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field invite_code", values[i])
+			} else if value.Valid {
+				_m.InviteCode = value.String
+			}
+		case user.FieldCommissionRate:
+			if value, ok := values[i].(*sql.NullFloat64); !ok {
+				return fmt.Errorf("unexpected type %T for field commission_rate", values[i])
+			} else if value.Valid {
+				_m.CommissionRate = value.Float64
+			}
+		case user.FieldCommissionBalance:
+			if value, ok := values[i].(*sql.NullFloat64); !ok {
+				return fmt.Errorf("unexpected type %T for field commission_balance", values[i])
+			} else if value.Valid {
+				_m.CommissionBalance = value.Float64
+			}
+		case user.FieldTotalCommissionEarned:
+			if value, ok := values[i].(*sql.NullFloat64); !ok {
+				return fmt.Errorf("unexpected type %T for field total_commission_earned", values[i])
+			} else if value.Valid {
+				_m.TotalCommissionEarned = value.Float64
+			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
 		}
@@ -354,6 +430,21 @@ func (_m *User) assignValues(columns []string, values []any) error {
 // This includes values selected through modifiers, order, etc.
 func (_m *User) Value(name string) (ent.Value, error) {
 	return _m.selectValues.Get(name)
+}
+
+// QueryInviter queries the "inviter" edge of the User entity.
+func (_m *User) QueryInviter() *UserQuery {
+	return NewUserClient(_m.config).QueryInviter(_m)
+}
+
+// QueryInvitees queries the "invitees" edge of the User entity.
+func (_m *User) QueryInvitees() *UserQuery {
+	return NewUserClient(_m.config).QueryInvitees(_m)
+}
+
+// QueryCommissionLogs queries the "commission_logs" edge of the User entity.
+func (_m *User) QueryCommissionLogs() *CommissionLogQuery {
+	return NewUserClient(_m.config).QueryCommissionLogs(_m)
 }
 
 // QueryAPIKeys queries the "api_keys" edge of the User entity.
@@ -498,6 +589,23 @@ func (_m *User) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("total_recharged=")
 	builder.WriteString(fmt.Sprintf("%v", _m.TotalRecharged))
+	builder.WriteString(", ")
+	if v := _m.InviterID; v != nil {
+		builder.WriteString("inviter_id=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
+	builder.WriteString("invite_code=")
+	builder.WriteString(_m.InviteCode)
+	builder.WriteString(", ")
+	builder.WriteString("commission_rate=")
+	builder.WriteString(fmt.Sprintf("%v", _m.CommissionRate))
+	builder.WriteString(", ")
+	builder.WriteString("commission_balance=")
+	builder.WriteString(fmt.Sprintf("%v", _m.CommissionBalance))
+	builder.WriteString(", ")
+	builder.WriteString("total_commission_earned=")
+	builder.WriteString(fmt.Sprintf("%v", _m.TotalCommissionEarned))
 	builder.WriteByte(')')
 	return builder.String()
 }

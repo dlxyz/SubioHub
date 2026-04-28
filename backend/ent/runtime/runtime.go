@@ -5,34 +5,35 @@ package runtime
 import (
 	"time"
 
-	"github.com/Wei-Shaw/sub2api/ent/account"
-	"github.com/Wei-Shaw/sub2api/ent/accountgroup"
-	"github.com/Wei-Shaw/sub2api/ent/announcement"
-	"github.com/Wei-Shaw/sub2api/ent/announcementread"
-	"github.com/Wei-Shaw/sub2api/ent/apikey"
-	"github.com/Wei-Shaw/sub2api/ent/errorpassthroughrule"
-	"github.com/Wei-Shaw/sub2api/ent/group"
-	"github.com/Wei-Shaw/sub2api/ent/idempotencyrecord"
-	"github.com/Wei-Shaw/sub2api/ent/paymentauditlog"
-	"github.com/Wei-Shaw/sub2api/ent/paymentorder"
-	"github.com/Wei-Shaw/sub2api/ent/paymentproviderinstance"
-	"github.com/Wei-Shaw/sub2api/ent/promocode"
-	"github.com/Wei-Shaw/sub2api/ent/promocodeusage"
-	"github.com/Wei-Shaw/sub2api/ent/proxy"
-	"github.com/Wei-Shaw/sub2api/ent/redeemcode"
-	"github.com/Wei-Shaw/sub2api/ent/schema"
-	"github.com/Wei-Shaw/sub2api/ent/securitysecret"
-	"github.com/Wei-Shaw/sub2api/ent/setting"
-	"github.com/Wei-Shaw/sub2api/ent/subscriptionplan"
-	"github.com/Wei-Shaw/sub2api/ent/tlsfingerprintprofile"
-	"github.com/Wei-Shaw/sub2api/ent/usagecleanuptask"
-	"github.com/Wei-Shaw/sub2api/ent/usagelog"
-	"github.com/Wei-Shaw/sub2api/ent/user"
-	"github.com/Wei-Shaw/sub2api/ent/userallowedgroup"
-	"github.com/Wei-Shaw/sub2api/ent/userattributedefinition"
-	"github.com/Wei-Shaw/sub2api/ent/userattributevalue"
-	"github.com/Wei-Shaw/sub2api/ent/usersubscription"
-	"github.com/Wei-Shaw/sub2api/internal/domain"
+	"github.com/dlxyz/SubioHub/ent/account"
+	"github.com/dlxyz/SubioHub/ent/accountgroup"
+	"github.com/dlxyz/SubioHub/ent/announcement"
+	"github.com/dlxyz/SubioHub/ent/announcementread"
+	"github.com/dlxyz/SubioHub/ent/apikey"
+	"github.com/dlxyz/SubioHub/ent/commissionlog"
+	"github.com/dlxyz/SubioHub/ent/errorpassthroughrule"
+	"github.com/dlxyz/SubioHub/ent/group"
+	"github.com/dlxyz/SubioHub/ent/idempotencyrecord"
+	"github.com/dlxyz/SubioHub/ent/paymentauditlog"
+	"github.com/dlxyz/SubioHub/ent/paymentorder"
+	"github.com/dlxyz/SubioHub/ent/paymentproviderinstance"
+	"github.com/dlxyz/SubioHub/ent/promocode"
+	"github.com/dlxyz/SubioHub/ent/promocodeusage"
+	"github.com/dlxyz/SubioHub/ent/proxy"
+	"github.com/dlxyz/SubioHub/ent/redeemcode"
+	"github.com/dlxyz/SubioHub/ent/schema"
+	"github.com/dlxyz/SubioHub/ent/securitysecret"
+	"github.com/dlxyz/SubioHub/ent/setting"
+	"github.com/dlxyz/SubioHub/ent/subscriptionplan"
+	"github.com/dlxyz/SubioHub/ent/tlsfingerprintprofile"
+	"github.com/dlxyz/SubioHub/ent/usagecleanuptask"
+	"github.com/dlxyz/SubioHub/ent/usagelog"
+	"github.com/dlxyz/SubioHub/ent/user"
+	"github.com/dlxyz/SubioHub/ent/userallowedgroup"
+	"github.com/dlxyz/SubioHub/ent/userattributedefinition"
+	"github.com/dlxyz/SubioHub/ent/userattributevalue"
+	"github.com/dlxyz/SubioHub/ent/usersubscription"
+	"github.com/dlxyz/SubioHub/internal/domain"
 )
 
 // The init function reads all schema descriptors with runtime code
@@ -309,6 +310,33 @@ func init() {
 	announcementreadDescCreatedAt := announcementreadFields[3].Descriptor()
 	// announcementread.DefaultCreatedAt holds the default value on creation for the created_at field.
 	announcementread.DefaultCreatedAt = announcementreadDescCreatedAt.Default.(func() time.Time)
+	commissionlogMixin := schema.CommissionLog{}.Mixin()
+	commissionlogMixinFields0 := commissionlogMixin[0].Fields()
+	_ = commissionlogMixinFields0
+	commissionlogFields := schema.CommissionLog{}.Fields()
+	_ = commissionlogFields
+	// commissionlogDescCreatedAt is the schema descriptor for created_at field.
+	commissionlogDescCreatedAt := commissionlogMixinFields0[0].Descriptor()
+	// commissionlog.DefaultCreatedAt holds the default value on creation for the created_at field.
+	commissionlog.DefaultCreatedAt = commissionlogDescCreatedAt.Default.(func() time.Time)
+	// commissionlogDescUpdatedAt is the schema descriptor for updated_at field.
+	commissionlogDescUpdatedAt := commissionlogMixinFields0[1].Descriptor()
+	// commissionlog.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	commissionlog.DefaultUpdatedAt = commissionlogDescUpdatedAt.Default.(func() time.Time)
+	// commissionlog.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	commissionlog.UpdateDefaultUpdatedAt = commissionlogDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// commissionlogDescStatus is the schema descriptor for status field.
+	commissionlogDescStatus := commissionlogFields[4].Descriptor()
+	// commissionlog.DefaultStatus holds the default value on creation for the status field.
+	commissionlog.DefaultStatus = commissionlogDescStatus.Default.(string)
+	// commissionlog.StatusValidator is a validator for the "status" field. It is called by the builders before save.
+	commissionlog.StatusValidator = commissionlogDescStatus.Validators[0].(func(string) error)
+	// commissionlogDescReason is the schema descriptor for reason field.
+	commissionlogDescReason := commissionlogFields[5].Descriptor()
+	// commissionlog.DefaultReason holds the default value on creation for the reason field.
+	commissionlog.DefaultReason = commissionlogDescReason.Default.(string)
+	// commissionlog.ReasonValidator is a validator for the "reason" field. It is called by the builders before save.
+	commissionlog.ReasonValidator = commissionlogDescReason.Validators[0].(func(string) error)
 	errorpassthroughruleMixin := schema.ErrorPassthroughRule{}.Mixin()
 	errorpassthroughruleMixinFields0 := errorpassthroughruleMixin[0].Fields()
 	_ = errorpassthroughruleMixinFields0
@@ -1313,6 +1341,22 @@ func init() {
 	userDescTotalRecharged := userFields[15].Descriptor()
 	// user.DefaultTotalRecharged holds the default value on creation for the total_recharged field.
 	user.DefaultTotalRecharged = userDescTotalRecharged.Default.(float64)
+	// userDescInviteCode is the schema descriptor for invite_code field.
+	userDescInviteCode := userFields[17].Descriptor()
+	// user.InviteCodeValidator is a validator for the "invite_code" field. It is called by the builders before save.
+	user.InviteCodeValidator = userDescInviteCode.Validators[0].(func(string) error)
+	// userDescCommissionRate is the schema descriptor for commission_rate field.
+	userDescCommissionRate := userFields[18].Descriptor()
+	// user.DefaultCommissionRate holds the default value on creation for the commission_rate field.
+	user.DefaultCommissionRate = userDescCommissionRate.Default.(float64)
+	// userDescCommissionBalance is the schema descriptor for commission_balance field.
+	userDescCommissionBalance := userFields[19].Descriptor()
+	// user.DefaultCommissionBalance holds the default value on creation for the commission_balance field.
+	user.DefaultCommissionBalance = userDescCommissionBalance.Default.(float64)
+	// userDescTotalCommissionEarned is the schema descriptor for total_commission_earned field.
+	userDescTotalCommissionEarned := userFields[20].Descriptor()
+	// user.DefaultTotalCommissionEarned holds the default value on creation for the total_commission_earned field.
+	user.DefaultTotalCommissionEarned = userDescTotalCommissionEarned.Default.(float64)
 	userallowedgroupFields := schema.UserAllowedGroup{}.Fields()
 	_ = userallowedgroupFields
 	// userallowedgroupDescCreatedAt is the schema descriptor for created_at field.

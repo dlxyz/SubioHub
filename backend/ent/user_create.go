@@ -11,16 +11,17 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/Wei-Shaw/sub2api/ent/announcementread"
-	"github.com/Wei-Shaw/sub2api/ent/apikey"
-	"github.com/Wei-Shaw/sub2api/ent/group"
-	"github.com/Wei-Shaw/sub2api/ent/paymentorder"
-	"github.com/Wei-Shaw/sub2api/ent/promocodeusage"
-	"github.com/Wei-Shaw/sub2api/ent/redeemcode"
-	"github.com/Wei-Shaw/sub2api/ent/usagelog"
-	"github.com/Wei-Shaw/sub2api/ent/user"
-	"github.com/Wei-Shaw/sub2api/ent/userattributevalue"
-	"github.com/Wei-Shaw/sub2api/ent/usersubscription"
+	"github.com/dlxyz/SubioHub/ent/announcementread"
+	"github.com/dlxyz/SubioHub/ent/apikey"
+	"github.com/dlxyz/SubioHub/ent/commissionlog"
+	"github.com/dlxyz/SubioHub/ent/group"
+	"github.com/dlxyz/SubioHub/ent/paymentorder"
+	"github.com/dlxyz/SubioHub/ent/promocodeusage"
+	"github.com/dlxyz/SubioHub/ent/redeemcode"
+	"github.com/dlxyz/SubioHub/ent/usagelog"
+	"github.com/dlxyz/SubioHub/ent/user"
+	"github.com/dlxyz/SubioHub/ent/userattributevalue"
+	"github.com/dlxyz/SubioHub/ent/usersubscription"
 )
 
 // UserCreate is the builder for creating a User entity.
@@ -281,6 +282,111 @@ func (_c *UserCreate) SetNillableTotalRecharged(v *float64) *UserCreate {
 	return _c
 }
 
+// SetInviterID sets the "inviter_id" field.
+func (_c *UserCreate) SetInviterID(v int64) *UserCreate {
+	_c.mutation.SetInviterID(v)
+	return _c
+}
+
+// SetNillableInviterID sets the "inviter_id" field if the given value is not nil.
+func (_c *UserCreate) SetNillableInviterID(v *int64) *UserCreate {
+	if v != nil {
+		_c.SetInviterID(*v)
+	}
+	return _c
+}
+
+// SetInviteCode sets the "invite_code" field.
+func (_c *UserCreate) SetInviteCode(v string) *UserCreate {
+	_c.mutation.SetInviteCode(v)
+	return _c
+}
+
+// SetNillableInviteCode sets the "invite_code" field if the given value is not nil.
+func (_c *UserCreate) SetNillableInviteCode(v *string) *UserCreate {
+	if v != nil {
+		_c.SetInviteCode(*v)
+	}
+	return _c
+}
+
+// SetCommissionRate sets the "commission_rate" field.
+func (_c *UserCreate) SetCommissionRate(v float64) *UserCreate {
+	_c.mutation.SetCommissionRate(v)
+	return _c
+}
+
+// SetNillableCommissionRate sets the "commission_rate" field if the given value is not nil.
+func (_c *UserCreate) SetNillableCommissionRate(v *float64) *UserCreate {
+	if v != nil {
+		_c.SetCommissionRate(*v)
+	}
+	return _c
+}
+
+// SetCommissionBalance sets the "commission_balance" field.
+func (_c *UserCreate) SetCommissionBalance(v float64) *UserCreate {
+	_c.mutation.SetCommissionBalance(v)
+	return _c
+}
+
+// SetNillableCommissionBalance sets the "commission_balance" field if the given value is not nil.
+func (_c *UserCreate) SetNillableCommissionBalance(v *float64) *UserCreate {
+	if v != nil {
+		_c.SetCommissionBalance(*v)
+	}
+	return _c
+}
+
+// SetTotalCommissionEarned sets the "total_commission_earned" field.
+func (_c *UserCreate) SetTotalCommissionEarned(v float64) *UserCreate {
+	_c.mutation.SetTotalCommissionEarned(v)
+	return _c
+}
+
+// SetNillableTotalCommissionEarned sets the "total_commission_earned" field if the given value is not nil.
+func (_c *UserCreate) SetNillableTotalCommissionEarned(v *float64) *UserCreate {
+	if v != nil {
+		_c.SetTotalCommissionEarned(*v)
+	}
+	return _c
+}
+
+// SetInviter sets the "inviter" edge to the User entity.
+func (_c *UserCreate) SetInviter(v *User) *UserCreate {
+	return _c.SetInviterID(v.ID)
+}
+
+// AddInviteeIDs adds the "invitees" edge to the User entity by IDs.
+func (_c *UserCreate) AddInviteeIDs(ids ...int64) *UserCreate {
+	_c.mutation.AddInviteeIDs(ids...)
+	return _c
+}
+
+// AddInvitees adds the "invitees" edges to the User entity.
+func (_c *UserCreate) AddInvitees(v ...*User) *UserCreate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddInviteeIDs(ids...)
+}
+
+// AddCommissionLogIDs adds the "commission_logs" edge to the CommissionLog entity by IDs.
+func (_c *UserCreate) AddCommissionLogIDs(ids ...int64) *UserCreate {
+	_c.mutation.AddCommissionLogIDs(ids...)
+	return _c
+}
+
+// AddCommissionLogs adds the "commission_logs" edges to the CommissionLog entity.
+func (_c *UserCreate) AddCommissionLogs(v ...*CommissionLog) *UserCreate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddCommissionLogIDs(ids...)
+}
+
 // AddAPIKeyIDs adds the "api_keys" edge to the APIKey entity by IDs.
 func (_c *UserCreate) AddAPIKeyIDs(ids ...int64) *UserCreate {
 	_c.mutation.AddAPIKeyIDs(ids...)
@@ -526,6 +632,18 @@ func (_c *UserCreate) defaults() error {
 		v := user.DefaultTotalRecharged
 		_c.mutation.SetTotalRecharged(v)
 	}
+	if _, ok := _c.mutation.CommissionRate(); !ok {
+		v := user.DefaultCommissionRate
+		_c.mutation.SetCommissionRate(v)
+	}
+	if _, ok := _c.mutation.CommissionBalance(); !ok {
+		v := user.DefaultCommissionBalance
+		_c.mutation.SetCommissionBalance(v)
+	}
+	if _, ok := _c.mutation.TotalCommissionEarned(); !ok {
+		v := user.DefaultTotalCommissionEarned
+		_c.mutation.SetTotalCommissionEarned(v)
+	}
 	return nil
 }
 
@@ -600,6 +718,20 @@ func (_c *UserCreate) check() error {
 	}
 	if _, ok := _c.mutation.TotalRecharged(); !ok {
 		return &ValidationError{Name: "total_recharged", err: errors.New(`ent: missing required field "User.total_recharged"`)}
+	}
+	if v, ok := _c.mutation.InviteCode(); ok {
+		if err := user.InviteCodeValidator(v); err != nil {
+			return &ValidationError{Name: "invite_code", err: fmt.Errorf(`ent: validator failed for field "User.invite_code": %w`, err)}
+		}
+	}
+	if _, ok := _c.mutation.CommissionRate(); !ok {
+		return &ValidationError{Name: "commission_rate", err: errors.New(`ent: missing required field "User.commission_rate"`)}
+	}
+	if _, ok := _c.mutation.CommissionBalance(); !ok {
+		return &ValidationError{Name: "commission_balance", err: errors.New(`ent: missing required field "User.commission_balance"`)}
+	}
+	if _, ok := _c.mutation.TotalCommissionEarned(); !ok {
+		return &ValidationError{Name: "total_commission_earned", err: errors.New(`ent: missing required field "User.total_commission_earned"`)}
 	}
 	return nil
 }
@@ -703,6 +835,71 @@ func (_c *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.TotalRecharged(); ok {
 		_spec.SetField(user.FieldTotalRecharged, field.TypeFloat64, value)
 		_node.TotalRecharged = value
+	}
+	if value, ok := _c.mutation.InviteCode(); ok {
+		_spec.SetField(user.FieldInviteCode, field.TypeString, value)
+		_node.InviteCode = value
+	}
+	if value, ok := _c.mutation.CommissionRate(); ok {
+		_spec.SetField(user.FieldCommissionRate, field.TypeFloat64, value)
+		_node.CommissionRate = value
+	}
+	if value, ok := _c.mutation.CommissionBalance(); ok {
+		_spec.SetField(user.FieldCommissionBalance, field.TypeFloat64, value)
+		_node.CommissionBalance = value
+	}
+	if value, ok := _c.mutation.TotalCommissionEarned(); ok {
+		_spec.SetField(user.FieldTotalCommissionEarned, field.TypeFloat64, value)
+		_node.TotalCommissionEarned = value
+	}
+	if nodes := _c.mutation.InviterIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   user.InviterTable,
+			Columns: []string{user.InviterColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.InviterID = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.InviteesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.InviteesTable,
+			Columns: []string{user.InviteesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.CommissionLogsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.CommissionLogsTable,
+			Columns: []string{user.CommissionLogsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(commissionlog.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := _c.mutation.APIKeysIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -1184,6 +1381,96 @@ func (u *UserUpsert) AddTotalRecharged(v float64) *UserUpsert {
 	return u
 }
 
+// SetInviterID sets the "inviter_id" field.
+func (u *UserUpsert) SetInviterID(v int64) *UserUpsert {
+	u.Set(user.FieldInviterID, v)
+	return u
+}
+
+// UpdateInviterID sets the "inviter_id" field to the value that was provided on create.
+func (u *UserUpsert) UpdateInviterID() *UserUpsert {
+	u.SetExcluded(user.FieldInviterID)
+	return u
+}
+
+// ClearInviterID clears the value of the "inviter_id" field.
+func (u *UserUpsert) ClearInviterID() *UserUpsert {
+	u.SetNull(user.FieldInviterID)
+	return u
+}
+
+// SetInviteCode sets the "invite_code" field.
+func (u *UserUpsert) SetInviteCode(v string) *UserUpsert {
+	u.Set(user.FieldInviteCode, v)
+	return u
+}
+
+// UpdateInviteCode sets the "invite_code" field to the value that was provided on create.
+func (u *UserUpsert) UpdateInviteCode() *UserUpsert {
+	u.SetExcluded(user.FieldInviteCode)
+	return u
+}
+
+// ClearInviteCode clears the value of the "invite_code" field.
+func (u *UserUpsert) ClearInviteCode() *UserUpsert {
+	u.SetNull(user.FieldInviteCode)
+	return u
+}
+
+// SetCommissionRate sets the "commission_rate" field.
+func (u *UserUpsert) SetCommissionRate(v float64) *UserUpsert {
+	u.Set(user.FieldCommissionRate, v)
+	return u
+}
+
+// UpdateCommissionRate sets the "commission_rate" field to the value that was provided on create.
+func (u *UserUpsert) UpdateCommissionRate() *UserUpsert {
+	u.SetExcluded(user.FieldCommissionRate)
+	return u
+}
+
+// AddCommissionRate adds v to the "commission_rate" field.
+func (u *UserUpsert) AddCommissionRate(v float64) *UserUpsert {
+	u.Add(user.FieldCommissionRate, v)
+	return u
+}
+
+// SetCommissionBalance sets the "commission_balance" field.
+func (u *UserUpsert) SetCommissionBalance(v float64) *UserUpsert {
+	u.Set(user.FieldCommissionBalance, v)
+	return u
+}
+
+// UpdateCommissionBalance sets the "commission_balance" field to the value that was provided on create.
+func (u *UserUpsert) UpdateCommissionBalance() *UserUpsert {
+	u.SetExcluded(user.FieldCommissionBalance)
+	return u
+}
+
+// AddCommissionBalance adds v to the "commission_balance" field.
+func (u *UserUpsert) AddCommissionBalance(v float64) *UserUpsert {
+	u.Add(user.FieldCommissionBalance, v)
+	return u
+}
+
+// SetTotalCommissionEarned sets the "total_commission_earned" field.
+func (u *UserUpsert) SetTotalCommissionEarned(v float64) *UserUpsert {
+	u.Set(user.FieldTotalCommissionEarned, v)
+	return u
+}
+
+// UpdateTotalCommissionEarned sets the "total_commission_earned" field to the value that was provided on create.
+func (u *UserUpsert) UpdateTotalCommissionEarned() *UserUpsert {
+	u.SetExcluded(user.FieldTotalCommissionEarned)
+	return u
+}
+
+// AddTotalCommissionEarned adds v to the "total_commission_earned" field.
+func (u *UserUpsert) AddTotalCommissionEarned(v float64) *UserUpsert {
+	u.Add(user.FieldTotalCommissionEarned, v)
+	return u
+}
+
 // UpdateNewValues updates the mutable fields using the new values that were set on create.
 // Using this option is equivalent to using:
 //
@@ -1534,6 +1821,111 @@ func (u *UserUpsertOne) AddTotalRecharged(v float64) *UserUpsertOne {
 func (u *UserUpsertOne) UpdateTotalRecharged() *UserUpsertOne {
 	return u.Update(func(s *UserUpsert) {
 		s.UpdateTotalRecharged()
+	})
+}
+
+// SetInviterID sets the "inviter_id" field.
+func (u *UserUpsertOne) SetInviterID(v int64) *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.SetInviterID(v)
+	})
+}
+
+// UpdateInviterID sets the "inviter_id" field to the value that was provided on create.
+func (u *UserUpsertOne) UpdateInviterID() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateInviterID()
+	})
+}
+
+// ClearInviterID clears the value of the "inviter_id" field.
+func (u *UserUpsertOne) ClearInviterID() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.ClearInviterID()
+	})
+}
+
+// SetInviteCode sets the "invite_code" field.
+func (u *UserUpsertOne) SetInviteCode(v string) *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.SetInviteCode(v)
+	})
+}
+
+// UpdateInviteCode sets the "invite_code" field to the value that was provided on create.
+func (u *UserUpsertOne) UpdateInviteCode() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateInviteCode()
+	})
+}
+
+// ClearInviteCode clears the value of the "invite_code" field.
+func (u *UserUpsertOne) ClearInviteCode() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.ClearInviteCode()
+	})
+}
+
+// SetCommissionRate sets the "commission_rate" field.
+func (u *UserUpsertOne) SetCommissionRate(v float64) *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.SetCommissionRate(v)
+	})
+}
+
+// AddCommissionRate adds v to the "commission_rate" field.
+func (u *UserUpsertOne) AddCommissionRate(v float64) *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.AddCommissionRate(v)
+	})
+}
+
+// UpdateCommissionRate sets the "commission_rate" field to the value that was provided on create.
+func (u *UserUpsertOne) UpdateCommissionRate() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateCommissionRate()
+	})
+}
+
+// SetCommissionBalance sets the "commission_balance" field.
+func (u *UserUpsertOne) SetCommissionBalance(v float64) *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.SetCommissionBalance(v)
+	})
+}
+
+// AddCommissionBalance adds v to the "commission_balance" field.
+func (u *UserUpsertOne) AddCommissionBalance(v float64) *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.AddCommissionBalance(v)
+	})
+}
+
+// UpdateCommissionBalance sets the "commission_balance" field to the value that was provided on create.
+func (u *UserUpsertOne) UpdateCommissionBalance() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateCommissionBalance()
+	})
+}
+
+// SetTotalCommissionEarned sets the "total_commission_earned" field.
+func (u *UserUpsertOne) SetTotalCommissionEarned(v float64) *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.SetTotalCommissionEarned(v)
+	})
+}
+
+// AddTotalCommissionEarned adds v to the "total_commission_earned" field.
+func (u *UserUpsertOne) AddTotalCommissionEarned(v float64) *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.AddTotalCommissionEarned(v)
+	})
+}
+
+// UpdateTotalCommissionEarned sets the "total_commission_earned" field to the value that was provided on create.
+func (u *UserUpsertOne) UpdateTotalCommissionEarned() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateTotalCommissionEarned()
 	})
 }
 
@@ -2053,6 +2445,111 @@ func (u *UserUpsertBulk) AddTotalRecharged(v float64) *UserUpsertBulk {
 func (u *UserUpsertBulk) UpdateTotalRecharged() *UserUpsertBulk {
 	return u.Update(func(s *UserUpsert) {
 		s.UpdateTotalRecharged()
+	})
+}
+
+// SetInviterID sets the "inviter_id" field.
+func (u *UserUpsertBulk) SetInviterID(v int64) *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.SetInviterID(v)
+	})
+}
+
+// UpdateInviterID sets the "inviter_id" field to the value that was provided on create.
+func (u *UserUpsertBulk) UpdateInviterID() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateInviterID()
+	})
+}
+
+// ClearInviterID clears the value of the "inviter_id" field.
+func (u *UserUpsertBulk) ClearInviterID() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.ClearInviterID()
+	})
+}
+
+// SetInviteCode sets the "invite_code" field.
+func (u *UserUpsertBulk) SetInviteCode(v string) *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.SetInviteCode(v)
+	})
+}
+
+// UpdateInviteCode sets the "invite_code" field to the value that was provided on create.
+func (u *UserUpsertBulk) UpdateInviteCode() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateInviteCode()
+	})
+}
+
+// ClearInviteCode clears the value of the "invite_code" field.
+func (u *UserUpsertBulk) ClearInviteCode() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.ClearInviteCode()
+	})
+}
+
+// SetCommissionRate sets the "commission_rate" field.
+func (u *UserUpsertBulk) SetCommissionRate(v float64) *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.SetCommissionRate(v)
+	})
+}
+
+// AddCommissionRate adds v to the "commission_rate" field.
+func (u *UserUpsertBulk) AddCommissionRate(v float64) *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.AddCommissionRate(v)
+	})
+}
+
+// UpdateCommissionRate sets the "commission_rate" field to the value that was provided on create.
+func (u *UserUpsertBulk) UpdateCommissionRate() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateCommissionRate()
+	})
+}
+
+// SetCommissionBalance sets the "commission_balance" field.
+func (u *UserUpsertBulk) SetCommissionBalance(v float64) *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.SetCommissionBalance(v)
+	})
+}
+
+// AddCommissionBalance adds v to the "commission_balance" field.
+func (u *UserUpsertBulk) AddCommissionBalance(v float64) *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.AddCommissionBalance(v)
+	})
+}
+
+// UpdateCommissionBalance sets the "commission_balance" field to the value that was provided on create.
+func (u *UserUpsertBulk) UpdateCommissionBalance() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateCommissionBalance()
+	})
+}
+
+// SetTotalCommissionEarned sets the "total_commission_earned" field.
+func (u *UserUpsertBulk) SetTotalCommissionEarned(v float64) *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.SetTotalCommissionEarned(v)
+	})
+}
+
+// AddTotalCommissionEarned adds v to the "total_commission_earned" field.
+func (u *UserUpsertBulk) AddTotalCommissionEarned(v float64) *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.AddTotalCommissionEarned(v)
+	})
+}
+
+// UpdateTotalCommissionEarned sets the "total_commission_earned" field to the value that was provided on create.
+func (u *UserUpsertBulk) UpdateTotalCommissionEarned() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateTotalCommissionEarned()
 	})
 }
 

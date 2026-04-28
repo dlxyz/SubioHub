@@ -11,17 +11,18 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/Wei-Shaw/sub2api/ent/announcementread"
-	"github.com/Wei-Shaw/sub2api/ent/apikey"
-	"github.com/Wei-Shaw/sub2api/ent/group"
-	"github.com/Wei-Shaw/sub2api/ent/paymentorder"
-	"github.com/Wei-Shaw/sub2api/ent/predicate"
-	"github.com/Wei-Shaw/sub2api/ent/promocodeusage"
-	"github.com/Wei-Shaw/sub2api/ent/redeemcode"
-	"github.com/Wei-Shaw/sub2api/ent/usagelog"
-	"github.com/Wei-Shaw/sub2api/ent/user"
-	"github.com/Wei-Shaw/sub2api/ent/userattributevalue"
-	"github.com/Wei-Shaw/sub2api/ent/usersubscription"
+	"github.com/dlxyz/SubioHub/ent/announcementread"
+	"github.com/dlxyz/SubioHub/ent/apikey"
+	"github.com/dlxyz/SubioHub/ent/commissionlog"
+	"github.com/dlxyz/SubioHub/ent/group"
+	"github.com/dlxyz/SubioHub/ent/paymentorder"
+	"github.com/dlxyz/SubioHub/ent/predicate"
+	"github.com/dlxyz/SubioHub/ent/promocodeusage"
+	"github.com/dlxyz/SubioHub/ent/redeemcode"
+	"github.com/dlxyz/SubioHub/ent/usagelog"
+	"github.com/dlxyz/SubioHub/ent/user"
+	"github.com/dlxyz/SubioHub/ent/userattributevalue"
+	"github.com/dlxyz/SubioHub/ent/usersubscription"
 )
 
 // UserUpdate is the builder for updating User entities.
@@ -333,6 +334,144 @@ func (_u *UserUpdate) AddTotalRecharged(v float64) *UserUpdate {
 	return _u
 }
 
+// SetInviterID sets the "inviter_id" field.
+func (_u *UserUpdate) SetInviterID(v int64) *UserUpdate {
+	_u.mutation.SetInviterID(v)
+	return _u
+}
+
+// SetNillableInviterID sets the "inviter_id" field if the given value is not nil.
+func (_u *UserUpdate) SetNillableInviterID(v *int64) *UserUpdate {
+	if v != nil {
+		_u.SetInviterID(*v)
+	}
+	return _u
+}
+
+// ClearInviterID clears the value of the "inviter_id" field.
+func (_u *UserUpdate) ClearInviterID() *UserUpdate {
+	_u.mutation.ClearInviterID()
+	return _u
+}
+
+// SetInviteCode sets the "invite_code" field.
+func (_u *UserUpdate) SetInviteCode(v string) *UserUpdate {
+	_u.mutation.SetInviteCode(v)
+	return _u
+}
+
+// SetNillableInviteCode sets the "invite_code" field if the given value is not nil.
+func (_u *UserUpdate) SetNillableInviteCode(v *string) *UserUpdate {
+	if v != nil {
+		_u.SetInviteCode(*v)
+	}
+	return _u
+}
+
+// ClearInviteCode clears the value of the "invite_code" field.
+func (_u *UserUpdate) ClearInviteCode() *UserUpdate {
+	_u.mutation.ClearInviteCode()
+	return _u
+}
+
+// SetCommissionRate sets the "commission_rate" field.
+func (_u *UserUpdate) SetCommissionRate(v float64) *UserUpdate {
+	_u.mutation.ResetCommissionRate()
+	_u.mutation.SetCommissionRate(v)
+	return _u
+}
+
+// SetNillableCommissionRate sets the "commission_rate" field if the given value is not nil.
+func (_u *UserUpdate) SetNillableCommissionRate(v *float64) *UserUpdate {
+	if v != nil {
+		_u.SetCommissionRate(*v)
+	}
+	return _u
+}
+
+// AddCommissionRate adds value to the "commission_rate" field.
+func (_u *UserUpdate) AddCommissionRate(v float64) *UserUpdate {
+	_u.mutation.AddCommissionRate(v)
+	return _u
+}
+
+// SetCommissionBalance sets the "commission_balance" field.
+func (_u *UserUpdate) SetCommissionBalance(v float64) *UserUpdate {
+	_u.mutation.ResetCommissionBalance()
+	_u.mutation.SetCommissionBalance(v)
+	return _u
+}
+
+// SetNillableCommissionBalance sets the "commission_balance" field if the given value is not nil.
+func (_u *UserUpdate) SetNillableCommissionBalance(v *float64) *UserUpdate {
+	if v != nil {
+		_u.SetCommissionBalance(*v)
+	}
+	return _u
+}
+
+// AddCommissionBalance adds value to the "commission_balance" field.
+func (_u *UserUpdate) AddCommissionBalance(v float64) *UserUpdate {
+	_u.mutation.AddCommissionBalance(v)
+	return _u
+}
+
+// SetTotalCommissionEarned sets the "total_commission_earned" field.
+func (_u *UserUpdate) SetTotalCommissionEarned(v float64) *UserUpdate {
+	_u.mutation.ResetTotalCommissionEarned()
+	_u.mutation.SetTotalCommissionEarned(v)
+	return _u
+}
+
+// SetNillableTotalCommissionEarned sets the "total_commission_earned" field if the given value is not nil.
+func (_u *UserUpdate) SetNillableTotalCommissionEarned(v *float64) *UserUpdate {
+	if v != nil {
+		_u.SetTotalCommissionEarned(*v)
+	}
+	return _u
+}
+
+// AddTotalCommissionEarned adds value to the "total_commission_earned" field.
+func (_u *UserUpdate) AddTotalCommissionEarned(v float64) *UserUpdate {
+	_u.mutation.AddTotalCommissionEarned(v)
+	return _u
+}
+
+// SetInviter sets the "inviter" edge to the User entity.
+func (_u *UserUpdate) SetInviter(v *User) *UserUpdate {
+	return _u.SetInviterID(v.ID)
+}
+
+// AddInviteeIDs adds the "invitees" edge to the User entity by IDs.
+func (_u *UserUpdate) AddInviteeIDs(ids ...int64) *UserUpdate {
+	_u.mutation.AddInviteeIDs(ids...)
+	return _u
+}
+
+// AddInvitees adds the "invitees" edges to the User entity.
+func (_u *UserUpdate) AddInvitees(v ...*User) *UserUpdate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddInviteeIDs(ids...)
+}
+
+// AddCommissionLogIDs adds the "commission_logs" edge to the CommissionLog entity by IDs.
+func (_u *UserUpdate) AddCommissionLogIDs(ids ...int64) *UserUpdate {
+	_u.mutation.AddCommissionLogIDs(ids...)
+	return _u
+}
+
+// AddCommissionLogs adds the "commission_logs" edges to the CommissionLog entity.
+func (_u *UserUpdate) AddCommissionLogs(v ...*CommissionLog) *UserUpdate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddCommissionLogIDs(ids...)
+}
+
 // AddAPIKeyIDs adds the "api_keys" edge to the APIKey entity by IDs.
 func (_u *UserUpdate) AddAPIKeyIDs(ids ...int64) *UserUpdate {
 	_u.mutation.AddAPIKeyIDs(ids...)
@@ -486,6 +625,54 @@ func (_u *UserUpdate) AddPaymentOrders(v ...*PaymentOrder) *UserUpdate {
 // Mutation returns the UserMutation object of the builder.
 func (_u *UserUpdate) Mutation() *UserMutation {
 	return _u.mutation
+}
+
+// ClearInviter clears the "inviter" edge to the User entity.
+func (_u *UserUpdate) ClearInviter() *UserUpdate {
+	_u.mutation.ClearInviter()
+	return _u
+}
+
+// ClearInvitees clears all "invitees" edges to the User entity.
+func (_u *UserUpdate) ClearInvitees() *UserUpdate {
+	_u.mutation.ClearInvitees()
+	return _u
+}
+
+// RemoveInviteeIDs removes the "invitees" edge to User entities by IDs.
+func (_u *UserUpdate) RemoveInviteeIDs(ids ...int64) *UserUpdate {
+	_u.mutation.RemoveInviteeIDs(ids...)
+	return _u
+}
+
+// RemoveInvitees removes "invitees" edges to User entities.
+func (_u *UserUpdate) RemoveInvitees(v ...*User) *UserUpdate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveInviteeIDs(ids...)
+}
+
+// ClearCommissionLogs clears all "commission_logs" edges to the CommissionLog entity.
+func (_u *UserUpdate) ClearCommissionLogs() *UserUpdate {
+	_u.mutation.ClearCommissionLogs()
+	return _u
+}
+
+// RemoveCommissionLogIDs removes the "commission_logs" edge to CommissionLog entities by IDs.
+func (_u *UserUpdate) RemoveCommissionLogIDs(ids ...int64) *UserUpdate {
+	_u.mutation.RemoveCommissionLogIDs(ids...)
+	return _u
+}
+
+// RemoveCommissionLogs removes "commission_logs" edges to CommissionLog entities.
+func (_u *UserUpdate) RemoveCommissionLogs(v ...*CommissionLog) *UserUpdate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveCommissionLogIDs(ids...)
 }
 
 // ClearAPIKeys clears all "api_keys" edges to the APIKey entity.
@@ -767,6 +954,11 @@ func (_u *UserUpdate) check() error {
 			return &ValidationError{Name: "username", err: fmt.Errorf(`ent: validator failed for field "User.username": %w`, err)}
 		}
 	}
+	if v, ok := _u.mutation.InviteCode(); ok {
+		if err := user.InviteCodeValidator(v); err != nil {
+			return &ValidationError{Name: "invite_code", err: fmt.Errorf(`ent: validator failed for field "User.invite_code": %w`, err)}
+		}
+	}
 	return nil
 }
 
@@ -859,6 +1051,149 @@ func (_u *UserUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if value, ok := _u.mutation.AddedTotalRecharged(); ok {
 		_spec.AddField(user.FieldTotalRecharged, field.TypeFloat64, value)
+	}
+	if value, ok := _u.mutation.InviteCode(); ok {
+		_spec.SetField(user.FieldInviteCode, field.TypeString, value)
+	}
+	if _u.mutation.InviteCodeCleared() {
+		_spec.ClearField(user.FieldInviteCode, field.TypeString)
+	}
+	if value, ok := _u.mutation.CommissionRate(); ok {
+		_spec.SetField(user.FieldCommissionRate, field.TypeFloat64, value)
+	}
+	if value, ok := _u.mutation.AddedCommissionRate(); ok {
+		_spec.AddField(user.FieldCommissionRate, field.TypeFloat64, value)
+	}
+	if value, ok := _u.mutation.CommissionBalance(); ok {
+		_spec.SetField(user.FieldCommissionBalance, field.TypeFloat64, value)
+	}
+	if value, ok := _u.mutation.AddedCommissionBalance(); ok {
+		_spec.AddField(user.FieldCommissionBalance, field.TypeFloat64, value)
+	}
+	if value, ok := _u.mutation.TotalCommissionEarned(); ok {
+		_spec.SetField(user.FieldTotalCommissionEarned, field.TypeFloat64, value)
+	}
+	if value, ok := _u.mutation.AddedTotalCommissionEarned(); ok {
+		_spec.AddField(user.FieldTotalCommissionEarned, field.TypeFloat64, value)
+	}
+	if _u.mutation.InviterCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   user.InviterTable,
+			Columns: []string{user.InviterColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.InviterIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   user.InviterTable,
+			Columns: []string{user.InviterColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.InviteesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.InviteesTable,
+			Columns: []string{user.InviteesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedInviteesIDs(); len(nodes) > 0 && !_u.mutation.InviteesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.InviteesTable,
+			Columns: []string{user.InviteesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.InviteesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.InviteesTable,
+			Columns: []string{user.InviteesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.CommissionLogsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.CommissionLogsTable,
+			Columns: []string{user.CommissionLogsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(commissionlog.FieldID, field.TypeInt64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedCommissionLogsIDs(); len(nodes) > 0 && !_u.mutation.CommissionLogsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.CommissionLogsTable,
+			Columns: []string{user.CommissionLogsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(commissionlog.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.CommissionLogsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.CommissionLogsTable,
+			Columns: []string{user.CommissionLogsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(commissionlog.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if _u.mutation.APIKeysCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -1638,6 +1973,144 @@ func (_u *UserUpdateOne) AddTotalRecharged(v float64) *UserUpdateOne {
 	return _u
 }
 
+// SetInviterID sets the "inviter_id" field.
+func (_u *UserUpdateOne) SetInviterID(v int64) *UserUpdateOne {
+	_u.mutation.SetInviterID(v)
+	return _u
+}
+
+// SetNillableInviterID sets the "inviter_id" field if the given value is not nil.
+func (_u *UserUpdateOne) SetNillableInviterID(v *int64) *UserUpdateOne {
+	if v != nil {
+		_u.SetInviterID(*v)
+	}
+	return _u
+}
+
+// ClearInviterID clears the value of the "inviter_id" field.
+func (_u *UserUpdateOne) ClearInviterID() *UserUpdateOne {
+	_u.mutation.ClearInviterID()
+	return _u
+}
+
+// SetInviteCode sets the "invite_code" field.
+func (_u *UserUpdateOne) SetInviteCode(v string) *UserUpdateOne {
+	_u.mutation.SetInviteCode(v)
+	return _u
+}
+
+// SetNillableInviteCode sets the "invite_code" field if the given value is not nil.
+func (_u *UserUpdateOne) SetNillableInviteCode(v *string) *UserUpdateOne {
+	if v != nil {
+		_u.SetInviteCode(*v)
+	}
+	return _u
+}
+
+// ClearInviteCode clears the value of the "invite_code" field.
+func (_u *UserUpdateOne) ClearInviteCode() *UserUpdateOne {
+	_u.mutation.ClearInviteCode()
+	return _u
+}
+
+// SetCommissionRate sets the "commission_rate" field.
+func (_u *UserUpdateOne) SetCommissionRate(v float64) *UserUpdateOne {
+	_u.mutation.ResetCommissionRate()
+	_u.mutation.SetCommissionRate(v)
+	return _u
+}
+
+// SetNillableCommissionRate sets the "commission_rate" field if the given value is not nil.
+func (_u *UserUpdateOne) SetNillableCommissionRate(v *float64) *UserUpdateOne {
+	if v != nil {
+		_u.SetCommissionRate(*v)
+	}
+	return _u
+}
+
+// AddCommissionRate adds value to the "commission_rate" field.
+func (_u *UserUpdateOne) AddCommissionRate(v float64) *UserUpdateOne {
+	_u.mutation.AddCommissionRate(v)
+	return _u
+}
+
+// SetCommissionBalance sets the "commission_balance" field.
+func (_u *UserUpdateOne) SetCommissionBalance(v float64) *UserUpdateOne {
+	_u.mutation.ResetCommissionBalance()
+	_u.mutation.SetCommissionBalance(v)
+	return _u
+}
+
+// SetNillableCommissionBalance sets the "commission_balance" field if the given value is not nil.
+func (_u *UserUpdateOne) SetNillableCommissionBalance(v *float64) *UserUpdateOne {
+	if v != nil {
+		_u.SetCommissionBalance(*v)
+	}
+	return _u
+}
+
+// AddCommissionBalance adds value to the "commission_balance" field.
+func (_u *UserUpdateOne) AddCommissionBalance(v float64) *UserUpdateOne {
+	_u.mutation.AddCommissionBalance(v)
+	return _u
+}
+
+// SetTotalCommissionEarned sets the "total_commission_earned" field.
+func (_u *UserUpdateOne) SetTotalCommissionEarned(v float64) *UserUpdateOne {
+	_u.mutation.ResetTotalCommissionEarned()
+	_u.mutation.SetTotalCommissionEarned(v)
+	return _u
+}
+
+// SetNillableTotalCommissionEarned sets the "total_commission_earned" field if the given value is not nil.
+func (_u *UserUpdateOne) SetNillableTotalCommissionEarned(v *float64) *UserUpdateOne {
+	if v != nil {
+		_u.SetTotalCommissionEarned(*v)
+	}
+	return _u
+}
+
+// AddTotalCommissionEarned adds value to the "total_commission_earned" field.
+func (_u *UserUpdateOne) AddTotalCommissionEarned(v float64) *UserUpdateOne {
+	_u.mutation.AddTotalCommissionEarned(v)
+	return _u
+}
+
+// SetInviter sets the "inviter" edge to the User entity.
+func (_u *UserUpdateOne) SetInviter(v *User) *UserUpdateOne {
+	return _u.SetInviterID(v.ID)
+}
+
+// AddInviteeIDs adds the "invitees" edge to the User entity by IDs.
+func (_u *UserUpdateOne) AddInviteeIDs(ids ...int64) *UserUpdateOne {
+	_u.mutation.AddInviteeIDs(ids...)
+	return _u
+}
+
+// AddInvitees adds the "invitees" edges to the User entity.
+func (_u *UserUpdateOne) AddInvitees(v ...*User) *UserUpdateOne {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddInviteeIDs(ids...)
+}
+
+// AddCommissionLogIDs adds the "commission_logs" edge to the CommissionLog entity by IDs.
+func (_u *UserUpdateOne) AddCommissionLogIDs(ids ...int64) *UserUpdateOne {
+	_u.mutation.AddCommissionLogIDs(ids...)
+	return _u
+}
+
+// AddCommissionLogs adds the "commission_logs" edges to the CommissionLog entity.
+func (_u *UserUpdateOne) AddCommissionLogs(v ...*CommissionLog) *UserUpdateOne {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddCommissionLogIDs(ids...)
+}
+
 // AddAPIKeyIDs adds the "api_keys" edge to the APIKey entity by IDs.
 func (_u *UserUpdateOne) AddAPIKeyIDs(ids ...int64) *UserUpdateOne {
 	_u.mutation.AddAPIKeyIDs(ids...)
@@ -1791,6 +2264,54 @@ func (_u *UserUpdateOne) AddPaymentOrders(v ...*PaymentOrder) *UserUpdateOne {
 // Mutation returns the UserMutation object of the builder.
 func (_u *UserUpdateOne) Mutation() *UserMutation {
 	return _u.mutation
+}
+
+// ClearInviter clears the "inviter" edge to the User entity.
+func (_u *UserUpdateOne) ClearInviter() *UserUpdateOne {
+	_u.mutation.ClearInviter()
+	return _u
+}
+
+// ClearInvitees clears all "invitees" edges to the User entity.
+func (_u *UserUpdateOne) ClearInvitees() *UserUpdateOne {
+	_u.mutation.ClearInvitees()
+	return _u
+}
+
+// RemoveInviteeIDs removes the "invitees" edge to User entities by IDs.
+func (_u *UserUpdateOne) RemoveInviteeIDs(ids ...int64) *UserUpdateOne {
+	_u.mutation.RemoveInviteeIDs(ids...)
+	return _u
+}
+
+// RemoveInvitees removes "invitees" edges to User entities.
+func (_u *UserUpdateOne) RemoveInvitees(v ...*User) *UserUpdateOne {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveInviteeIDs(ids...)
+}
+
+// ClearCommissionLogs clears all "commission_logs" edges to the CommissionLog entity.
+func (_u *UserUpdateOne) ClearCommissionLogs() *UserUpdateOne {
+	_u.mutation.ClearCommissionLogs()
+	return _u
+}
+
+// RemoveCommissionLogIDs removes the "commission_logs" edge to CommissionLog entities by IDs.
+func (_u *UserUpdateOne) RemoveCommissionLogIDs(ids ...int64) *UserUpdateOne {
+	_u.mutation.RemoveCommissionLogIDs(ids...)
+	return _u
+}
+
+// RemoveCommissionLogs removes "commission_logs" edges to CommissionLog entities.
+func (_u *UserUpdateOne) RemoveCommissionLogs(v ...*CommissionLog) *UserUpdateOne {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveCommissionLogIDs(ids...)
 }
 
 // ClearAPIKeys clears all "api_keys" edges to the APIKey entity.
@@ -2085,6 +2606,11 @@ func (_u *UserUpdateOne) check() error {
 			return &ValidationError{Name: "username", err: fmt.Errorf(`ent: validator failed for field "User.username": %w`, err)}
 		}
 	}
+	if v, ok := _u.mutation.InviteCode(); ok {
+		if err := user.InviteCodeValidator(v); err != nil {
+			return &ValidationError{Name: "invite_code", err: fmt.Errorf(`ent: validator failed for field "User.invite_code": %w`, err)}
+		}
+	}
 	return nil
 }
 
@@ -2194,6 +2720,149 @@ func (_u *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) {
 	}
 	if value, ok := _u.mutation.AddedTotalRecharged(); ok {
 		_spec.AddField(user.FieldTotalRecharged, field.TypeFloat64, value)
+	}
+	if value, ok := _u.mutation.InviteCode(); ok {
+		_spec.SetField(user.FieldInviteCode, field.TypeString, value)
+	}
+	if _u.mutation.InviteCodeCleared() {
+		_spec.ClearField(user.FieldInviteCode, field.TypeString)
+	}
+	if value, ok := _u.mutation.CommissionRate(); ok {
+		_spec.SetField(user.FieldCommissionRate, field.TypeFloat64, value)
+	}
+	if value, ok := _u.mutation.AddedCommissionRate(); ok {
+		_spec.AddField(user.FieldCommissionRate, field.TypeFloat64, value)
+	}
+	if value, ok := _u.mutation.CommissionBalance(); ok {
+		_spec.SetField(user.FieldCommissionBalance, field.TypeFloat64, value)
+	}
+	if value, ok := _u.mutation.AddedCommissionBalance(); ok {
+		_spec.AddField(user.FieldCommissionBalance, field.TypeFloat64, value)
+	}
+	if value, ok := _u.mutation.TotalCommissionEarned(); ok {
+		_spec.SetField(user.FieldTotalCommissionEarned, field.TypeFloat64, value)
+	}
+	if value, ok := _u.mutation.AddedTotalCommissionEarned(); ok {
+		_spec.AddField(user.FieldTotalCommissionEarned, field.TypeFloat64, value)
+	}
+	if _u.mutation.InviterCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   user.InviterTable,
+			Columns: []string{user.InviterColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.InviterIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   user.InviterTable,
+			Columns: []string{user.InviterColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.InviteesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.InviteesTable,
+			Columns: []string{user.InviteesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedInviteesIDs(); len(nodes) > 0 && !_u.mutation.InviteesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.InviteesTable,
+			Columns: []string{user.InviteesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.InviteesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.InviteesTable,
+			Columns: []string{user.InviteesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.CommissionLogsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.CommissionLogsTable,
+			Columns: []string{user.CommissionLogsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(commissionlog.FieldID, field.TypeInt64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedCommissionLogsIDs(); len(nodes) > 0 && !_u.mutation.CommissionLogsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.CommissionLogsTable,
+			Columns: []string{user.CommissionLogsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(commissionlog.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.CommissionLogsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.CommissionLogsTable,
+			Columns: []string{user.CommissionLogsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(commissionlog.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if _u.mutation.APIKeysCleared() {
 		edge := &sqlgraph.EdgeSpec{

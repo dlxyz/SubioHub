@@ -53,6 +53,22 @@ const (
 	FieldBalanceNotifyExtraEmails = "balance_notify_extra_emails"
 	// FieldTotalRecharged holds the string denoting the total_recharged field in the database.
 	FieldTotalRecharged = "total_recharged"
+	// FieldInviterID holds the string denoting the inviter_id field in the database.
+	FieldInviterID = "inviter_id"
+	// FieldInviteCode holds the string denoting the invite_code field in the database.
+	FieldInviteCode = "invite_code"
+	// FieldCommissionRate holds the string denoting the commission_rate field in the database.
+	FieldCommissionRate = "commission_rate"
+	// FieldCommissionBalance holds the string denoting the commission_balance field in the database.
+	FieldCommissionBalance = "commission_balance"
+	// FieldTotalCommissionEarned holds the string denoting the total_commission_earned field in the database.
+	FieldTotalCommissionEarned = "total_commission_earned"
+	// EdgeInviter holds the string denoting the inviter edge name in mutations.
+	EdgeInviter = "inviter"
+	// EdgeInvitees holds the string denoting the invitees edge name in mutations.
+	EdgeInvitees = "invitees"
+	// EdgeCommissionLogs holds the string denoting the commission_logs edge name in mutations.
+	EdgeCommissionLogs = "commission_logs"
 	// EdgeAPIKeys holds the string denoting the api_keys edge name in mutations.
 	EdgeAPIKeys = "api_keys"
 	// EdgeRedeemCodes holds the string denoting the redeem_codes edge name in mutations.
@@ -77,6 +93,21 @@ const (
 	EdgeUserAllowedGroups = "user_allowed_groups"
 	// Table holds the table name of the user in the database.
 	Table = "users"
+	// InviterTable is the table that holds the inviter relation/edge.
+	InviterTable = "users"
+	// InviterColumn is the table column denoting the inviter relation/edge.
+	InviterColumn = "inviter_id"
+	// InviteesTable is the table that holds the invitees relation/edge.
+	InviteesTable = "users"
+	// InviteesColumn is the table column denoting the invitees relation/edge.
+	InviteesColumn = "inviter_id"
+	// CommissionLogsTable is the table that holds the commission_logs relation/edge.
+	CommissionLogsTable = "commission_logs"
+	// CommissionLogsInverseTable is the table name for the CommissionLog entity.
+	// It exists in this package in order to avoid circular dependency with the "commissionlog" package.
+	CommissionLogsInverseTable = "commission_logs"
+	// CommissionLogsColumn is the table column denoting the commission_logs relation/edge.
+	CommissionLogsColumn = "user_id"
 	// APIKeysTable is the table that holds the api_keys relation/edge.
 	APIKeysTable = "api_keys"
 	// APIKeysInverseTable is the table name for the APIKey entity.
@@ -176,6 +207,11 @@ var Columns = []string{
 	FieldBalanceNotifyThreshold,
 	FieldBalanceNotifyExtraEmails,
 	FieldTotalRecharged,
+	FieldInviterID,
+	FieldInviteCode,
+	FieldCommissionRate,
+	FieldCommissionBalance,
+	FieldTotalCommissionEarned,
 }
 
 var (
@@ -198,7 +234,7 @@ func ValidColumn(column string) bool {
 // package on the initialization of the application. Therefore,
 // it should be imported in the main as follows:
 //
-//	import _ "github.com/Wei-Shaw/sub2api/ent/runtime"
+//	import _ "github.com/dlxyz/SubioHub/ent/runtime"
 var (
 	Hooks        [1]ent.Hook
 	Interceptors [1]ent.Interceptor
@@ -240,6 +276,14 @@ var (
 	DefaultBalanceNotifyExtraEmails string
 	// DefaultTotalRecharged holds the default value on creation for the "total_recharged" field.
 	DefaultTotalRecharged float64
+	// InviteCodeValidator is a validator for the "invite_code" field. It is called by the builders before save.
+	InviteCodeValidator func(string) error
+	// DefaultCommissionRate holds the default value on creation for the "commission_rate" field.
+	DefaultCommissionRate float64
+	// DefaultCommissionBalance holds the default value on creation for the "commission_balance" field.
+	DefaultCommissionBalance float64
+	// DefaultTotalCommissionEarned holds the default value on creation for the "total_commission_earned" field.
+	DefaultTotalCommissionEarned float64
 )
 
 // OrderOption defines the ordering options for the User queries.
@@ -343,6 +387,66 @@ func ByBalanceNotifyExtraEmails(opts ...sql.OrderTermOption) OrderOption {
 // ByTotalRecharged orders the results by the total_recharged field.
 func ByTotalRecharged(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTotalRecharged, opts...).ToFunc()
+}
+
+// ByInviterID orders the results by the inviter_id field.
+func ByInviterID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldInviterID, opts...).ToFunc()
+}
+
+// ByInviteCode orders the results by the invite_code field.
+func ByInviteCode(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldInviteCode, opts...).ToFunc()
+}
+
+// ByCommissionRate orders the results by the commission_rate field.
+func ByCommissionRate(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldCommissionRate, opts...).ToFunc()
+}
+
+// ByCommissionBalance orders the results by the commission_balance field.
+func ByCommissionBalance(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldCommissionBalance, opts...).ToFunc()
+}
+
+// ByTotalCommissionEarned orders the results by the total_commission_earned field.
+func ByTotalCommissionEarned(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldTotalCommissionEarned, opts...).ToFunc()
+}
+
+// ByInviterField orders the results by inviter field.
+func ByInviterField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newInviterStep(), sql.OrderByField(field, opts...))
+	}
+}
+
+// ByInviteesCount orders the results by invitees count.
+func ByInviteesCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newInviteesStep(), opts...)
+	}
+}
+
+// ByInvitees orders the results by invitees terms.
+func ByInvitees(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newInviteesStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByCommissionLogsCount orders the results by commission_logs count.
+func ByCommissionLogsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newCommissionLogsStep(), opts...)
+	}
+}
+
+// ByCommissionLogs orders the results by commission_logs terms.
+func ByCommissionLogs(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newCommissionLogsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
 }
 
 // ByAPIKeysCount orders the results by api_keys count.
@@ -497,6 +601,27 @@ func ByUserAllowedGroups(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption
 	return func(s *sql.Selector) {
 		sqlgraph.OrderByNeighborTerms(s, newUserAllowedGroupsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
+}
+func newInviterStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(Table, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, true, InviterTable, InviterColumn),
+	)
+}
+func newInviteesStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(Table, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, InviteesTable, InviteesColumn),
+	)
+}
+func newCommissionLogsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(CommissionLogsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, CommissionLogsTable, CommissionLogsColumn),
+	)
 }
 func newAPIKeysStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(

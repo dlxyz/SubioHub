@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Wei-Shaw/sub2api/internal/payment"
+	"github.com/dlxyz/SubioHub/internal/payment"
 )
 
 func TestMapWxState(t *testing.T) {

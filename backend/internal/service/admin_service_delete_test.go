@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Wei-Shaw/sub2api/internal/pkg/pagination"
+	"github.com/dlxyz/SubioHub/internal/pkg/pagination"
 	"github.com/stretchr/testify/require"
 )
 
@@ -76,6 +76,10 @@ func (s *userRepoStub) UpdateBalance(ctx context.Context, id int64, amount float
 
 func (s *userRepoStub) DeductBalance(ctx context.Context, id int64, amount float64) error {
 	panic("unexpected DeductBalance call")
+}
+
+func (s *userRepoStub) UpdateCommissionBalance(ctx context.Context, id int64, amount float64) error {
+	panic("unexpected UpdateCommissionBalance call")
 }
 
 func (s *userRepoStub) UpdateConcurrency(ctx context.Context, id int64, amount int) error {

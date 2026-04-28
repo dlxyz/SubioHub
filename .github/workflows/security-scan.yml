@@ -30,29 +30,25 @@ jobs:
           go install golang.org/x/vuln/cmd/govulncheck@latest
           govulncheck ./...
 
-  frontend-security:
+  next-web-security:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-      - name: Set up pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 9
       - name: Set up Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: '20'
-          cache: 'pnpm'
-          cache-dependency-path: frontend/pnpm-lock.yaml
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: next-web/package-lock.json
       - name: Install dependencies
-        working-directory: frontend
-        run: pnpm install --frozen-lockfile
-      - name: Run pnpm audit
-        working-directory: frontend
+        working-directory: next-web
+        run: npm ci
+      - name: Run npm audit
+        working-directory: next-web
         run: |
-          pnpm audit --prod --audit-level=high --json > audit.json || true
+          npm audit --omit=dev --audit-level=high --json > audit.json || true
       - name: Check audit exceptions
         run: |
           python tools/check_pnpm_audit_exceptions.py \
-            --audit frontend/audit.json \
+            --audit next-web/audit.json \
             --exceptions .github/audit-exceptions.yml

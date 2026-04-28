@@ -1,6 +1,6 @@
 package service
 
-import "github.com/Wei-Shaw/sub2api/internal/domain"
+import "github.com/dlxyz/SubioHub/internal/domain"
 
 // Status constants
 const (
@@ -258,6 +258,10 @@ const (
 	// Account Quota Notification
 	SettingKeyAccountQuotaNotifyEnabled = "account_quota_notify_enabled" // 全局开关
 	SettingKeyAccountQuotaNotifyEmails  = "account_quota_notify_emails"  // 管理员通知邮箱列表（JSON 数组）
+
+	// Affiliate settlement
+	SettingKeyAffiliateAutoSettlementEnabled         = "affiliate_auto_settlement_enabled"          // 是否启用返佣自动结算
+	SettingKeyAffiliateManualPayoutSettlementEnabled = "affiliate_manual_payout_settlement_enabled" // 是否允许管理员在手动打款后执行结算
 
 	// Web Search Emulation
 	SettingKeyWebSearchEmulationConfig = "web_search_emulation_config" // JSON 配置

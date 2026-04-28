@@ -1,14 +1,14 @@
-#!/bin/bash
+﻿#!/bin/bash
 # =============================================================================
-# Sub2API Docker Deployment Preparation Script
+# SubioHub Docker Deployment Preparation Script
 # =============================================================================
-# This script prepares deployment files for Sub2API:
-#   - Downloads docker-compose.local.yml and .env.example
+# This script prepares deployment files for SubioHub:
+#   - Downloads docker-compose.local.yml, Caddyfile and .env.example
 #   - Generates secure secrets (JWT_SECRET, TOTP_ENCRYPTION_KEY, POSTGRES_PASSWORD)
-#   - Creates necessary data directories
+#   - Creates necessary data directories for API, next-web and Caddy
 #
 # After running this script, you can start services with:
-#   docker-compose up -d
+#   docker compose up -d
 # =============================================================================
 
 set -e
@@ -21,7 +21,7 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # GitHub raw content base URL
-GITHUB_RAW_URL="https://raw.githubusercontent.com/Wei-Shaw/sub2api/main/deploy"
+GITHUB_RAW_URL="https://raw.githubusercontent.com/dlxyz/SubioHub/main/deploy"
 
 # Print colored message
 print_info() {
@@ -54,7 +54,7 @@ command_exists() {
 main() {
     echo ""
     echo "=========================================="
-    echo "  Sub2API Deployment Preparation"
+    echo "  SubioHub Deployment Preparation"
     echo "=========================================="
     echo ""
 
@@ -86,6 +86,15 @@ main() {
         exit 1
     fi
     print_success "Downloaded docker-compose.yml"
+
+    # Download Caddyfile
+    print_info "Downloading Caddyfile..."
+    if command_exists curl; then
+        curl -sSL "${GITHUB_RAW_URL}/Caddyfile" -o Caddyfile
+    else
+        wget -q "${GITHUB_RAW_URL}/Caddyfile" -O Caddyfile
+    fi
+    print_success "Downloaded Caddyfile"
 
     # Download .env.example
     print_info "Downloading .env.example..."
@@ -123,7 +132,7 @@ main() {
 
     # Create data directories
     print_info "Creating data directories..."
-    mkdir -p data postgres_data redis_data
+    mkdir -p data postgres_data redis_data caddy_data caddy_config
     print_success "Created data directories"
 
     # Set secure permissions for .env file (readable/writable only by owner)
@@ -145,19 +154,23 @@ main() {
     echo ""
     echo "Directory structure:"
     echo "  docker-compose.yml        - Docker Compose configuration"
+    echo "  Caddyfile                 - Reverse proxy configuration"
     echo "  .env                      - Environment variables (generated secrets)"
     echo "  .env.example              - Example template (for reference)"
     echo "  data/                     - Application data (will be created on first run)"
     echo "  postgres_data/            - PostgreSQL data"
     echo "  redis_data/               - Redis data"
+    echo "  caddy_data/               - Caddy runtime data"
+    echo "  caddy_config/             - Caddy runtime config"
     echo ""
     echo "Next steps:"
     echo "  1. (Optional) Edit .env to customize configuration"
+    echo "     - Set NEXT_PUBLIC_SITE_URL to your final public domain"
     echo "  2. Start services:"
-    echo "     docker-compose up -d"
+    echo "     docker compose up -d"
     echo ""
     echo "  3. View logs:"
-    echo "     docker-compose logs -f sub2api"
+    echo "     docker compose logs -f web next-web subiohub"
     echo ""
     echo "  4. Access Web UI:"
     echo "     http://localhost:8080"
@@ -169,3 +182,4 @@ main() {
 
 # Run main function
 main "$@"
+

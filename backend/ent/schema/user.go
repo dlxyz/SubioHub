@@ -1,8 +1,8 @@
 package schema
 
 import (
-	"github.com/Wei-Shaw/sub2api/ent/schema/mixins"
-	"github.com/Wei-Shaw/sub2api/internal/domain"
+	"github.com/dlxyz/SubioHub/ent/schema/mixins"
+	"github.com/dlxyz/SubioHub/internal/domain"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect"
@@ -88,11 +88,42 @@ func (User) Fields() []ent.Field {
 		field.Float("total_recharged").
 			SchemaType(map[string]string{dialect.Postgres: "decimal(20,8)"}).
 			Default(0),
+
+		// ------------------ 分销与邀请返佣系统字段 ------------------
+		field.Int64("inviter_id").
+			Optional().
+			Nillable().
+			Comment("邀请人的 User ID"),
+		field.String("invite_code").
+			Optional().
+			MaxLen(32).
+			Unique().
+			Comment("用户专属邀请码"),
+		field.Float("commission_rate").
+			SchemaType(map[string]string{dialect.Postgres: "decimal(5,4)"}).
+			Default(0.10).
+			Comment("专属返佣比例 (默认 0.10 即 10%)"),
+		field.Float("commission_balance").
+			SchemaType(map[string]string{dialect.Postgres: "decimal(20,8)"}).
+			Default(0).
+			Comment("当前可提现或划转的佣金余额"),
+		field.Float("total_commission_earned").
+			SchemaType(map[string]string{dialect.Postgres: "decimal(20,8)"}).
+			Default(0).
+			Comment("历史累计赚取的总佣金"),
 	}
 }
 
 func (User) Edges() []ent.Edge {
 	return []ent.Edge{
+		// 自关联关系：邀请人与被邀请人
+		edge.To("invitees", User.Type).
+			From("inviter").
+			Unique().
+			Field("inviter_id"),
+
+		edge.To("commission_logs", CommissionLog.Type),
+
 		edge.To("api_keys", APIKey.Type),
 		edge.To("redeem_codes", RedeemCode.Type),
 		edge.To("subscriptions", UserSubscription.Type),

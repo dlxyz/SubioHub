@@ -7,9 +7,9 @@ import (
 	"testing"
 	"time"
 
-	dbent "github.com/Wei-Shaw/sub2api/ent"
-	"github.com/Wei-Shaw/sub2api/internal/pkg/pagination"
-	"github.com/Wei-Shaw/sub2api/internal/service"
+	dbent "github.com/dlxyz/SubioHub/ent"
+	"github.com/dlxyz/SubioHub/internal/pkg/pagination"
+	"github.com/dlxyz/SubioHub/internal/service"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -109,6 +109,22 @@ func (s *UserRepoSuite) TestCreate() {
 	s.Require().Equal("create@test.com", got.Email)
 }
 
+func (s *UserRepoSuite) TestCreate_PersistsInviterID() {
+	inviter := s.mustCreateUser(&service.User{Email: "inviter-create@test.com"})
+	user := s.mustCreateUser(&service.User{
+		Email:        "invitee-create@test.com",
+		PasswordHash: "test-password-hash",
+		Role:         service.RoleUser,
+		Status:       service.StatusActive,
+		InviterID:    &inviter.ID,
+	})
+
+	got, err := s.repo.GetByID(s.ctx, user.ID)
+	s.Require().NoError(err, "GetByID")
+	s.Require().NotNil(got.InviterID, "expected inviter_id to be persisted")
+	s.Require().Equal(inviter.ID, *got.InviterID)
+}
+
 func (s *UserRepoSuite) TestGetByID_NotFound() {
 	_, err := s.repo.GetByID(s.ctx, 999999)
 	s.Require().Error(err, "expected error for non-existent ID")
@@ -138,6 +154,21 @@ func (s *UserRepoSuite) TestUpdate() {
 	updated, err := s.repo.GetByID(s.ctx, user.ID)
 	s.Require().NoError(err, "GetByID after update")
 	s.Require().Equal("updated", updated.Username)
+}
+
+func (s *UserRepoSuite) TestUpdate_PersistsInviterID() {
+	inviter := s.mustCreateUser(&service.User{Email: "inviter-update@test.com"})
+	user := s.mustCreateUser(&service.User{Email: "invitee-update@test.com", Username: "original"})
+
+	got, err := s.repo.GetByID(s.ctx, user.ID)
+	s.Require().NoError(err)
+	got.InviterID = &inviter.ID
+	s.Require().NoError(s.repo.Update(s.ctx, got), "Update")
+
+	updated, err := s.repo.GetByID(s.ctx, user.ID)
+	s.Require().NoError(err, "GetByID after update")
+	s.Require().NotNil(updated.InviterID, "expected inviter_id to be persisted")
+	s.Require().Equal(inviter.ID, *updated.InviterID)
 }
 
 func (s *UserRepoSuite) TestDelete() {

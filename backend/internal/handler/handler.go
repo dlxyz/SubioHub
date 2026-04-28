@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"github.com/Wei-Shaw/sub2api/internal/handler/admin"
+	"github.com/dlxyz/SubioHub/internal/handler/admin"
 )
 
 // AdminHandlers contains all admin-related HTTP handlers
@@ -32,6 +32,7 @@ type AdminHandlers struct {
 	ScheduledTest         *admin.ScheduledTestHandler
 	Channel               *admin.ChannelHandler
 	Payment               *admin.PaymentHandler
+	Affiliate             *admin.AffiliateHandler
 }
 
 // Handlers contains all HTTP handlers
@@ -44,6 +45,7 @@ type Handlers struct {
 	Subscription   *SubscriptionHandler
 	Announcement   *AnnouncementHandler
 	Admin          *AdminHandlers
+	Affiliate      *AffiliateHandler
 	Gateway        *GatewayHandler
 	OpenAIGateway  *OpenAIGatewayHandler
 	Setting        *SettingHandler

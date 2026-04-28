@@ -3,7 +3,7 @@ package dto
 import (
 	"time"
 
-	"github.com/Wei-Shaw/sub2api/internal/service"
+	"github.com/dlxyz/SubioHub/internal/service"
 )
 
 type Announcement struct {
@@ -40,6 +40,16 @@ type UserAnnouncement struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
+type PublicAnnouncement struct {
+	ID        int64      `json:"id"`
+	Title     string     `json:"title"`
+	Content   string     `json:"content"`
+	StartsAt  *time.Time `json:"starts_at,omitempty"`
+	EndsAt    *time.Time `json:"ends_at,omitempty"`
+	CreatedAt time.Time  `json:"created_at"`
+	UpdatedAt time.Time  `json:"updated_at"`
+}
+
 func AnnouncementFromService(a *service.Announcement) *Announcement {
 	if a == nil {
 		return nil
@@ -57,6 +67,21 @@ func AnnouncementFromService(a *service.Announcement) *Announcement {
 		UpdatedBy:  a.UpdatedBy,
 		CreatedAt:  a.CreatedAt,
 		UpdatedAt:  a.UpdatedAt,
+	}
+}
+
+func PublicAnnouncementFromService(a *service.Announcement) *PublicAnnouncement {
+	if a == nil {
+		return nil
+	}
+	return &PublicAnnouncement{
+		ID:        a.ID,
+		Title:     a.Title,
+		Content:   a.Content,
+		StartsAt:  a.StartsAt,
+		EndsAt:    a.EndsAt,
+		CreatedAt: a.CreatedAt,
+		UpdatedAt: a.UpdatedAt,
 	}
 }
 

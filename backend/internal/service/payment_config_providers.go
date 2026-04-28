@@ -7,11 +7,11 @@ import (
 	"strconv"
 	"strings"
 
-	dbent "github.com/Wei-Shaw/sub2api/ent"
-	"github.com/Wei-Shaw/sub2api/ent/paymentorder"
-	"github.com/Wei-Shaw/sub2api/ent/paymentproviderinstance"
-	"github.com/Wei-Shaw/sub2api/internal/payment"
-	infraerrors "github.com/Wei-Shaw/sub2api/internal/pkg/errors"
+	dbent "github.com/dlxyz/SubioHub/ent"
+	"github.com/dlxyz/SubioHub/ent/paymentorder"
+	"github.com/dlxyz/SubioHub/ent/paymentproviderinstance"
+	"github.com/dlxyz/SubioHub/internal/payment"
+	infraerrors "github.com/dlxyz/SubioHub/internal/pkg/errors"
 )
 
 // --- Provider Instance CRUD ---
@@ -121,7 +121,7 @@ func (s *PaymentConfigService) CreateProviderInstance(ctx context.Context, req C
 		Save(ctx)
 }
 
-func validateProviderRequest(providerKey, name, supportedTypes string) error {
+func validateProviderRequest(providerKey, name, _ string) error {
 	if strings.TrimSpace(name) == "" {
 		return infraerrors.BadRequest("VALIDATION_ERROR", "provider name is required")
 	}

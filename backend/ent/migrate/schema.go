@@ -338,6 +338,51 @@ var (
 			},
 		},
 	}
+	// CommissionLogsColumns holds the columns for the "commission_logs" table.
+	CommissionLogsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt64, Increment: true},
+		{Name: "created_at", Type: field.TypeTime, SchemaType: map[string]string{"postgres": "timestamptz"}},
+		{Name: "updated_at", Type: field.TypeTime, SchemaType: map[string]string{"postgres": "timestamptz"}},
+		{Name: "amount", Type: field.TypeFloat64, SchemaType: map[string]string{"postgres": "decimal(20,8)"}},
+		{Name: "status", Type: field.TypeString, Size: 20, Default: "settled"},
+		{Name: "reason", Type: field.TypeString, Size: 255, Default: ""},
+		{Name: "invitee_id", Type: field.TypeInt64, Nullable: true},
+		{Name: "order_id", Type: field.TypeInt64, Nullable: true},
+		{Name: "user_id", Type: field.TypeInt64},
+	}
+	// CommissionLogsTable holds the schema information for the "commission_logs" table.
+	CommissionLogsTable = &schema.Table{
+		Name:       "commission_logs",
+		Columns:    CommissionLogsColumns,
+		PrimaryKey: []*schema.Column{CommissionLogsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "commission_logs_users_invitee",
+				Columns:    []*schema.Column{CommissionLogsColumns[6]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "commission_logs_payment_orders_payment_order",
+				Columns:    []*schema.Column{CommissionLogsColumns[7]},
+				RefColumns: []*schema.Column{PaymentOrdersColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "commission_logs_users_commission_logs",
+				Columns:    []*schema.Column{CommissionLogsColumns[8]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "commissionlog_user_id_status",
+				Unique:  false,
+				Columns: []*schema.Column{CommissionLogsColumns[8], CommissionLogsColumns[4]},
+			},
+		},
+	}
 	// ErrorPassthroughRulesColumns holds the columns for the "error_passthrough_rules" table.
 	ErrorPassthroughRulesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt64, Increment: true},
@@ -1084,12 +1129,25 @@ var (
 		{Name: "balance_notify_threshold", Type: field.TypeFloat64, Nullable: true, SchemaType: map[string]string{"postgres": "decimal(20,8)"}},
 		{Name: "balance_notify_extra_emails", Type: field.TypeString, Default: "[]", SchemaType: map[string]string{"postgres": "text"}},
 		{Name: "total_recharged", Type: field.TypeFloat64, Default: 0, SchemaType: map[string]string{"postgres": "decimal(20,8)"}},
+		{Name: "invite_code", Type: field.TypeString, Unique: true, Nullable: true, Size: 32},
+		{Name: "commission_rate", Type: field.TypeFloat64, Default: 0.1, SchemaType: map[string]string{"postgres": "decimal(5,4)"}},
+		{Name: "commission_balance", Type: field.TypeFloat64, Default: 0, SchemaType: map[string]string{"postgres": "decimal(20,8)"}},
+		{Name: "total_commission_earned", Type: field.TypeFloat64, Default: 0, SchemaType: map[string]string{"postgres": "decimal(20,8)"}},
+		{Name: "inviter_id", Type: field.TypeInt64, Nullable: true},
 	}
 	// UsersTable holds the schema information for the "users" table.
 	UsersTable = &schema.Table{
 		Name:       "users",
 		Columns:    UsersColumns,
 		PrimaryKey: []*schema.Column{UsersColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "users_users_invitees",
+				Columns:    []*schema.Column{UsersColumns[24]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
 		Indexes: []*schema.Index{
 			{
 				Name:    "user_status",
@@ -1318,6 +1376,7 @@ var (
 		AccountGroupsTable,
 		AnnouncementsTable,
 		AnnouncementReadsTable,
+		CommissionLogsTable,
 		ErrorPassthroughRulesTable,
 		GroupsTable,
 		IdempotencyRecordsTable,
@@ -1364,6 +1423,12 @@ func init() {
 	AnnouncementReadsTable.ForeignKeys[1].RefTable = UsersTable
 	AnnouncementReadsTable.Annotation = &entsql.Annotation{
 		Table: "announcement_reads",
+	}
+	CommissionLogsTable.ForeignKeys[0].RefTable = UsersTable
+	CommissionLogsTable.ForeignKeys[1].RefTable = PaymentOrdersTable
+	CommissionLogsTable.ForeignKeys[2].RefTable = UsersTable
+	CommissionLogsTable.Annotation = &entsql.Annotation{
+		Table: "commission_logs",
 	}
 	ErrorPassthroughRulesTable.Annotation = &entsql.Annotation{
 		Table: "error_passthrough_rules",
@@ -1423,6 +1488,7 @@ func init() {
 	UsageLogsTable.Annotation = &entsql.Annotation{
 		Table: "usage_logs",
 	}
+	UsersTable.ForeignKeys[0].RefTable = UsersTable
 	UsersTable.Annotation = &entsql.Annotation{
 		Table: "users",
 	}

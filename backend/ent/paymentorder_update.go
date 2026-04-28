@@ -11,9 +11,10 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/Wei-Shaw/sub2api/ent/paymentorder"
-	"github.com/Wei-Shaw/sub2api/ent/predicate"
-	"github.com/Wei-Shaw/sub2api/ent/user"
+	"github.com/dlxyz/SubioHub/ent/commissionlog"
+	"github.com/dlxyz/SubioHub/ent/paymentorder"
+	"github.com/dlxyz/SubioHub/ent/predicate"
+	"github.com/dlxyz/SubioHub/ent/user"
 )
 
 // PaymentOrderUpdate is the builder for updating PaymentOrder entities.
@@ -687,6 +688,21 @@ func (_u *PaymentOrderUpdate) SetUser(v *User) *PaymentOrderUpdate {
 	return _u.SetUserID(v.ID)
 }
 
+// AddCommissionLogIDs adds the "commission_logs" edge to the CommissionLog entity by IDs.
+func (_u *PaymentOrderUpdate) AddCommissionLogIDs(ids ...int64) *PaymentOrderUpdate {
+	_u.mutation.AddCommissionLogIDs(ids...)
+	return _u
+}
+
+// AddCommissionLogs adds the "commission_logs" edges to the CommissionLog entity.
+func (_u *PaymentOrderUpdate) AddCommissionLogs(v ...*CommissionLog) *PaymentOrderUpdate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddCommissionLogIDs(ids...)
+}
+
 // Mutation returns the PaymentOrderMutation object of the builder.
 func (_u *PaymentOrderUpdate) Mutation() *PaymentOrderMutation {
 	return _u.mutation
@@ -696,6 +712,27 @@ func (_u *PaymentOrderUpdate) Mutation() *PaymentOrderMutation {
 func (_u *PaymentOrderUpdate) ClearUser() *PaymentOrderUpdate {
 	_u.mutation.ClearUser()
 	return _u
+}
+
+// ClearCommissionLogs clears all "commission_logs" edges to the CommissionLog entity.
+func (_u *PaymentOrderUpdate) ClearCommissionLogs() *PaymentOrderUpdate {
+	_u.mutation.ClearCommissionLogs()
+	return _u
+}
+
+// RemoveCommissionLogIDs removes the "commission_logs" edge to CommissionLog entities by IDs.
+func (_u *PaymentOrderUpdate) RemoveCommissionLogIDs(ids ...int64) *PaymentOrderUpdate {
+	_u.mutation.RemoveCommissionLogIDs(ids...)
+	return _u
+}
+
+// RemoveCommissionLogs removes "commission_logs" edges to CommissionLog entities.
+func (_u *PaymentOrderUpdate) RemoveCommissionLogs(v ...*CommissionLog) *PaymentOrderUpdate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveCommissionLogIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -1016,6 +1053,51 @@ func (_u *PaymentOrderUpdate) sqlSave(ctx context.Context) (_node int, err error
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.CommissionLogsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   paymentorder.CommissionLogsTable,
+			Columns: []string{paymentorder.CommissionLogsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(commissionlog.FieldID, field.TypeInt64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedCommissionLogsIDs(); len(nodes) > 0 && !_u.mutation.CommissionLogsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   paymentorder.CommissionLogsTable,
+			Columns: []string{paymentorder.CommissionLogsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(commissionlog.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.CommissionLogsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   paymentorder.CommissionLogsTable,
+			Columns: []string{paymentorder.CommissionLogsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(commissionlog.FieldID, field.TypeInt64),
 			},
 		}
 		for _, k := range nodes {
@@ -1701,6 +1783,21 @@ func (_u *PaymentOrderUpdateOne) SetUser(v *User) *PaymentOrderUpdateOne {
 	return _u.SetUserID(v.ID)
 }
 
+// AddCommissionLogIDs adds the "commission_logs" edge to the CommissionLog entity by IDs.
+func (_u *PaymentOrderUpdateOne) AddCommissionLogIDs(ids ...int64) *PaymentOrderUpdateOne {
+	_u.mutation.AddCommissionLogIDs(ids...)
+	return _u
+}
+
+// AddCommissionLogs adds the "commission_logs" edges to the CommissionLog entity.
+func (_u *PaymentOrderUpdateOne) AddCommissionLogs(v ...*CommissionLog) *PaymentOrderUpdateOne {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddCommissionLogIDs(ids...)
+}
+
 // Mutation returns the PaymentOrderMutation object of the builder.
 func (_u *PaymentOrderUpdateOne) Mutation() *PaymentOrderMutation {
 	return _u.mutation
@@ -1710,6 +1807,27 @@ func (_u *PaymentOrderUpdateOne) Mutation() *PaymentOrderMutation {
 func (_u *PaymentOrderUpdateOne) ClearUser() *PaymentOrderUpdateOne {
 	_u.mutation.ClearUser()
 	return _u
+}
+
+// ClearCommissionLogs clears all "commission_logs" edges to the CommissionLog entity.
+func (_u *PaymentOrderUpdateOne) ClearCommissionLogs() *PaymentOrderUpdateOne {
+	_u.mutation.ClearCommissionLogs()
+	return _u
+}
+
+// RemoveCommissionLogIDs removes the "commission_logs" edge to CommissionLog entities by IDs.
+func (_u *PaymentOrderUpdateOne) RemoveCommissionLogIDs(ids ...int64) *PaymentOrderUpdateOne {
+	_u.mutation.RemoveCommissionLogIDs(ids...)
+	return _u
+}
+
+// RemoveCommissionLogs removes "commission_logs" edges to CommissionLog entities.
+func (_u *PaymentOrderUpdateOne) RemoveCommissionLogs(v ...*CommissionLog) *PaymentOrderUpdateOne {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveCommissionLogIDs(ids...)
 }
 
 // Where appends a list predicates to the PaymentOrderUpdate builder.
@@ -2060,6 +2178,51 @@ func (_u *PaymentOrderUpdateOne) sqlSave(ctx context.Context) (_node *PaymentOrd
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.CommissionLogsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   paymentorder.CommissionLogsTable,
+			Columns: []string{paymentorder.CommissionLogsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(commissionlog.FieldID, field.TypeInt64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedCommissionLogsIDs(); len(nodes) > 0 && !_u.mutation.CommissionLogsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   paymentorder.CommissionLogsTable,
+			Columns: []string{paymentorder.CommissionLogsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(commissionlog.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.CommissionLogsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   paymentorder.CommissionLogsTable,
+			Columns: []string{paymentorder.CommissionLogsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(commissionlog.FieldID, field.TypeInt64),
 			},
 		}
 		for _, k := range nodes {

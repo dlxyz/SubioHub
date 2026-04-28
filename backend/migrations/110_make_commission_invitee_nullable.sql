@@ -1,0 +1,2 @@
+ALTER TABLE IF EXISTS commission_logs
+  ALTER COLUMN invitee_id DROP NOT NULL;

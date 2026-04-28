@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Wei-Shaw/sub2api/internal/service"
+	"github.com/dlxyz/SubioHub/internal/service"
 )
 
 func (r *opsRepository) GetThroughputTrend(ctx context.Context, filter *service.OpsDashboardFilter, bucketSeconds int) (*service.OpsThroughputTrendResponse, error) {
@@ -150,11 +150,9 @@ ORDER BY bucket ASC`
 	var topGroups []*service.OpsThroughputGroupBreakdownItem
 
 	platform := ""
+	var groupID *int64
 	if filter != nil {
 		platform = strings.TrimSpace(strings.ToLower(filter.Platform))
-	}
-	groupID := (*int64)(nil)
-	if filter != nil {
 		groupID = filter.GroupID
 	}
 
