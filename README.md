@@ -3,7 +3,7 @@
 <div align="center">
 
 [![Go](https://img.shields.io/badge/Go-1.25.7-00ADD8.svg)](https://golang.org/)
-[![Vue](https://img.shields.io/badge/Vue-3.4+-4FC08D.svg)](https://vuejs.org/)
+[![Next.js](https://img.shields.io/badge/Next.js-15+-000000.svg)](https://nextjs.org/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15+-336791.svg)](https://www.postgresql.org/)
 [![Redis](https://img.shields.io/badge/Redis-7+-DC382D.svg)](https://redis.io/)
 [![Docker](https://img.shields.io/badge/Docker-Ready-2496ED.svg)](https://www.docker.com/)
@@ -44,7 +44,7 @@ SubioHub is a self-hosted AI API gateway platform built for unified upstream acc
 | Component | Technology |
 |-----------|------------|
 | Backend | Go 1.25.7, Gin, Ent |
-| Frontend | Vue 3.4+, Vite 5+, TailwindCSS |
+| Frontend | Next.js 15+, React, TailwindCSS |
 | Database | PostgreSQL 15+ |
 | Cache/Queue | Redis 7+ |
 
@@ -512,12 +512,16 @@ subiohub/
 │   │   └── gateway/          # API gateway core
 │   └── resources/            # Static resources
 │
-├── frontend/                 # Vue 3 frontend
+├── next-web/                 # Primary Next.js web app
 │   └── src/
-│       ├── api/              # API calls
-│       ├── stores/           # State management
-│       ├── views/            # Page components
-│       └── components/       # Reusable components
+│       ├── app/              # App Router pages
+│       ├── components/       # UI components
+│       ├── i18n/             # Route-based i18n
+│       ├── lib/              # API clients and helpers
+│       └── store/            # Client state stores
+│
+├── frontend/                 # Legacy Vue frontend (temporary)
+│   └── src/                  # Planned for removal after migration wrap-up
 │
 └── deploy/                   # Deployment files
     ├── docker-compose.yml    # Docker Compose configuration
@@ -525,6 +529,8 @@ subiohub/
     ├── config.example.yaml   # Full config file for binary deployment
     └── install.sh            # One-click installation script
 ```
+
+> `next-web` is the current primary web architecture. The old `frontend` directory is kept only for transition and will be removed after the migration is fully completed.
 
 ## Disclaimer
 
