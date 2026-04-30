@@ -56,7 +56,7 @@ function formatDateTime(value: string | null | undefined, locale: string) {
   }
 }
 
-function getStatusLabel(status: string, t: (key: string, params?: Record<string, unknown>) => string) {
+function getStatusLabel(status: string, t: (key: string, params?: Record<string, string | number>) => string) {
   const key = `admin.news.statusOptions.${status}`;
   const label = t(key);
   return label === key ? status : label;
@@ -821,7 +821,9 @@ export default function AdminNewsPage() {
                     setEditSlugEdited(false);
                     setEditForm((prev) => ({
                       ...prev,
-                      slug: generateSlugFromTitle(prev.title),
+                      slug: generateSlugFromTitle(
+                        getTranslationByLocale(prev.translations, prev.default_locale)?.title || ''
+                      ),
                     }));
                   }}
                   className="rounded-lg border border-gray-200 px-3 py-2 text-xs font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-800"
