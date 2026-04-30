@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿import type { MessageTree } from '@/i18n/schema';
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿import type { MessageTree } from '@/i18n/schema';
 
 const zhCN = {
   dashboard: {
@@ -538,6 +538,9 @@ const zhCN = {
         releaseNotes: '发布说明',
         noReleaseInfo: '暂无发布说明',
         releasePublishedAt: '发布时间：{value}',
+        checkedAt: '上次检查：{value}',
+        notCheckedYet: '尚未检查',
+        latestUnavailable: '暂时无法获取',
         confirmUpdate: '确认执行自动升级吗？升级完成后通常还需要重启服务。',
         confirmRollback: '确认回滚到上一个版本吗？回滚完成后通常还需要重启服务。',
         confirmRestart: '确认立即重启服务吗？短时间内会中断当前访问。',

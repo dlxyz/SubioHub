@@ -128,6 +128,7 @@ export default function AdminDashboardPage() {
   const [versionError, setVersionError] = useState('');
   const [versionNotice, setVersionNotice] = useState('');
   const [versionAction, setVersionAction] = useState<'check' | 'update' | 'rollback' | 'restart' | null>(null);
+  const [versionCheckedAt, setVersionCheckedAt] = useState('');
 
   const loadDashboard = useCallback(async () => {
     setLoading(true);
@@ -148,6 +149,7 @@ export default function AdminDashboardPage() {
     try {
       const info = await checkAdminSystemUpdates(force);
       setUpdateInfo(info);
+      setVersionCheckedAt(new Date().toISOString());
     } catch (err: unknown) {
       try {
         const version = await getAdminSystemVersion();
@@ -160,6 +162,7 @@ export default function AdminDashboardPage() {
       } catch {
         setUpdateInfo(null);
       }
+      setVersionCheckedAt(new Date().toISOString());
       setVersionError(formatVersionError(getErrorMessage(err, t('admin.dashboard.version.loadFailed')), locale, t));
     } finally {
       setVersionLoading(false);
@@ -231,6 +234,15 @@ export default function AdminDashboardPage() {
   const hasUpdate = Boolean(updateInfo?.has_update);
   const canRollback = isReleaseBuild;
   const releaseInfo = updateInfo?.release_info;
+  const hasRateLimitWarning = Boolean(updateInfo?.warning?.includes('GitHub API rate limit reached'));
+  const latestVersionDisplay = versionLoading
+    ? '...'
+    : hasRateLimitWarning
+      ? t('admin.dashboard.version.latestUnavailable')
+      : updateInfo?.latest_version || '-';
+  const checkedAtDisplay = versionCheckedAt
+    ? formatDateTime(versionCheckedAt, locale)
+    : t('admin.dashboard.version.notCheckedYet');
 
   const versionStatusLabel = versionLoading
     ? t('admin.dashboard.version.checking')
@@ -451,7 +463,7 @@ export default function AdminDashboardPage() {
               {t('admin.dashboard.version.latest')}
             </p>
             <p className="mt-2 text-xl font-semibold text-gray-900 dark:text-white">
-              {versionLoading ? '...' : updateInfo?.latest_version || '-'}
+              {latestVersionDisplay}
             </p>
           </div>
           <div className="rounded-xl border border-gray-200 p-4 dark:border-gray-800">
@@ -476,6 +488,9 @@ export default function AdminDashboardPage() {
             </p>
             <p className="mt-3 text-sm text-gray-700 dark:text-gray-300">
               {t('admin.dashboard.version.buildTypeValue', { value: buildType })}
+            </p>
+            <p className="mt-2 text-sm text-gray-700 dark:text-gray-300">
+              {t('admin.dashboard.version.checkedAt', { value: checkedAtDisplay })}
             </p>
             <p className="mt-2 text-sm text-gray-700 dark:text-gray-300">
               {isReleaseBuild

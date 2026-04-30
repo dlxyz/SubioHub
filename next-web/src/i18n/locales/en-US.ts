@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿import type { MessageTree } from '@/i18n/schema';
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿import type { MessageTree } from '@/i18n/schema';
 
 const enUS = {
   dashboard: {
@@ -538,6 +538,9 @@ const enUS = {
         releaseNotes: 'Release Notes',
         noReleaseInfo: 'No release notes available',
         releasePublishedAt: 'Published at: {value}',
+        checkedAt: 'Last checked: {value}',
+        notCheckedYet: 'Not checked yet',
+        latestUnavailable: 'Temporarily unavailable',
         confirmUpdate: 'Run automatic upgrade now? A service restart is usually required after completion.',
         confirmRollback: 'Roll back to the previous version now? A service restart is usually required after completion.',
         confirmRestart: 'Restart the service now? Active traffic may be interrupted briefly.',
