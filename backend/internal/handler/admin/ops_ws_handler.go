@@ -47,7 +47,7 @@ var upgrader = websocket.Upgrader{
 		return isAllowedOpsWSOrigin(r)
 	},
 	// Subprotocol negotiation:
-	// - The frontend passes ["subiohub-admin", "jwt.<token>"].
+	// - The web client passes ["subiohub-admin", "jwt.<token>"].
 	// - We always select "subiohub-admin" so the token is never echoed back in the handshake response.
 	Subprotocols: []string{"subiohub-admin"},
 }

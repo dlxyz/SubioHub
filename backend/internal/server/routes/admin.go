@@ -32,6 +32,9 @@ func RegisterAdminRoutes(
 		// 公告管理
 		registerAnnouncementRoutes(admin, h)
 
+		// 资讯管理
+		registerNewsRoutes(admin, h)
+
 		// OpenAI OAuth
 		registerOpenAIOAuthRoutes(admin, h)
 
@@ -308,6 +311,18 @@ func registerAnnouncementRoutes(admin *gin.RouterGroup, h *handler.Handlers) {
 		announcements.PUT("/:id", h.Admin.Announcement.Update)
 		announcements.DELETE("/:id", h.Admin.Announcement.Delete)
 		announcements.GET("/:id/read-status", h.Admin.Announcement.ListReadStatus)
+	}
+}
+
+func registerNewsRoutes(admin *gin.RouterGroup, h *handler.Handlers) {
+	news := admin.Group("/news")
+	{
+		news.GET("", h.Admin.News.List)
+		news.POST("", h.Admin.News.Create)
+		news.GET("/:id", h.Admin.News.GetByID)
+		news.PUT("/:id", h.Admin.News.Update)
+		news.DELETE("/:id", h.Admin.News.Delete)
+		news.POST("/:id/translations/:locale/ai-translate", h.Admin.News.AITranslate)
 	}
 }
 

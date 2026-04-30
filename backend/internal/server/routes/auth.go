@@ -89,8 +89,8 @@ func RegisterAuthRoutes(
 
 	news := v1.Group("/news")
 	{
-		news.GET("", h.Announcement.ListPublic)
-		news.GET("/:id", h.Announcement.GetPublic)
+		news.GET("", h.News.ListPublic)
+		news.GET("/:id", h.News.GetPublic)
 	}
 
 	// 需要认证的当前用户信息

@@ -16,7 +16,7 @@ export async function generateMetadata({
   const fallbackDescription = resolveSeoText(safeLocale, 'seo.news.description');
 
   try {
-    const item = await getPublicNewsDetailServer(id);
+    const item = await getPublicNewsDetailServer(id, safeLocale);
     const description = buildNewsDescription(item.content) || fallbackDescription;
 
     return buildPublicMetadata({

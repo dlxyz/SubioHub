@@ -18,10 +18,15 @@ import (
 type githubReleaseClient struct {
 	httpClient         *http.Client
 	downloadHTTPClient *http.Client
+	githubToken        string
 }
 
 type githubReleaseClientError struct {
 	err error
+}
+
+type githubAPIErrorPayload struct {
+	Message string `json:"message"`
 }
 
 // NewGitHubReleaseClient 创建 GitHub Release 客户端
@@ -29,7 +34,7 @@ type githubReleaseClientError struct {
 // 代理配置失败时行为由 allowDirectOnProxyError 控制：
 //   - false（默认）：返回错误占位客户端，禁止回退到直连
 //   - true：回退到直连（仅限管理员显式开启）
-func NewGitHubReleaseClient(proxyURL string, allowDirectOnProxyError bool) service.GitHubReleaseClient {
+func NewGitHubReleaseClient(proxyURL string, githubToken string, allowDirectOnProxyError bool) service.GitHubReleaseClient {
 	// 安全说明：httpclient.GetClient 的错误链（url.Parse / proxyutil）不含明文代理凭据，
 	// 但仍通过 slog 仅在服务端日志记录，不会暴露给 HTTP 响应。
 	sharedClient, err := httpclient.GetClient(httpclient.Options{
@@ -60,6 +65,7 @@ func NewGitHubReleaseClient(proxyURL string, allowDirectOnProxyError bool) servi
 	return &githubReleaseClient{
 		httpClient:         sharedClient,
 		downloadHTTPClient: downloadClient,
+		githubToken:        strings.TrimSpace(githubToken),
 	}
 }
 
@@ -84,6 +90,9 @@ func (c *githubReleaseClient) FetchLatestRelease(ctx context.Context, repo strin
 	}
 	req.Header.Set("Accept", "application/vnd.github.v3+json")
 	req.Header.Set("User-Agent", "SubioHub-Updater")
+	if c.githubToken != "" {
+		req.Header.Set("Authorization", "Bearer "+c.githubToken)
+	}
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
@@ -92,7 +101,8 @@ func (c *githubReleaseClient) FetchLatestRelease(ctx context.Context, repo strin
 	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("GitHub API returned %d", resp.StatusCode)
+		body, _ := io.ReadAll(io.LimitReader(resp.Body, 4096))
+		return nil, buildGitHubAPIError(resp.StatusCode, resp.Header, body)
 	}
 
 	var release service.GitHubRelease
@@ -101,6 +111,46 @@ func (c *githubReleaseClient) FetchLatestRelease(ctx context.Context, repo strin
 	}
 
 	return &release, nil
+}
+
+func buildGitHubAPIError(statusCode int, header http.Header, body []byte) error {
+	rawMessage := ""
+	var payload githubAPIErrorPayload
+	if err := json.Unmarshal(body, &payload); err == nil {
+		rawMessage = strings.TrimSpace(payload.Message)
+	}
+	if rawMessage == "" {
+		rawMessage = strings.TrimSpace(string(body))
+	}
+	if len(rawMessage) > 200 {
+		rawMessage = rawMessage[:200]
+	}
+
+	switch statusCode {
+	case http.StatusForbidden:
+		remaining := strings.TrimSpace(header.Get("X-RateLimit-Remaining"))
+		reset := strings.TrimSpace(header.Get("X-RateLimit-Reset"))
+		if remaining == "0" {
+			if reset != "" {
+				return fmt.Errorf("GitHub API rate limit reached; retry after reset time %s", reset)
+			}
+			return fmt.Errorf("GitHub API rate limit reached; retry later")
+		}
+		if rawMessage != "" {
+			return fmt.Errorf("GitHub release check forbidden (403): %s", rawMessage)
+		}
+		return fmt.Errorf("GitHub release check forbidden (403)")
+	case http.StatusUnauthorized:
+		if rawMessage != "" {
+			return fmt.Errorf("GitHub release check unauthorized (401): %s", rawMessage)
+		}
+		return fmt.Errorf("GitHub release check unauthorized (401)")
+	default:
+		if rawMessage != "" {
+			return fmt.Errorf("GitHub API returned %d: %s", statusCode, rawMessage)
+		}
+		return fmt.Errorf("GitHub API returned %d", statusCode)
+	}
 }
 
 func (c *githubReleaseClient) DownloadFile(ctx context.Context, url, dest string, maxSize int64) error {

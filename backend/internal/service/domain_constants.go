@@ -166,6 +166,13 @@ const (
 	SettingKeyFallbackModelGemini      = "fallback_model_gemini"
 	SettingKeyFallbackModelAntigravity = "fallback_model_antigravity"
 
+	// News translation AI settings
+	SettingKeyNewsTranslationAPIKey         = "news_translation_api_key"
+	SettingKeyNewsTranslationBaseURL        = "news_translation_base_url"
+	SettingKeyNewsTranslationModel          = "news_translation_model"
+	SettingKeyNewsTranslationTimeoutSeconds = "news_translation_timeout_seconds"
+	SettingKeyNewsTranslationTemperature    = "news_translation_temperature"
+
 	// Request identity patch (Claude -> Gemini systemInstruction injection)
 	SettingKeyEnableIdentityPatch = "enable_identity_patch"
 	SettingKeyIdentityPatchPrompt = "identity_patch_prompt"

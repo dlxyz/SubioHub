@@ -3,10 +3,17 @@ import type { AppLocale } from '@/store/locale';
 
 export interface PublicNewsItem {
   id: number;
+  slug: string;
+  locale: string;
+  fallback_locale?: string | null;
   title: string;
+  summary: string;
   content: string;
-  starts_at?: string | null;
-  ends_at?: string | null;
+  seo_title?: string | null;
+  seo_description?: string | null;
+  cover_image_url?: string | null;
+  author_name?: string | null;
+  published_at?: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -38,8 +45,13 @@ function getServerApiBaseUrl() {
   return `${siteOrigin.replace(/\/$/, '')}/api/v1`;
 }
 
-async function fetchPublicApi<T>(path: string): Promise<T> {
-  const response = await fetch(`${getServerApiBaseUrl()}${path}`, {
+async function fetchPublicApi<T>(path: string, locale?: string): Promise<T> {
+  const url = new URL(`${getServerApiBaseUrl()}${path}`);
+  if (locale) {
+    url.searchParams.set('locale', locale);
+  }
+
+  const response = await fetch(url.toString(), {
     next: {
       revalidate: 300,
     },
@@ -53,16 +65,17 @@ async function fetchPublicApi<T>(path: string): Promise<T> {
   return unwrapSuccessEnvelope(payload) as T;
 }
 
-export async function listPublicNewsServer() {
-  return fetchPublicApi<PublicNewsItem[]>('/news');
+export async function listPublicNewsServer(locale?: string) {
+  return fetchPublicApi<PublicNewsItem[]>('/news', locale);
 }
 
-export async function getPublicNewsDetailServer(id: number | string) {
-  return fetchPublicApi<PublicNewsItem>(`/news/${id}`);
+export async function getPublicNewsDetailServer(id: number | string, locale?: string) {
+  return fetchPublicApi<PublicNewsItem>(`/news/${id}`, locale);
 }
 
 export function stripNewsContent(content: string) {
   return content
+    .replace(/<[^>]+>/g, ' ')
     .replace(/```[\s\S]*?```/g, ' ')
     .replace(/`[^`]*`/g, ' ')
     .replace(/[#>*_\-\[\]\(\)!]/g, ' ')

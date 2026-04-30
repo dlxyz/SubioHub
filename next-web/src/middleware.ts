@@ -1,4 +1,4 @@
-﻿﻿import { NextResponse, type NextRequest } from 'next/server';
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿import { NextResponse, type NextRequest } from 'next/server';
 import { isAppLocale } from '@/store/locale';
 
 const defaultLocale = 'zh-CN';

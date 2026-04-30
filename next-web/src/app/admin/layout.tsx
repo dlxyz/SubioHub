@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
@@ -18,6 +18,7 @@ import {
   LayoutDashboard,
   Menu,
   Moon,
+  Newspaper,
   Settings,
   Shield,
   Sun,
@@ -57,6 +58,7 @@ const adminSections: NavSection[] = [
       { labelKey: 'admin.nav.subscriptions', href: '/admin/subscriptions', icon: CreditCard },
       { labelKey: 'admin.nav.accounts', href: '/admin/accounts', icon: Globe },
       { labelKey: 'admin.nav.announcements', href: '/admin/announcements', icon: Bell },
+      { labelKey: 'admin.nav.news', href: '/admin/news', icon: Newspaper },
       { labelKey: 'admin.nav.proxies', href: '/admin/proxies', icon: Shield },
       { labelKey: 'admin.nav.redeem', href: '/admin/redeem', icon: Ticket },
       { labelKey: 'admin.nav.promoCodes', href: '/admin/promo-codes', icon: Gift },

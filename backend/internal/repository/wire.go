@@ -28,7 +28,7 @@ func ProvideConcurrencyCache(rdb *redis.Client, cfg *config.Config) service.Conc
 // ProvideGitHubReleaseClient 创建 GitHub Release 客户端
 // 从配置中读取代理设置，支持国内服务器通过代理访问 GitHub
 func ProvideGitHubReleaseClient(cfg *config.Config) service.GitHubReleaseClient {
-	return NewGitHubReleaseClient(cfg.Update.ProxyURL, cfg.Security.ProxyFallback.AllowDirectOnError)
+	return NewGitHubReleaseClient(cfg.Update.ProxyURL, cfg.Update.GitHubToken, cfg.Security.ProxyFallback.AllowDirectOnError)
 }
 
 // ProvidePricingRemoteClient 创建定价数据远程客户端
@@ -75,6 +75,7 @@ var ProviderSet = wire.NewSet(
 	NewPromoCodeRepository,
 	NewAnnouncementRepository,
 	NewAnnouncementReadRepository,
+	NewNewsRepository,
 	NewUsageLogRepository,
 	NewUsageBillingRepository,
 	NewIdempotencyRepository,

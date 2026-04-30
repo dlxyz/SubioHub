@@ -24,6 +24,8 @@ import (
 	"github.com/dlxyz/SubioHub/ent/errorpassthroughrule"
 	"github.com/dlxyz/SubioHub/ent/group"
 	"github.com/dlxyz/SubioHub/ent/idempotencyrecord"
+	"github.com/dlxyz/SubioHub/ent/newspost"
+	"github.com/dlxyz/SubioHub/ent/newsposttranslation"
 	"github.com/dlxyz/SubioHub/ent/paymentauditlog"
 	"github.com/dlxyz/SubioHub/ent/paymentorder"
 	"github.com/dlxyz/SubioHub/ent/paymentproviderinstance"
@@ -69,6 +71,10 @@ type Client struct {
 	Group *GroupClient
 	// IdempotencyRecord is the client for interacting with the IdempotencyRecord builders.
 	IdempotencyRecord *IdempotencyRecordClient
+	// NewsPost is the client for interacting with the NewsPost builders.
+	NewsPost *NewsPostClient
+	// NewsPostTranslation is the client for interacting with the NewsPostTranslation builders.
+	NewsPostTranslation *NewsPostTranslationClient
 	// PaymentAuditLog is the client for interacting with the PaymentAuditLog builders.
 	PaymentAuditLog *PaymentAuditLogClient
 	// PaymentOrder is the client for interacting with the PaymentOrder builders.
@@ -125,6 +131,8 @@ func (c *Client) init() {
 	c.ErrorPassthroughRule = NewErrorPassthroughRuleClient(c.config)
 	c.Group = NewGroupClient(c.config)
 	c.IdempotencyRecord = NewIdempotencyRecordClient(c.config)
+	c.NewsPost = NewNewsPostClient(c.config)
+	c.NewsPostTranslation = NewNewsPostTranslationClient(c.config)
 	c.PaymentAuditLog = NewPaymentAuditLogClient(c.config)
 	c.PaymentOrder = NewPaymentOrderClient(c.config)
 	c.PaymentProviderInstance = NewPaymentProviderInstanceClient(c.config)
@@ -244,6 +252,8 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		ErrorPassthroughRule:    NewErrorPassthroughRuleClient(cfg),
 		Group:                   NewGroupClient(cfg),
 		IdempotencyRecord:       NewIdempotencyRecordClient(cfg),
+		NewsPost:                NewNewsPostClient(cfg),
+		NewsPostTranslation:     NewNewsPostTranslationClient(cfg),
 		PaymentAuditLog:         NewPaymentAuditLogClient(cfg),
 		PaymentOrder:            NewPaymentOrderClient(cfg),
 		PaymentProviderInstance: NewPaymentProviderInstanceClient(cfg),
@@ -290,6 +300,8 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		ErrorPassthroughRule:    NewErrorPassthroughRuleClient(cfg),
 		Group:                   NewGroupClient(cfg),
 		IdempotencyRecord:       NewIdempotencyRecordClient(cfg),
+		NewsPost:                NewNewsPostClient(cfg),
+		NewsPostTranslation:     NewNewsPostTranslationClient(cfg),
 		PaymentAuditLog:         NewPaymentAuditLogClient(cfg),
 		PaymentOrder:            NewPaymentOrderClient(cfg),
 		PaymentProviderInstance: NewPaymentProviderInstanceClient(cfg),
@@ -339,10 +351,11 @@ func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
 		c.APIKey, c.Account, c.AccountGroup, c.Announcement, c.AnnouncementRead,
 		c.CommissionLog, c.ErrorPassthroughRule, c.Group, c.IdempotencyRecord,
-		c.PaymentAuditLog, c.PaymentOrder, c.PaymentProviderInstance, c.PromoCode,
-		c.PromoCodeUsage, c.Proxy, c.RedeemCode, c.SecuritySecret, c.Setting,
-		c.SubscriptionPlan, c.TLSFingerprintProfile, c.UsageCleanupTask, c.UsageLog,
-		c.User, c.UserAllowedGroup, c.UserAttributeDefinition, c.UserAttributeValue,
+		c.NewsPost, c.NewsPostTranslation, c.PaymentAuditLog, c.PaymentOrder,
+		c.PaymentProviderInstance, c.PromoCode, c.PromoCodeUsage, c.Proxy,
+		c.RedeemCode, c.SecuritySecret, c.Setting, c.SubscriptionPlan,
+		c.TLSFingerprintProfile, c.UsageCleanupTask, c.UsageLog, c.User,
+		c.UserAllowedGroup, c.UserAttributeDefinition, c.UserAttributeValue,
 		c.UserSubscription,
 	} {
 		n.Use(hooks...)
@@ -355,10 +368,11 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
 		c.APIKey, c.Account, c.AccountGroup, c.Announcement, c.AnnouncementRead,
 		c.CommissionLog, c.ErrorPassthroughRule, c.Group, c.IdempotencyRecord,
-		c.PaymentAuditLog, c.PaymentOrder, c.PaymentProviderInstance, c.PromoCode,
-		c.PromoCodeUsage, c.Proxy, c.RedeemCode, c.SecuritySecret, c.Setting,
-		c.SubscriptionPlan, c.TLSFingerprintProfile, c.UsageCleanupTask, c.UsageLog,
-		c.User, c.UserAllowedGroup, c.UserAttributeDefinition, c.UserAttributeValue,
+		c.NewsPost, c.NewsPostTranslation, c.PaymentAuditLog, c.PaymentOrder,
+		c.PaymentProviderInstance, c.PromoCode, c.PromoCodeUsage, c.Proxy,
+		c.RedeemCode, c.SecuritySecret, c.Setting, c.SubscriptionPlan,
+		c.TLSFingerprintProfile, c.UsageCleanupTask, c.UsageLog, c.User,
+		c.UserAllowedGroup, c.UserAttributeDefinition, c.UserAttributeValue,
 		c.UserSubscription,
 	} {
 		n.Intercept(interceptors...)
@@ -386,6 +400,10 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.Group.mutate(ctx, m)
 	case *IdempotencyRecordMutation:
 		return c.IdempotencyRecord.mutate(ctx, m)
+	case *NewsPostMutation:
+		return c.NewsPost.mutate(ctx, m)
+	case *NewsPostTranslationMutation:
+		return c.NewsPostTranslation.mutate(ctx, m)
 	case *PaymentAuditLogMutation:
 		return c.PaymentAuditLog.mutate(ctx, m)
 	case *PaymentOrderMutation:
@@ -1946,6 +1964,304 @@ func (c *IdempotencyRecordClient) mutate(ctx context.Context, m *IdempotencyReco
 		return (&IdempotencyRecordDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown IdempotencyRecord mutation op: %q", m.Op())
+	}
+}
+
+// NewsPostClient is a client for the NewsPost schema.
+type NewsPostClient struct {
+	config
+}
+
+// NewNewsPostClient returns a client for the NewsPost from the given config.
+func NewNewsPostClient(c config) *NewsPostClient {
+	return &NewsPostClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `newspost.Hooks(f(g(h())))`.
+func (c *NewsPostClient) Use(hooks ...Hook) {
+	c.hooks.NewsPost = append(c.hooks.NewsPost, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `newspost.Intercept(f(g(h())))`.
+func (c *NewsPostClient) Intercept(interceptors ...Interceptor) {
+	c.inters.NewsPost = append(c.inters.NewsPost, interceptors...)
+}
+
+// Create returns a builder for creating a NewsPost entity.
+func (c *NewsPostClient) Create() *NewsPostCreate {
+	mutation := newNewsPostMutation(c.config, OpCreate)
+	return &NewsPostCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of NewsPost entities.
+func (c *NewsPostClient) CreateBulk(builders ...*NewsPostCreate) *NewsPostCreateBulk {
+	return &NewsPostCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *NewsPostClient) MapCreateBulk(slice any, setFunc func(*NewsPostCreate, int)) *NewsPostCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &NewsPostCreateBulk{err: fmt.Errorf("calling to NewsPostClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*NewsPostCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &NewsPostCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for NewsPost.
+func (c *NewsPostClient) Update() *NewsPostUpdate {
+	mutation := newNewsPostMutation(c.config, OpUpdate)
+	return &NewsPostUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *NewsPostClient) UpdateOne(_m *NewsPost) *NewsPostUpdateOne {
+	mutation := newNewsPostMutation(c.config, OpUpdateOne, withNewsPost(_m))
+	return &NewsPostUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *NewsPostClient) UpdateOneID(id int64) *NewsPostUpdateOne {
+	mutation := newNewsPostMutation(c.config, OpUpdateOne, withNewsPostID(id))
+	return &NewsPostUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for NewsPost.
+func (c *NewsPostClient) Delete() *NewsPostDelete {
+	mutation := newNewsPostMutation(c.config, OpDelete)
+	return &NewsPostDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *NewsPostClient) DeleteOne(_m *NewsPost) *NewsPostDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *NewsPostClient) DeleteOneID(id int64) *NewsPostDeleteOne {
+	builder := c.Delete().Where(newspost.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &NewsPostDeleteOne{builder}
+}
+
+// Query returns a query builder for NewsPost.
+func (c *NewsPostClient) Query() *NewsPostQuery {
+	return &NewsPostQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeNewsPost},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a NewsPost entity by its id.
+func (c *NewsPostClient) Get(ctx context.Context, id int64) (*NewsPost, error) {
+	return c.Query().Where(newspost.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *NewsPostClient) GetX(ctx context.Context, id int64) *NewsPost {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryTranslations queries the translations edge of a NewsPost.
+func (c *NewsPostClient) QueryTranslations(_m *NewsPost) *NewsPostTranslationQuery {
+	query := (&NewsPostTranslationClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(newspost.Table, newspost.FieldID, id),
+			sqlgraph.To(newsposttranslation.Table, newsposttranslation.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, newspost.TranslationsTable, newspost.TranslationsColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *NewsPostClient) Hooks() []Hook {
+	return c.hooks.NewsPost
+}
+
+// Interceptors returns the client interceptors.
+func (c *NewsPostClient) Interceptors() []Interceptor {
+	return c.inters.NewsPost
+}
+
+func (c *NewsPostClient) mutate(ctx context.Context, m *NewsPostMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&NewsPostCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&NewsPostUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&NewsPostUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&NewsPostDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown NewsPost mutation op: %q", m.Op())
+	}
+}
+
+// NewsPostTranslationClient is a client for the NewsPostTranslation schema.
+type NewsPostTranslationClient struct {
+	config
+}
+
+// NewNewsPostTranslationClient returns a client for the NewsPostTranslation from the given config.
+func NewNewsPostTranslationClient(c config) *NewsPostTranslationClient {
+	return &NewsPostTranslationClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `newsposttranslation.Hooks(f(g(h())))`.
+func (c *NewsPostTranslationClient) Use(hooks ...Hook) {
+	c.hooks.NewsPostTranslation = append(c.hooks.NewsPostTranslation, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `newsposttranslation.Intercept(f(g(h())))`.
+func (c *NewsPostTranslationClient) Intercept(interceptors ...Interceptor) {
+	c.inters.NewsPostTranslation = append(c.inters.NewsPostTranslation, interceptors...)
+}
+
+// Create returns a builder for creating a NewsPostTranslation entity.
+func (c *NewsPostTranslationClient) Create() *NewsPostTranslationCreate {
+	mutation := newNewsPostTranslationMutation(c.config, OpCreate)
+	return &NewsPostTranslationCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of NewsPostTranslation entities.
+func (c *NewsPostTranslationClient) CreateBulk(builders ...*NewsPostTranslationCreate) *NewsPostTranslationCreateBulk {
+	return &NewsPostTranslationCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *NewsPostTranslationClient) MapCreateBulk(slice any, setFunc func(*NewsPostTranslationCreate, int)) *NewsPostTranslationCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &NewsPostTranslationCreateBulk{err: fmt.Errorf("calling to NewsPostTranslationClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*NewsPostTranslationCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &NewsPostTranslationCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for NewsPostTranslation.
+func (c *NewsPostTranslationClient) Update() *NewsPostTranslationUpdate {
+	mutation := newNewsPostTranslationMutation(c.config, OpUpdate)
+	return &NewsPostTranslationUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *NewsPostTranslationClient) UpdateOne(_m *NewsPostTranslation) *NewsPostTranslationUpdateOne {
+	mutation := newNewsPostTranslationMutation(c.config, OpUpdateOne, withNewsPostTranslation(_m))
+	return &NewsPostTranslationUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *NewsPostTranslationClient) UpdateOneID(id int64) *NewsPostTranslationUpdateOne {
+	mutation := newNewsPostTranslationMutation(c.config, OpUpdateOne, withNewsPostTranslationID(id))
+	return &NewsPostTranslationUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for NewsPostTranslation.
+func (c *NewsPostTranslationClient) Delete() *NewsPostTranslationDelete {
+	mutation := newNewsPostTranslationMutation(c.config, OpDelete)
+	return &NewsPostTranslationDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *NewsPostTranslationClient) DeleteOne(_m *NewsPostTranslation) *NewsPostTranslationDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *NewsPostTranslationClient) DeleteOneID(id int64) *NewsPostTranslationDeleteOne {
+	builder := c.Delete().Where(newsposttranslation.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &NewsPostTranslationDeleteOne{builder}
+}
+
+// Query returns a query builder for NewsPostTranslation.
+func (c *NewsPostTranslationClient) Query() *NewsPostTranslationQuery {
+	return &NewsPostTranslationQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeNewsPostTranslation},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a NewsPostTranslation entity by its id.
+func (c *NewsPostTranslationClient) Get(ctx context.Context, id int64) (*NewsPostTranslation, error) {
+	return c.Query().Where(newsposttranslation.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *NewsPostTranslationClient) GetX(ctx context.Context, id int64) *NewsPostTranslation {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryNewsPost queries the news_post edge of a NewsPostTranslation.
+func (c *NewsPostTranslationClient) QueryNewsPost(_m *NewsPostTranslation) *NewsPostQuery {
+	query := (&NewsPostClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(newsposttranslation.Table, newsposttranslation.FieldID, id),
+			sqlgraph.To(newspost.Table, newspost.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, newsposttranslation.NewsPostTable, newsposttranslation.NewsPostColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *NewsPostTranslationClient) Hooks() []Hook {
+	return c.hooks.NewsPostTranslation
+}
+
+// Interceptors returns the client interceptors.
+func (c *NewsPostTranslationClient) Interceptors() []Interceptor {
+	return c.inters.NewsPostTranslation
+}
+
+func (c *NewsPostTranslationClient) mutate(ctx context.Context, m *NewsPostTranslationMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&NewsPostTranslationCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&NewsPostTranslationUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&NewsPostTranslationUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&NewsPostTranslationDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown NewsPostTranslation mutation op: %q", m.Op())
 	}
 }
 
@@ -4882,19 +5198,19 @@ func (c *UserSubscriptionClient) mutate(ctx context.Context, m *UserSubscription
 type (
 	hooks struct {
 		APIKey, Account, AccountGroup, Announcement, AnnouncementRead, CommissionLog,
-		ErrorPassthroughRule, Group, IdempotencyRecord, PaymentAuditLog, PaymentOrder,
-		PaymentProviderInstance, PromoCode, PromoCodeUsage, Proxy, RedeemCode,
-		SecuritySecret, Setting, SubscriptionPlan, TLSFingerprintProfile,
-		UsageCleanupTask, UsageLog, User, UserAllowedGroup, UserAttributeDefinition,
-		UserAttributeValue, UserSubscription []ent.Hook
+		ErrorPassthroughRule, Group, IdempotencyRecord, NewsPost, NewsPostTranslation,
+		PaymentAuditLog, PaymentOrder, PaymentProviderInstance, PromoCode,
+		PromoCodeUsage, Proxy, RedeemCode, SecuritySecret, Setting, SubscriptionPlan,
+		TLSFingerprintProfile, UsageCleanupTask, UsageLog, User, UserAllowedGroup,
+		UserAttributeDefinition, UserAttributeValue, UserSubscription []ent.Hook
 	}
 	inters struct {
 		APIKey, Account, AccountGroup, Announcement, AnnouncementRead, CommissionLog,
-		ErrorPassthroughRule, Group, IdempotencyRecord, PaymentAuditLog, PaymentOrder,
-		PaymentProviderInstance, PromoCode, PromoCodeUsage, Proxy, RedeemCode,
-		SecuritySecret, Setting, SubscriptionPlan, TLSFingerprintProfile,
-		UsageCleanupTask, UsageLog, User, UserAllowedGroup, UserAttributeDefinition,
-		UserAttributeValue, UserSubscription []ent.Interceptor
+		ErrorPassthroughRule, Group, IdempotencyRecord, NewsPost, NewsPostTranslation,
+		PaymentAuditLog, PaymentOrder, PaymentProviderInstance, PromoCode,
+		PromoCodeUsage, Proxy, RedeemCode, SecuritySecret, Setting, SubscriptionPlan,
+		TLSFingerprintProfile, UsageCleanupTask, UsageLog, User, UserAllowedGroup,
+		UserAttributeDefinition, UserAttributeValue, UserSubscription []ent.Interceptor
 	}
 )
 

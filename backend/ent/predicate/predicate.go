@@ -33,6 +33,12 @@ type Group func(*sql.Selector)
 // IdempotencyRecord is the predicate function for idempotencyrecord builders.
 type IdempotencyRecord func(*sql.Selector)
 
+// NewsPost is the predicate function for newspost builders.
+type NewsPost func(*sql.Selector)
+
+// NewsPostTranslation is the predicate function for newsposttranslation builders.
+type NewsPostTranslation func(*sql.Selector)
+
 // PaymentAuditLog is the predicate function for paymentauditlog builders.
 type PaymentAuditLog func(*sql.Selector)
 

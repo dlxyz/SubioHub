@@ -21,6 +21,8 @@ import (
 	"github.com/dlxyz/SubioHub/ent/errorpassthroughrule"
 	"github.com/dlxyz/SubioHub/ent/group"
 	"github.com/dlxyz/SubioHub/ent/idempotencyrecord"
+	"github.com/dlxyz/SubioHub/ent/newspost"
+	"github.com/dlxyz/SubioHub/ent/newsposttranslation"
 	"github.com/dlxyz/SubioHub/ent/paymentauditlog"
 	"github.com/dlxyz/SubioHub/ent/paymentorder"
 	"github.com/dlxyz/SubioHub/ent/paymentproviderinstance"
@@ -108,6 +110,8 @@ func checkColumn(t, c string) error {
 			errorpassthroughrule.Table:    errorpassthroughrule.ValidColumn,
 			group.Table:                   group.ValidColumn,
 			idempotencyrecord.Table:       idempotencyrecord.ValidColumn,
+			newspost.Table:                newspost.ValidColumn,
+			newsposttranslation.Table:     newsposttranslation.ValidColumn,
 			paymentauditlog.Table:         paymentauditlog.ValidColumn,
 			paymentorder.Table:            paymentorder.ValidColumn,
 			paymentproviderinstance.Table: paymentproviderinstance.ValidColumn,

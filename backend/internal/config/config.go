@@ -82,6 +82,7 @@ type Config struct {
 	RunMode                 string                        `mapstructure:"run_mode" yaml:"run_mode"`
 	Timezone                string                        `mapstructure:"timezone"` // e.g. "Asia/Shanghai", "UTC"
 	Gemini                  GeminiConfig                  `mapstructure:"gemini"`
+	NewsTranslation         NewsTranslationConfig         `mapstructure:"news_translation"`
 	Update                  UpdateConfig                  `mapstructure:"update"`
 	Idempotency             IdempotencyConfig             `mapstructure:"idempotency"`
 }
@@ -145,6 +146,16 @@ type UpdateConfig struct {
 	// 支持 http/https/socks5/socks5h 协议
 	// 例如: "http://127.0.0.1:7890", "socks5://127.0.0.1:1080"
 	ProxyURL string `mapstructure:"proxy_url"`
+	// GitHubToken 可选，用于提高 GitHub Releases API 检查更新的稳定性，避免匿名限流
+	GitHubToken string `mapstructure:"github_token"`
+}
+
+type NewsTranslationConfig struct {
+	APIKey         string  `mapstructure:"api_key"`
+	BaseURL        string  `mapstructure:"base_url"`
+	Model          string  `mapstructure:"model"`
+	TimeoutSeconds int     `mapstructure:"timeout_seconds"`
+	Temperature    float64 `mapstructure:"temperature"`
 }
 
 type IdempotencyConfig struct {
@@ -1016,6 +1027,15 @@ func load(allowMissingJWTSecret bool) (*Config, error) {
 	cfg.LinuxDo.TokenURL = strings.TrimSpace(cfg.LinuxDo.TokenURL)
 	cfg.LinuxDo.UserInfoURL = strings.TrimSpace(cfg.LinuxDo.UserInfoURL)
 	cfg.LinuxDo.Scopes = strings.TrimSpace(cfg.LinuxDo.Scopes)
+	cfg.NewsTranslation.APIKey = strings.TrimSpace(cfg.NewsTranslation.APIKey)
+	cfg.NewsTranslation.BaseURL = strings.TrimSpace(cfg.NewsTranslation.BaseURL)
+	cfg.NewsTranslation.Model = strings.TrimSpace(cfg.NewsTranslation.Model)
+	if cfg.NewsTranslation.TimeoutSeconds <= 0 {
+		cfg.NewsTranslation.TimeoutSeconds = 60
+	}
+	if cfg.NewsTranslation.Temperature < 0 {
+		cfg.NewsTranslation.Temperature = 0
+	}
 	cfg.LinuxDo.RedirectURL = strings.TrimSpace(cfg.LinuxDo.RedirectURL)
 	cfg.LinuxDo.FrontendRedirectURL = strings.TrimSpace(cfg.LinuxDo.FrontendRedirectURL)
 	cfg.LinuxDo.TokenAuthMethod = strings.ToLower(strings.TrimSpace(cfg.LinuxDo.TokenAuthMethod))
@@ -1310,6 +1330,17 @@ func setDefaults() {
 	viper.SetDefault("pricing.fallback_file", "./resources/model-pricing/model_prices_and_context_window.json")
 	viper.SetDefault("pricing.update_interval_hours", 24)
 	viper.SetDefault("pricing.hash_check_interval_minutes", 10)
+
+	// Update
+	viper.SetDefault("update.proxy_url", "")
+	viper.SetDefault("update.github_token", "")
+
+	// News translation
+	viper.SetDefault("news_translation.api_key", "")
+	viper.SetDefault("news_translation.base_url", "https://api.openai.com/v1")
+	viper.SetDefault("news_translation.model", "")
+	viper.SetDefault("news_translation.timeout_seconds", 60)
+	viper.SetDefault("news_translation.temperature", 0.2)
 
 	// Timezone (default to Asia/Shanghai for Chinese users)
 	viper.SetDefault("timezone", "Asia/Shanghai")

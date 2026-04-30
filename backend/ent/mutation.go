@@ -21,6 +21,8 @@ import (
 	"github.com/dlxyz/SubioHub/ent/errorpassthroughrule"
 	"github.com/dlxyz/SubioHub/ent/group"
 	"github.com/dlxyz/SubioHub/ent/idempotencyrecord"
+	"github.com/dlxyz/SubioHub/ent/newspost"
+	"github.com/dlxyz/SubioHub/ent/newsposttranslation"
 	"github.com/dlxyz/SubioHub/ent/paymentauditlog"
 	"github.com/dlxyz/SubioHub/ent/paymentorder"
 	"github.com/dlxyz/SubioHub/ent/paymentproviderinstance"
@@ -61,6 +63,8 @@ const (
 	TypeErrorPassthroughRule    = "ErrorPassthroughRule"
 	TypeGroup                   = "Group"
 	TypeIdempotencyRecord       = "IdempotencyRecord"
+	TypeNewsPost                = "NewsPost"
+	TypeNewsPostTranslation     = "NewsPostTranslation"
 	TypePaymentAuditLog         = "PaymentAuditLog"
 	TypePaymentOrder            = "PaymentOrder"
 	TypePaymentProviderInstance = "PaymentProviderInstance"
@@ -13131,6 +13135,2228 @@ func (m *IdempotencyRecordMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *IdempotencyRecordMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown IdempotencyRecord edge %s", name)
+}
+
+// NewsPostMutation represents an operation that mutates the NewsPost nodes in the graph.
+type NewsPostMutation struct {
+	config
+	op                  Op
+	typ                 string
+	id                  *int64
+	slug                *string
+	status              *string
+	default_locale      *string
+	cover_image_url     *string
+	author_name         *string
+	published_at        *time.Time
+	created_by          *int64
+	addcreated_by       *int64
+	updated_by          *int64
+	addupdated_by       *int64
+	created_at          *time.Time
+	updated_at          *time.Time
+	clearedFields       map[string]struct{}
+	translations        map[int64]struct{}
+	removedtranslations map[int64]struct{}
+	clearedtranslations bool
+	done                bool
+	oldValue            func(context.Context) (*NewsPost, error)
+	predicates          []predicate.NewsPost
+}
+
+var _ ent.Mutation = (*NewsPostMutation)(nil)
+
+// newspostOption allows management of the mutation configuration using functional options.
+type newspostOption func(*NewsPostMutation)
+
+// newNewsPostMutation creates new mutation for the NewsPost entity.
+func newNewsPostMutation(c config, op Op, opts ...newspostOption) *NewsPostMutation {
+	m := &NewsPostMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeNewsPost,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withNewsPostID sets the ID field of the mutation.
+func withNewsPostID(id int64) newspostOption {
+	return func(m *NewsPostMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *NewsPost
+		)
+		m.oldValue = func(ctx context.Context) (*NewsPost, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().NewsPost.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withNewsPost sets the old NewsPost of the mutation.
+func withNewsPost(node *NewsPost) newspostOption {
+	return func(m *NewsPostMutation) {
+		m.oldValue = func(context.Context) (*NewsPost, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m NewsPostMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m NewsPostMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *NewsPostMutation) ID() (id int64, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *NewsPostMutation) IDs(ctx context.Context) ([]int64, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int64{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().NewsPost.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetSlug sets the "slug" field.
+func (m *NewsPostMutation) SetSlug(s string) {
+	m.slug = &s
+}
+
+// Slug returns the value of the "slug" field in the mutation.
+func (m *NewsPostMutation) Slug() (r string, exists bool) {
+	v := m.slug
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSlug returns the old "slug" field's value of the NewsPost entity.
+// If the NewsPost object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NewsPostMutation) OldSlug(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSlug is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSlug requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSlug: %w", err)
+	}
+	return oldValue.Slug, nil
+}
+
+// ResetSlug resets all changes to the "slug" field.
+func (m *NewsPostMutation) ResetSlug() {
+	m.slug = nil
+}
+
+// SetStatus sets the "status" field.
+func (m *NewsPostMutation) SetStatus(s string) {
+	m.status = &s
+}
+
+// Status returns the value of the "status" field in the mutation.
+func (m *NewsPostMutation) Status() (r string, exists bool) {
+	v := m.status
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldStatus returns the old "status" field's value of the NewsPost entity.
+// If the NewsPost object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NewsPostMutation) OldStatus(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldStatus is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldStatus requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldStatus: %w", err)
+	}
+	return oldValue.Status, nil
+}
+
+// ResetStatus resets all changes to the "status" field.
+func (m *NewsPostMutation) ResetStatus() {
+	m.status = nil
+}
+
+// SetDefaultLocale sets the "default_locale" field.
+func (m *NewsPostMutation) SetDefaultLocale(s string) {
+	m.default_locale = &s
+}
+
+// DefaultLocale returns the value of the "default_locale" field in the mutation.
+func (m *NewsPostMutation) DefaultLocale() (r string, exists bool) {
+	v := m.default_locale
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDefaultLocale returns the old "default_locale" field's value of the NewsPost entity.
+// If the NewsPost object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NewsPostMutation) OldDefaultLocale(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDefaultLocale is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDefaultLocale requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDefaultLocale: %w", err)
+	}
+	return oldValue.DefaultLocale, nil
+}
+
+// ResetDefaultLocale resets all changes to the "default_locale" field.
+func (m *NewsPostMutation) ResetDefaultLocale() {
+	m.default_locale = nil
+}
+
+// SetCoverImageURL sets the "cover_image_url" field.
+func (m *NewsPostMutation) SetCoverImageURL(s string) {
+	m.cover_image_url = &s
+}
+
+// CoverImageURL returns the value of the "cover_image_url" field in the mutation.
+func (m *NewsPostMutation) CoverImageURL() (r string, exists bool) {
+	v := m.cover_image_url
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCoverImageURL returns the old "cover_image_url" field's value of the NewsPost entity.
+// If the NewsPost object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NewsPostMutation) OldCoverImageURL(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCoverImageURL is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCoverImageURL requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCoverImageURL: %w", err)
+	}
+	return oldValue.CoverImageURL, nil
+}
+
+// ClearCoverImageURL clears the value of the "cover_image_url" field.
+func (m *NewsPostMutation) ClearCoverImageURL() {
+	m.cover_image_url = nil
+	m.clearedFields[newspost.FieldCoverImageURL] = struct{}{}
+}
+
+// CoverImageURLCleared returns if the "cover_image_url" field was cleared in this mutation.
+func (m *NewsPostMutation) CoverImageURLCleared() bool {
+	_, ok := m.clearedFields[newspost.FieldCoverImageURL]
+	return ok
+}
+
+// ResetCoverImageURL resets all changes to the "cover_image_url" field.
+func (m *NewsPostMutation) ResetCoverImageURL() {
+	m.cover_image_url = nil
+	delete(m.clearedFields, newspost.FieldCoverImageURL)
+}
+
+// SetAuthorName sets the "author_name" field.
+func (m *NewsPostMutation) SetAuthorName(s string) {
+	m.author_name = &s
+}
+
+// AuthorName returns the value of the "author_name" field in the mutation.
+func (m *NewsPostMutation) AuthorName() (r string, exists bool) {
+	v := m.author_name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAuthorName returns the old "author_name" field's value of the NewsPost entity.
+// If the NewsPost object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NewsPostMutation) OldAuthorName(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAuthorName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAuthorName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAuthorName: %w", err)
+	}
+	return oldValue.AuthorName, nil
+}
+
+// ClearAuthorName clears the value of the "author_name" field.
+func (m *NewsPostMutation) ClearAuthorName() {
+	m.author_name = nil
+	m.clearedFields[newspost.FieldAuthorName] = struct{}{}
+}
+
+// AuthorNameCleared returns if the "author_name" field was cleared in this mutation.
+func (m *NewsPostMutation) AuthorNameCleared() bool {
+	_, ok := m.clearedFields[newspost.FieldAuthorName]
+	return ok
+}
+
+// ResetAuthorName resets all changes to the "author_name" field.
+func (m *NewsPostMutation) ResetAuthorName() {
+	m.author_name = nil
+	delete(m.clearedFields, newspost.FieldAuthorName)
+}
+
+// SetPublishedAt sets the "published_at" field.
+func (m *NewsPostMutation) SetPublishedAt(t time.Time) {
+	m.published_at = &t
+}
+
+// PublishedAt returns the value of the "published_at" field in the mutation.
+func (m *NewsPostMutation) PublishedAt() (r time.Time, exists bool) {
+	v := m.published_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPublishedAt returns the old "published_at" field's value of the NewsPost entity.
+// If the NewsPost object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NewsPostMutation) OldPublishedAt(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPublishedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPublishedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPublishedAt: %w", err)
+	}
+	return oldValue.PublishedAt, nil
+}
+
+// ClearPublishedAt clears the value of the "published_at" field.
+func (m *NewsPostMutation) ClearPublishedAt() {
+	m.published_at = nil
+	m.clearedFields[newspost.FieldPublishedAt] = struct{}{}
+}
+
+// PublishedAtCleared returns if the "published_at" field was cleared in this mutation.
+func (m *NewsPostMutation) PublishedAtCleared() bool {
+	_, ok := m.clearedFields[newspost.FieldPublishedAt]
+	return ok
+}
+
+// ResetPublishedAt resets all changes to the "published_at" field.
+func (m *NewsPostMutation) ResetPublishedAt() {
+	m.published_at = nil
+	delete(m.clearedFields, newspost.FieldPublishedAt)
+}
+
+// SetCreatedBy sets the "created_by" field.
+func (m *NewsPostMutation) SetCreatedBy(i int64) {
+	m.created_by = &i
+	m.addcreated_by = nil
+}
+
+// CreatedBy returns the value of the "created_by" field in the mutation.
+func (m *NewsPostMutation) CreatedBy() (r int64, exists bool) {
+	v := m.created_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedBy returns the old "created_by" field's value of the NewsPost entity.
+// If the NewsPost object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NewsPostMutation) OldCreatedBy(ctx context.Context) (v *int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedBy is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedBy requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedBy: %w", err)
+	}
+	return oldValue.CreatedBy, nil
+}
+
+// AddCreatedBy adds i to the "created_by" field.
+func (m *NewsPostMutation) AddCreatedBy(i int64) {
+	if m.addcreated_by != nil {
+		*m.addcreated_by += i
+	} else {
+		m.addcreated_by = &i
+	}
+}
+
+// AddedCreatedBy returns the value that was added to the "created_by" field in this mutation.
+func (m *NewsPostMutation) AddedCreatedBy() (r int64, exists bool) {
+	v := m.addcreated_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearCreatedBy clears the value of the "created_by" field.
+func (m *NewsPostMutation) ClearCreatedBy() {
+	m.created_by = nil
+	m.addcreated_by = nil
+	m.clearedFields[newspost.FieldCreatedBy] = struct{}{}
+}
+
+// CreatedByCleared returns if the "created_by" field was cleared in this mutation.
+func (m *NewsPostMutation) CreatedByCleared() bool {
+	_, ok := m.clearedFields[newspost.FieldCreatedBy]
+	return ok
+}
+
+// ResetCreatedBy resets all changes to the "created_by" field.
+func (m *NewsPostMutation) ResetCreatedBy() {
+	m.created_by = nil
+	m.addcreated_by = nil
+	delete(m.clearedFields, newspost.FieldCreatedBy)
+}
+
+// SetUpdatedBy sets the "updated_by" field.
+func (m *NewsPostMutation) SetUpdatedBy(i int64) {
+	m.updated_by = &i
+	m.addupdated_by = nil
+}
+
+// UpdatedBy returns the value of the "updated_by" field in the mutation.
+func (m *NewsPostMutation) UpdatedBy() (r int64, exists bool) {
+	v := m.updated_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedBy returns the old "updated_by" field's value of the NewsPost entity.
+// If the NewsPost object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NewsPostMutation) OldUpdatedBy(ctx context.Context) (v *int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedBy is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedBy requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedBy: %w", err)
+	}
+	return oldValue.UpdatedBy, nil
+}
+
+// AddUpdatedBy adds i to the "updated_by" field.
+func (m *NewsPostMutation) AddUpdatedBy(i int64) {
+	if m.addupdated_by != nil {
+		*m.addupdated_by += i
+	} else {
+		m.addupdated_by = &i
+	}
+}
+
+// AddedUpdatedBy returns the value that was added to the "updated_by" field in this mutation.
+func (m *NewsPostMutation) AddedUpdatedBy() (r int64, exists bool) {
+	v := m.addupdated_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearUpdatedBy clears the value of the "updated_by" field.
+func (m *NewsPostMutation) ClearUpdatedBy() {
+	m.updated_by = nil
+	m.addupdated_by = nil
+	m.clearedFields[newspost.FieldUpdatedBy] = struct{}{}
+}
+
+// UpdatedByCleared returns if the "updated_by" field was cleared in this mutation.
+func (m *NewsPostMutation) UpdatedByCleared() bool {
+	_, ok := m.clearedFields[newspost.FieldUpdatedBy]
+	return ok
+}
+
+// ResetUpdatedBy resets all changes to the "updated_by" field.
+func (m *NewsPostMutation) ResetUpdatedBy() {
+	m.updated_by = nil
+	m.addupdated_by = nil
+	delete(m.clearedFields, newspost.FieldUpdatedBy)
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *NewsPostMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *NewsPostMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the NewsPost entity.
+// If the NewsPost object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NewsPostMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *NewsPostMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *NewsPostMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *NewsPostMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the NewsPost entity.
+// If the NewsPost object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NewsPostMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *NewsPostMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+}
+
+// AddTranslationIDs adds the "translations" edge to the NewsPostTranslation entity by ids.
+func (m *NewsPostMutation) AddTranslationIDs(ids ...int64) {
+	if m.translations == nil {
+		m.translations = make(map[int64]struct{})
+	}
+	for i := range ids {
+		m.translations[ids[i]] = struct{}{}
+	}
+}
+
+// ClearTranslations clears the "translations" edge to the NewsPostTranslation entity.
+func (m *NewsPostMutation) ClearTranslations() {
+	m.clearedtranslations = true
+}
+
+// TranslationsCleared reports if the "translations" edge to the NewsPostTranslation entity was cleared.
+func (m *NewsPostMutation) TranslationsCleared() bool {
+	return m.clearedtranslations
+}
+
+// RemoveTranslationIDs removes the "translations" edge to the NewsPostTranslation entity by IDs.
+func (m *NewsPostMutation) RemoveTranslationIDs(ids ...int64) {
+	if m.removedtranslations == nil {
+		m.removedtranslations = make(map[int64]struct{})
+	}
+	for i := range ids {
+		delete(m.translations, ids[i])
+		m.removedtranslations[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedTranslations returns the removed IDs of the "translations" edge to the NewsPostTranslation entity.
+func (m *NewsPostMutation) RemovedTranslationsIDs() (ids []int64) {
+	for id := range m.removedtranslations {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// TranslationsIDs returns the "translations" edge IDs in the mutation.
+func (m *NewsPostMutation) TranslationsIDs() (ids []int64) {
+	for id := range m.translations {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetTranslations resets all changes to the "translations" edge.
+func (m *NewsPostMutation) ResetTranslations() {
+	m.translations = nil
+	m.clearedtranslations = false
+	m.removedtranslations = nil
+}
+
+// Where appends a list predicates to the NewsPostMutation builder.
+func (m *NewsPostMutation) Where(ps ...predicate.NewsPost) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the NewsPostMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *NewsPostMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.NewsPost, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *NewsPostMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *NewsPostMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (NewsPost).
+func (m *NewsPostMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *NewsPostMutation) Fields() []string {
+	fields := make([]string, 0, 10)
+	if m.slug != nil {
+		fields = append(fields, newspost.FieldSlug)
+	}
+	if m.status != nil {
+		fields = append(fields, newspost.FieldStatus)
+	}
+	if m.default_locale != nil {
+		fields = append(fields, newspost.FieldDefaultLocale)
+	}
+	if m.cover_image_url != nil {
+		fields = append(fields, newspost.FieldCoverImageURL)
+	}
+	if m.author_name != nil {
+		fields = append(fields, newspost.FieldAuthorName)
+	}
+	if m.published_at != nil {
+		fields = append(fields, newspost.FieldPublishedAt)
+	}
+	if m.created_by != nil {
+		fields = append(fields, newspost.FieldCreatedBy)
+	}
+	if m.updated_by != nil {
+		fields = append(fields, newspost.FieldUpdatedBy)
+	}
+	if m.created_at != nil {
+		fields = append(fields, newspost.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, newspost.FieldUpdatedAt)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *NewsPostMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case newspost.FieldSlug:
+		return m.Slug()
+	case newspost.FieldStatus:
+		return m.Status()
+	case newspost.FieldDefaultLocale:
+		return m.DefaultLocale()
+	case newspost.FieldCoverImageURL:
+		return m.CoverImageURL()
+	case newspost.FieldAuthorName:
+		return m.AuthorName()
+	case newspost.FieldPublishedAt:
+		return m.PublishedAt()
+	case newspost.FieldCreatedBy:
+		return m.CreatedBy()
+	case newspost.FieldUpdatedBy:
+		return m.UpdatedBy()
+	case newspost.FieldCreatedAt:
+		return m.CreatedAt()
+	case newspost.FieldUpdatedAt:
+		return m.UpdatedAt()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *NewsPostMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case newspost.FieldSlug:
+		return m.OldSlug(ctx)
+	case newspost.FieldStatus:
+		return m.OldStatus(ctx)
+	case newspost.FieldDefaultLocale:
+		return m.OldDefaultLocale(ctx)
+	case newspost.FieldCoverImageURL:
+		return m.OldCoverImageURL(ctx)
+	case newspost.FieldAuthorName:
+		return m.OldAuthorName(ctx)
+	case newspost.FieldPublishedAt:
+		return m.OldPublishedAt(ctx)
+	case newspost.FieldCreatedBy:
+		return m.OldCreatedBy(ctx)
+	case newspost.FieldUpdatedBy:
+		return m.OldUpdatedBy(ctx)
+	case newspost.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case newspost.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
+	}
+	return nil, fmt.Errorf("unknown NewsPost field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *NewsPostMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case newspost.FieldSlug:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSlug(v)
+		return nil
+	case newspost.FieldStatus:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetStatus(v)
+		return nil
+	case newspost.FieldDefaultLocale:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDefaultLocale(v)
+		return nil
+	case newspost.FieldCoverImageURL:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCoverImageURL(v)
+		return nil
+	case newspost.FieldAuthorName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAuthorName(v)
+		return nil
+	case newspost.FieldPublishedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPublishedAt(v)
+		return nil
+	case newspost.FieldCreatedBy:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedBy(v)
+		return nil
+	case newspost.FieldUpdatedBy:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedBy(v)
+		return nil
+	case newspost.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case newspost.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown NewsPost field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *NewsPostMutation) AddedFields() []string {
+	var fields []string
+	if m.addcreated_by != nil {
+		fields = append(fields, newspost.FieldCreatedBy)
+	}
+	if m.addupdated_by != nil {
+		fields = append(fields, newspost.FieldUpdatedBy)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *NewsPostMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case newspost.FieldCreatedBy:
+		return m.AddedCreatedBy()
+	case newspost.FieldUpdatedBy:
+		return m.AddedUpdatedBy()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *NewsPostMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case newspost.FieldCreatedBy:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddCreatedBy(v)
+		return nil
+	case newspost.FieldUpdatedBy:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddUpdatedBy(v)
+		return nil
+	}
+	return fmt.Errorf("unknown NewsPost numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *NewsPostMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(newspost.FieldCoverImageURL) {
+		fields = append(fields, newspost.FieldCoverImageURL)
+	}
+	if m.FieldCleared(newspost.FieldAuthorName) {
+		fields = append(fields, newspost.FieldAuthorName)
+	}
+	if m.FieldCleared(newspost.FieldPublishedAt) {
+		fields = append(fields, newspost.FieldPublishedAt)
+	}
+	if m.FieldCleared(newspost.FieldCreatedBy) {
+		fields = append(fields, newspost.FieldCreatedBy)
+	}
+	if m.FieldCleared(newspost.FieldUpdatedBy) {
+		fields = append(fields, newspost.FieldUpdatedBy)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *NewsPostMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *NewsPostMutation) ClearField(name string) error {
+	switch name {
+	case newspost.FieldCoverImageURL:
+		m.ClearCoverImageURL()
+		return nil
+	case newspost.FieldAuthorName:
+		m.ClearAuthorName()
+		return nil
+	case newspost.FieldPublishedAt:
+		m.ClearPublishedAt()
+		return nil
+	case newspost.FieldCreatedBy:
+		m.ClearCreatedBy()
+		return nil
+	case newspost.FieldUpdatedBy:
+		m.ClearUpdatedBy()
+		return nil
+	}
+	return fmt.Errorf("unknown NewsPost nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *NewsPostMutation) ResetField(name string) error {
+	switch name {
+	case newspost.FieldSlug:
+		m.ResetSlug()
+		return nil
+	case newspost.FieldStatus:
+		m.ResetStatus()
+		return nil
+	case newspost.FieldDefaultLocale:
+		m.ResetDefaultLocale()
+		return nil
+	case newspost.FieldCoverImageURL:
+		m.ResetCoverImageURL()
+		return nil
+	case newspost.FieldAuthorName:
+		m.ResetAuthorName()
+		return nil
+	case newspost.FieldPublishedAt:
+		m.ResetPublishedAt()
+		return nil
+	case newspost.FieldCreatedBy:
+		m.ResetCreatedBy()
+		return nil
+	case newspost.FieldUpdatedBy:
+		m.ResetUpdatedBy()
+		return nil
+	case newspost.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case newspost.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown NewsPost field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *NewsPostMutation) AddedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.translations != nil {
+		edges = append(edges, newspost.EdgeTranslations)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *NewsPostMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case newspost.EdgeTranslations:
+		ids := make([]ent.Value, 0, len(m.translations))
+		for id := range m.translations {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *NewsPostMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.removedtranslations != nil {
+		edges = append(edges, newspost.EdgeTranslations)
+	}
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *NewsPostMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case newspost.EdgeTranslations:
+		ids := make([]ent.Value, 0, len(m.removedtranslations))
+		for id := range m.removedtranslations {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *NewsPostMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.clearedtranslations {
+		edges = append(edges, newspost.EdgeTranslations)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *NewsPostMutation) EdgeCleared(name string) bool {
+	switch name {
+	case newspost.EdgeTranslations:
+		return m.clearedtranslations
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *NewsPostMutation) ClearEdge(name string) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown NewsPost unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *NewsPostMutation) ResetEdge(name string) error {
+	switch name {
+	case newspost.EdgeTranslations:
+		m.ResetTranslations()
+		return nil
+	}
+	return fmt.Errorf("unknown NewsPost edge %s", name)
+}
+
+// NewsPostTranslationMutation represents an operation that mutates the NewsPostTranslation nodes in the graph.
+type NewsPostTranslationMutation struct {
+	config
+	op                     Op
+	typ                    string
+	id                     *int64
+	locale                 *string
+	title                  *string
+	summary                *string
+	content                *string
+	seo_title              *string
+	seo_description        *string
+	translation_status     *string
+	translation_provider   *string
+	translated_from_locale *string
+	last_translated_at     *time.Time
+	created_at             *time.Time
+	updated_at             *time.Time
+	clearedFields          map[string]struct{}
+	news_post              *int64
+	clearednews_post       bool
+	done                   bool
+	oldValue               func(context.Context) (*NewsPostTranslation, error)
+	predicates             []predicate.NewsPostTranslation
+}
+
+var _ ent.Mutation = (*NewsPostTranslationMutation)(nil)
+
+// newsposttranslationOption allows management of the mutation configuration using functional options.
+type newsposttranslationOption func(*NewsPostTranslationMutation)
+
+// newNewsPostTranslationMutation creates new mutation for the NewsPostTranslation entity.
+func newNewsPostTranslationMutation(c config, op Op, opts ...newsposttranslationOption) *NewsPostTranslationMutation {
+	m := &NewsPostTranslationMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeNewsPostTranslation,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withNewsPostTranslationID sets the ID field of the mutation.
+func withNewsPostTranslationID(id int64) newsposttranslationOption {
+	return func(m *NewsPostTranslationMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *NewsPostTranslation
+		)
+		m.oldValue = func(ctx context.Context) (*NewsPostTranslation, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().NewsPostTranslation.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withNewsPostTranslation sets the old NewsPostTranslation of the mutation.
+func withNewsPostTranslation(node *NewsPostTranslation) newsposttranslationOption {
+	return func(m *NewsPostTranslationMutation) {
+		m.oldValue = func(context.Context) (*NewsPostTranslation, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m NewsPostTranslationMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m NewsPostTranslationMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *NewsPostTranslationMutation) ID() (id int64, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *NewsPostTranslationMutation) IDs(ctx context.Context) ([]int64, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int64{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().NewsPostTranslation.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetNewsPostID sets the "news_post_id" field.
+func (m *NewsPostTranslationMutation) SetNewsPostID(i int64) {
+	m.news_post = &i
+}
+
+// NewsPostID returns the value of the "news_post_id" field in the mutation.
+func (m *NewsPostTranslationMutation) NewsPostID() (r int64, exists bool) {
+	v := m.news_post
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldNewsPostID returns the old "news_post_id" field's value of the NewsPostTranslation entity.
+// If the NewsPostTranslation object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NewsPostTranslationMutation) OldNewsPostID(ctx context.Context) (v int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldNewsPostID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldNewsPostID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldNewsPostID: %w", err)
+	}
+	return oldValue.NewsPostID, nil
+}
+
+// ResetNewsPostID resets all changes to the "news_post_id" field.
+func (m *NewsPostTranslationMutation) ResetNewsPostID() {
+	m.news_post = nil
+}
+
+// SetLocale sets the "locale" field.
+func (m *NewsPostTranslationMutation) SetLocale(s string) {
+	m.locale = &s
+}
+
+// Locale returns the value of the "locale" field in the mutation.
+func (m *NewsPostTranslationMutation) Locale() (r string, exists bool) {
+	v := m.locale
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLocale returns the old "locale" field's value of the NewsPostTranslation entity.
+// If the NewsPostTranslation object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NewsPostTranslationMutation) OldLocale(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLocale is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLocale requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLocale: %w", err)
+	}
+	return oldValue.Locale, nil
+}
+
+// ResetLocale resets all changes to the "locale" field.
+func (m *NewsPostTranslationMutation) ResetLocale() {
+	m.locale = nil
+}
+
+// SetTitle sets the "title" field.
+func (m *NewsPostTranslationMutation) SetTitle(s string) {
+	m.title = &s
+}
+
+// Title returns the value of the "title" field in the mutation.
+func (m *NewsPostTranslationMutation) Title() (r string, exists bool) {
+	v := m.title
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTitle returns the old "title" field's value of the NewsPostTranslation entity.
+// If the NewsPostTranslation object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NewsPostTranslationMutation) OldTitle(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTitle is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTitle requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTitle: %w", err)
+	}
+	return oldValue.Title, nil
+}
+
+// ResetTitle resets all changes to the "title" field.
+func (m *NewsPostTranslationMutation) ResetTitle() {
+	m.title = nil
+}
+
+// SetSummary sets the "summary" field.
+func (m *NewsPostTranslationMutation) SetSummary(s string) {
+	m.summary = &s
+}
+
+// Summary returns the value of the "summary" field in the mutation.
+func (m *NewsPostTranslationMutation) Summary() (r string, exists bool) {
+	v := m.summary
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSummary returns the old "summary" field's value of the NewsPostTranslation entity.
+// If the NewsPostTranslation object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NewsPostTranslationMutation) OldSummary(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSummary is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSummary requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSummary: %w", err)
+	}
+	return oldValue.Summary, nil
+}
+
+// ClearSummary clears the value of the "summary" field.
+func (m *NewsPostTranslationMutation) ClearSummary() {
+	m.summary = nil
+	m.clearedFields[newsposttranslation.FieldSummary] = struct{}{}
+}
+
+// SummaryCleared returns if the "summary" field was cleared in this mutation.
+func (m *NewsPostTranslationMutation) SummaryCleared() bool {
+	_, ok := m.clearedFields[newsposttranslation.FieldSummary]
+	return ok
+}
+
+// ResetSummary resets all changes to the "summary" field.
+func (m *NewsPostTranslationMutation) ResetSummary() {
+	m.summary = nil
+	delete(m.clearedFields, newsposttranslation.FieldSummary)
+}
+
+// SetContent sets the "content" field.
+func (m *NewsPostTranslationMutation) SetContent(s string) {
+	m.content = &s
+}
+
+// Content returns the value of the "content" field in the mutation.
+func (m *NewsPostTranslationMutation) Content() (r string, exists bool) {
+	v := m.content
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldContent returns the old "content" field's value of the NewsPostTranslation entity.
+// If the NewsPostTranslation object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NewsPostTranslationMutation) OldContent(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldContent is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldContent requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldContent: %w", err)
+	}
+	return oldValue.Content, nil
+}
+
+// ResetContent resets all changes to the "content" field.
+func (m *NewsPostTranslationMutation) ResetContent() {
+	m.content = nil
+}
+
+// SetSeoTitle sets the "seo_title" field.
+func (m *NewsPostTranslationMutation) SetSeoTitle(s string) {
+	m.seo_title = &s
+}
+
+// SeoTitle returns the value of the "seo_title" field in the mutation.
+func (m *NewsPostTranslationMutation) SeoTitle() (r string, exists bool) {
+	v := m.seo_title
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSeoTitle returns the old "seo_title" field's value of the NewsPostTranslation entity.
+// If the NewsPostTranslation object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NewsPostTranslationMutation) OldSeoTitle(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSeoTitle is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSeoTitle requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSeoTitle: %w", err)
+	}
+	return oldValue.SeoTitle, nil
+}
+
+// ClearSeoTitle clears the value of the "seo_title" field.
+func (m *NewsPostTranslationMutation) ClearSeoTitle() {
+	m.seo_title = nil
+	m.clearedFields[newsposttranslation.FieldSeoTitle] = struct{}{}
+}
+
+// SeoTitleCleared returns if the "seo_title" field was cleared in this mutation.
+func (m *NewsPostTranslationMutation) SeoTitleCleared() bool {
+	_, ok := m.clearedFields[newsposttranslation.FieldSeoTitle]
+	return ok
+}
+
+// ResetSeoTitle resets all changes to the "seo_title" field.
+func (m *NewsPostTranslationMutation) ResetSeoTitle() {
+	m.seo_title = nil
+	delete(m.clearedFields, newsposttranslation.FieldSeoTitle)
+}
+
+// SetSeoDescription sets the "seo_description" field.
+func (m *NewsPostTranslationMutation) SetSeoDescription(s string) {
+	m.seo_description = &s
+}
+
+// SeoDescription returns the value of the "seo_description" field in the mutation.
+func (m *NewsPostTranslationMutation) SeoDescription() (r string, exists bool) {
+	v := m.seo_description
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSeoDescription returns the old "seo_description" field's value of the NewsPostTranslation entity.
+// If the NewsPostTranslation object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NewsPostTranslationMutation) OldSeoDescription(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSeoDescription is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSeoDescription requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSeoDescription: %w", err)
+	}
+	return oldValue.SeoDescription, nil
+}
+
+// ClearSeoDescription clears the value of the "seo_description" field.
+func (m *NewsPostTranslationMutation) ClearSeoDescription() {
+	m.seo_description = nil
+	m.clearedFields[newsposttranslation.FieldSeoDescription] = struct{}{}
+}
+
+// SeoDescriptionCleared returns if the "seo_description" field was cleared in this mutation.
+func (m *NewsPostTranslationMutation) SeoDescriptionCleared() bool {
+	_, ok := m.clearedFields[newsposttranslation.FieldSeoDescription]
+	return ok
+}
+
+// ResetSeoDescription resets all changes to the "seo_description" field.
+func (m *NewsPostTranslationMutation) ResetSeoDescription() {
+	m.seo_description = nil
+	delete(m.clearedFields, newsposttranslation.FieldSeoDescription)
+}
+
+// SetTranslationStatus sets the "translation_status" field.
+func (m *NewsPostTranslationMutation) SetTranslationStatus(s string) {
+	m.translation_status = &s
+}
+
+// TranslationStatus returns the value of the "translation_status" field in the mutation.
+func (m *NewsPostTranslationMutation) TranslationStatus() (r string, exists bool) {
+	v := m.translation_status
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTranslationStatus returns the old "translation_status" field's value of the NewsPostTranslation entity.
+// If the NewsPostTranslation object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NewsPostTranslationMutation) OldTranslationStatus(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTranslationStatus is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTranslationStatus requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTranslationStatus: %w", err)
+	}
+	return oldValue.TranslationStatus, nil
+}
+
+// ResetTranslationStatus resets all changes to the "translation_status" field.
+func (m *NewsPostTranslationMutation) ResetTranslationStatus() {
+	m.translation_status = nil
+}
+
+// SetTranslationProvider sets the "translation_provider" field.
+func (m *NewsPostTranslationMutation) SetTranslationProvider(s string) {
+	m.translation_provider = &s
+}
+
+// TranslationProvider returns the value of the "translation_provider" field in the mutation.
+func (m *NewsPostTranslationMutation) TranslationProvider() (r string, exists bool) {
+	v := m.translation_provider
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTranslationProvider returns the old "translation_provider" field's value of the NewsPostTranslation entity.
+// If the NewsPostTranslation object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NewsPostTranslationMutation) OldTranslationProvider(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTranslationProvider is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTranslationProvider requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTranslationProvider: %w", err)
+	}
+	return oldValue.TranslationProvider, nil
+}
+
+// ClearTranslationProvider clears the value of the "translation_provider" field.
+func (m *NewsPostTranslationMutation) ClearTranslationProvider() {
+	m.translation_provider = nil
+	m.clearedFields[newsposttranslation.FieldTranslationProvider] = struct{}{}
+}
+
+// TranslationProviderCleared returns if the "translation_provider" field was cleared in this mutation.
+func (m *NewsPostTranslationMutation) TranslationProviderCleared() bool {
+	_, ok := m.clearedFields[newsposttranslation.FieldTranslationProvider]
+	return ok
+}
+
+// ResetTranslationProvider resets all changes to the "translation_provider" field.
+func (m *NewsPostTranslationMutation) ResetTranslationProvider() {
+	m.translation_provider = nil
+	delete(m.clearedFields, newsposttranslation.FieldTranslationProvider)
+}
+
+// SetTranslatedFromLocale sets the "translated_from_locale" field.
+func (m *NewsPostTranslationMutation) SetTranslatedFromLocale(s string) {
+	m.translated_from_locale = &s
+}
+
+// TranslatedFromLocale returns the value of the "translated_from_locale" field in the mutation.
+func (m *NewsPostTranslationMutation) TranslatedFromLocale() (r string, exists bool) {
+	v := m.translated_from_locale
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTranslatedFromLocale returns the old "translated_from_locale" field's value of the NewsPostTranslation entity.
+// If the NewsPostTranslation object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NewsPostTranslationMutation) OldTranslatedFromLocale(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTranslatedFromLocale is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTranslatedFromLocale requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTranslatedFromLocale: %w", err)
+	}
+	return oldValue.TranslatedFromLocale, nil
+}
+
+// ClearTranslatedFromLocale clears the value of the "translated_from_locale" field.
+func (m *NewsPostTranslationMutation) ClearTranslatedFromLocale() {
+	m.translated_from_locale = nil
+	m.clearedFields[newsposttranslation.FieldTranslatedFromLocale] = struct{}{}
+}
+
+// TranslatedFromLocaleCleared returns if the "translated_from_locale" field was cleared in this mutation.
+func (m *NewsPostTranslationMutation) TranslatedFromLocaleCleared() bool {
+	_, ok := m.clearedFields[newsposttranslation.FieldTranslatedFromLocale]
+	return ok
+}
+
+// ResetTranslatedFromLocale resets all changes to the "translated_from_locale" field.
+func (m *NewsPostTranslationMutation) ResetTranslatedFromLocale() {
+	m.translated_from_locale = nil
+	delete(m.clearedFields, newsposttranslation.FieldTranslatedFromLocale)
+}
+
+// SetLastTranslatedAt sets the "last_translated_at" field.
+func (m *NewsPostTranslationMutation) SetLastTranslatedAt(t time.Time) {
+	m.last_translated_at = &t
+}
+
+// LastTranslatedAt returns the value of the "last_translated_at" field in the mutation.
+func (m *NewsPostTranslationMutation) LastTranslatedAt() (r time.Time, exists bool) {
+	v := m.last_translated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLastTranslatedAt returns the old "last_translated_at" field's value of the NewsPostTranslation entity.
+// If the NewsPostTranslation object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NewsPostTranslationMutation) OldLastTranslatedAt(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLastTranslatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLastTranslatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLastTranslatedAt: %w", err)
+	}
+	return oldValue.LastTranslatedAt, nil
+}
+
+// ClearLastTranslatedAt clears the value of the "last_translated_at" field.
+func (m *NewsPostTranslationMutation) ClearLastTranslatedAt() {
+	m.last_translated_at = nil
+	m.clearedFields[newsposttranslation.FieldLastTranslatedAt] = struct{}{}
+}
+
+// LastTranslatedAtCleared returns if the "last_translated_at" field was cleared in this mutation.
+func (m *NewsPostTranslationMutation) LastTranslatedAtCleared() bool {
+	_, ok := m.clearedFields[newsposttranslation.FieldLastTranslatedAt]
+	return ok
+}
+
+// ResetLastTranslatedAt resets all changes to the "last_translated_at" field.
+func (m *NewsPostTranslationMutation) ResetLastTranslatedAt() {
+	m.last_translated_at = nil
+	delete(m.clearedFields, newsposttranslation.FieldLastTranslatedAt)
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *NewsPostTranslationMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *NewsPostTranslationMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the NewsPostTranslation entity.
+// If the NewsPostTranslation object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NewsPostTranslationMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *NewsPostTranslationMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *NewsPostTranslationMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *NewsPostTranslationMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the NewsPostTranslation entity.
+// If the NewsPostTranslation object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NewsPostTranslationMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *NewsPostTranslationMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+}
+
+// ClearNewsPost clears the "news_post" edge to the NewsPost entity.
+func (m *NewsPostTranslationMutation) ClearNewsPost() {
+	m.clearednews_post = true
+	m.clearedFields[newsposttranslation.FieldNewsPostID] = struct{}{}
+}
+
+// NewsPostCleared reports if the "news_post" edge to the NewsPost entity was cleared.
+func (m *NewsPostTranslationMutation) NewsPostCleared() bool {
+	return m.clearednews_post
+}
+
+// NewsPostIDs returns the "news_post" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// NewsPostID instead. It exists only for internal usage by the builders.
+func (m *NewsPostTranslationMutation) NewsPostIDs() (ids []int64) {
+	if id := m.news_post; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetNewsPost resets all changes to the "news_post" edge.
+func (m *NewsPostTranslationMutation) ResetNewsPost() {
+	m.news_post = nil
+	m.clearednews_post = false
+}
+
+// Where appends a list predicates to the NewsPostTranslationMutation builder.
+func (m *NewsPostTranslationMutation) Where(ps ...predicate.NewsPostTranslation) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the NewsPostTranslationMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *NewsPostTranslationMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.NewsPostTranslation, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *NewsPostTranslationMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *NewsPostTranslationMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (NewsPostTranslation).
+func (m *NewsPostTranslationMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *NewsPostTranslationMutation) Fields() []string {
+	fields := make([]string, 0, 13)
+	if m.news_post != nil {
+		fields = append(fields, newsposttranslation.FieldNewsPostID)
+	}
+	if m.locale != nil {
+		fields = append(fields, newsposttranslation.FieldLocale)
+	}
+	if m.title != nil {
+		fields = append(fields, newsposttranslation.FieldTitle)
+	}
+	if m.summary != nil {
+		fields = append(fields, newsposttranslation.FieldSummary)
+	}
+	if m.content != nil {
+		fields = append(fields, newsposttranslation.FieldContent)
+	}
+	if m.seo_title != nil {
+		fields = append(fields, newsposttranslation.FieldSeoTitle)
+	}
+	if m.seo_description != nil {
+		fields = append(fields, newsposttranslation.FieldSeoDescription)
+	}
+	if m.translation_status != nil {
+		fields = append(fields, newsposttranslation.FieldTranslationStatus)
+	}
+	if m.translation_provider != nil {
+		fields = append(fields, newsposttranslation.FieldTranslationProvider)
+	}
+	if m.translated_from_locale != nil {
+		fields = append(fields, newsposttranslation.FieldTranslatedFromLocale)
+	}
+	if m.last_translated_at != nil {
+		fields = append(fields, newsposttranslation.FieldLastTranslatedAt)
+	}
+	if m.created_at != nil {
+		fields = append(fields, newsposttranslation.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, newsposttranslation.FieldUpdatedAt)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *NewsPostTranslationMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case newsposttranslation.FieldNewsPostID:
+		return m.NewsPostID()
+	case newsposttranslation.FieldLocale:
+		return m.Locale()
+	case newsposttranslation.FieldTitle:
+		return m.Title()
+	case newsposttranslation.FieldSummary:
+		return m.Summary()
+	case newsposttranslation.FieldContent:
+		return m.Content()
+	case newsposttranslation.FieldSeoTitle:
+		return m.SeoTitle()
+	case newsposttranslation.FieldSeoDescription:
+		return m.SeoDescription()
+	case newsposttranslation.FieldTranslationStatus:
+		return m.TranslationStatus()
+	case newsposttranslation.FieldTranslationProvider:
+		return m.TranslationProvider()
+	case newsposttranslation.FieldTranslatedFromLocale:
+		return m.TranslatedFromLocale()
+	case newsposttranslation.FieldLastTranslatedAt:
+		return m.LastTranslatedAt()
+	case newsposttranslation.FieldCreatedAt:
+		return m.CreatedAt()
+	case newsposttranslation.FieldUpdatedAt:
+		return m.UpdatedAt()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *NewsPostTranslationMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case newsposttranslation.FieldNewsPostID:
+		return m.OldNewsPostID(ctx)
+	case newsposttranslation.FieldLocale:
+		return m.OldLocale(ctx)
+	case newsposttranslation.FieldTitle:
+		return m.OldTitle(ctx)
+	case newsposttranslation.FieldSummary:
+		return m.OldSummary(ctx)
+	case newsposttranslation.FieldContent:
+		return m.OldContent(ctx)
+	case newsposttranslation.FieldSeoTitle:
+		return m.OldSeoTitle(ctx)
+	case newsposttranslation.FieldSeoDescription:
+		return m.OldSeoDescription(ctx)
+	case newsposttranslation.FieldTranslationStatus:
+		return m.OldTranslationStatus(ctx)
+	case newsposttranslation.FieldTranslationProvider:
+		return m.OldTranslationProvider(ctx)
+	case newsposttranslation.FieldTranslatedFromLocale:
+		return m.OldTranslatedFromLocale(ctx)
+	case newsposttranslation.FieldLastTranslatedAt:
+		return m.OldLastTranslatedAt(ctx)
+	case newsposttranslation.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case newsposttranslation.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
+	}
+	return nil, fmt.Errorf("unknown NewsPostTranslation field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *NewsPostTranslationMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case newsposttranslation.FieldNewsPostID:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetNewsPostID(v)
+		return nil
+	case newsposttranslation.FieldLocale:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLocale(v)
+		return nil
+	case newsposttranslation.FieldTitle:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTitle(v)
+		return nil
+	case newsposttranslation.FieldSummary:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSummary(v)
+		return nil
+	case newsposttranslation.FieldContent:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetContent(v)
+		return nil
+	case newsposttranslation.FieldSeoTitle:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSeoTitle(v)
+		return nil
+	case newsposttranslation.FieldSeoDescription:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSeoDescription(v)
+		return nil
+	case newsposttranslation.FieldTranslationStatus:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTranslationStatus(v)
+		return nil
+	case newsposttranslation.FieldTranslationProvider:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTranslationProvider(v)
+		return nil
+	case newsposttranslation.FieldTranslatedFromLocale:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTranslatedFromLocale(v)
+		return nil
+	case newsposttranslation.FieldLastTranslatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLastTranslatedAt(v)
+		return nil
+	case newsposttranslation.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case newsposttranslation.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown NewsPostTranslation field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *NewsPostTranslationMutation) AddedFields() []string {
+	var fields []string
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *NewsPostTranslationMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *NewsPostTranslationMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown NewsPostTranslation numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *NewsPostTranslationMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(newsposttranslation.FieldSummary) {
+		fields = append(fields, newsposttranslation.FieldSummary)
+	}
+	if m.FieldCleared(newsposttranslation.FieldSeoTitle) {
+		fields = append(fields, newsposttranslation.FieldSeoTitle)
+	}
+	if m.FieldCleared(newsposttranslation.FieldSeoDescription) {
+		fields = append(fields, newsposttranslation.FieldSeoDescription)
+	}
+	if m.FieldCleared(newsposttranslation.FieldTranslationProvider) {
+		fields = append(fields, newsposttranslation.FieldTranslationProvider)
+	}
+	if m.FieldCleared(newsposttranslation.FieldTranslatedFromLocale) {
+		fields = append(fields, newsposttranslation.FieldTranslatedFromLocale)
+	}
+	if m.FieldCleared(newsposttranslation.FieldLastTranslatedAt) {
+		fields = append(fields, newsposttranslation.FieldLastTranslatedAt)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *NewsPostTranslationMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *NewsPostTranslationMutation) ClearField(name string) error {
+	switch name {
+	case newsposttranslation.FieldSummary:
+		m.ClearSummary()
+		return nil
+	case newsposttranslation.FieldSeoTitle:
+		m.ClearSeoTitle()
+		return nil
+	case newsposttranslation.FieldSeoDescription:
+		m.ClearSeoDescription()
+		return nil
+	case newsposttranslation.FieldTranslationProvider:
+		m.ClearTranslationProvider()
+		return nil
+	case newsposttranslation.FieldTranslatedFromLocale:
+		m.ClearTranslatedFromLocale()
+		return nil
+	case newsposttranslation.FieldLastTranslatedAt:
+		m.ClearLastTranslatedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown NewsPostTranslation nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *NewsPostTranslationMutation) ResetField(name string) error {
+	switch name {
+	case newsposttranslation.FieldNewsPostID:
+		m.ResetNewsPostID()
+		return nil
+	case newsposttranslation.FieldLocale:
+		m.ResetLocale()
+		return nil
+	case newsposttranslation.FieldTitle:
+		m.ResetTitle()
+		return nil
+	case newsposttranslation.FieldSummary:
+		m.ResetSummary()
+		return nil
+	case newsposttranslation.FieldContent:
+		m.ResetContent()
+		return nil
+	case newsposttranslation.FieldSeoTitle:
+		m.ResetSeoTitle()
+		return nil
+	case newsposttranslation.FieldSeoDescription:
+		m.ResetSeoDescription()
+		return nil
+	case newsposttranslation.FieldTranslationStatus:
+		m.ResetTranslationStatus()
+		return nil
+	case newsposttranslation.FieldTranslationProvider:
+		m.ResetTranslationProvider()
+		return nil
+	case newsposttranslation.FieldTranslatedFromLocale:
+		m.ResetTranslatedFromLocale()
+		return nil
+	case newsposttranslation.FieldLastTranslatedAt:
+		m.ResetLastTranslatedAt()
+		return nil
+	case newsposttranslation.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case newsposttranslation.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown NewsPostTranslation field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *NewsPostTranslationMutation) AddedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.news_post != nil {
+		edges = append(edges, newsposttranslation.EdgeNewsPost)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *NewsPostTranslationMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case newsposttranslation.EdgeNewsPost:
+		if id := m.news_post; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *NewsPostTranslationMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 1)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *NewsPostTranslationMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *NewsPostTranslationMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.clearednews_post {
+		edges = append(edges, newsposttranslation.EdgeNewsPost)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *NewsPostTranslationMutation) EdgeCleared(name string) bool {
+	switch name {
+	case newsposttranslation.EdgeNewsPost:
+		return m.clearednews_post
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *NewsPostTranslationMutation) ClearEdge(name string) error {
+	switch name {
+	case newsposttranslation.EdgeNewsPost:
+		m.ClearNewsPost()
+		return nil
+	}
+	return fmt.Errorf("unknown NewsPostTranslation unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *NewsPostTranslationMutation) ResetEdge(name string) error {
+	switch name {
+	case newsposttranslation.EdgeNewsPost:
+		m.ResetNewsPost()
+		return nil
+	}
+	return fmt.Errorf("unknown NewsPostTranslation edge %s", name)
 }
 
 // PaymentAuditLogMutation represents an operation that mutates the PaymentAuditLog nodes in the graph.

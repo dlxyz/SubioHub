@@ -245,6 +245,35 @@ func (s *GitHubReleaseServiceSuite) TestFetchLatestRelease_Success() {
 	require.Equal(s.T(), "app-linux-amd64.tar.gz", release.Assets[0].Name)
 }
 
+func (s *GitHubReleaseServiceSuite) TestFetchLatestRelease_WithToken() {
+	releaseJSON := `{
+		"tag_name": "v1.0.1",
+		"name": "Release 1.0.1",
+		"body": "Release notes",
+		"html_url": "https://github.com/test/repo/releases/v1.0.1",
+		"assets": []
+	}`
+
+	s.srv = newLocalTestServer(s.T(), http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		require.Equal(s.T(), "Bearer ghp_test_token", r.Header.Get("Authorization"))
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte(releaseJSON))
+	}))
+
+	s.client = &githubReleaseClient{
+		httpClient: &http.Client{
+			Transport: &testTransport{testServerURL: s.srv.URL},
+		},
+		downloadHTTPClient: &http.Client{},
+		githubToken:        "ghp_test_token",
+	}
+
+	release, err := s.client.FetchLatestRelease(context.Background(), "test/repo")
+	require.NoError(s.T(), err)
+	require.Equal(s.T(), "v1.0.1", release.TagName)
+}
+
 func (s *GitHubReleaseServiceSuite) TestFetchLatestRelease_Non200() {
 	s.srv = newLocalTestServer(s.T(), http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNotFound)
@@ -260,6 +289,46 @@ func (s *GitHubReleaseServiceSuite) TestFetchLatestRelease_Non200() {
 	_, err := s.client.FetchLatestRelease(context.Background(), "test/repo")
 	require.Error(s.T(), err)
 	require.Contains(s.T(), err.Error(), "404")
+}
+
+func (s *GitHubReleaseServiceSuite) TestFetchLatestRelease_ForbiddenRateLimit() {
+	s.srv = newLocalTestServer(s.T(), http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("X-RateLimit-Remaining", "0")
+		w.Header().Set("X-RateLimit-Reset", "1710000000")
+		w.WriteHeader(http.StatusForbidden)
+		_, _ = w.Write([]byte(`{"message":"API rate limit exceeded"}`))
+	}))
+
+	s.client = &githubReleaseClient{
+		httpClient: &http.Client{
+			Transport: &testTransport{testServerURL: s.srv.URL},
+		},
+		downloadHTTPClient: &http.Client{},
+	}
+
+	_, err := s.client.FetchLatestRelease(context.Background(), "test/repo")
+	require.Error(s.T(), err)
+	require.Contains(s.T(), err.Error(), "rate limit reached")
+	require.Contains(s.T(), err.Error(), "1710000000")
+}
+
+func (s *GitHubReleaseServiceSuite) TestFetchLatestRelease_ForbiddenMessage() {
+	s.srv = newLocalTestServer(s.T(), http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusForbidden)
+		_, _ = w.Write([]byte(`{"message":"Repository access blocked by policy"}`))
+	}))
+
+	s.client = &githubReleaseClient{
+		httpClient: &http.Client{
+			Transport: &testTransport{testServerURL: s.srv.URL},
+		},
+		downloadHTTPClient: &http.Client{},
+	}
+
+	_, err := s.client.FetchLatestRelease(context.Background(), "test/repo")
+	require.Error(s.T(), err)
+	require.Contains(s.T(), err.Error(), "forbidden (403)")
+	require.Contains(s.T(), err.Error(), "Repository access blocked by policy")
 }
 
 func (s *GitHubReleaseServiceSuite) TestFetchLatestRelease_InvalidJSON() {

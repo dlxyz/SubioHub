@@ -78,6 +78,11 @@ type SettingsForm = {
   fallback_model_openai: string;
   fallback_model_gemini: string;
   fallback_model_antigravity: string;
+  news_translation_api_key: string;
+  news_translation_base_url: string;
+  news_translation_model: string;
+  news_translation_timeout_seconds: string;
+  news_translation_temperature: string;
   enable_identity_patch: boolean;
   identity_patch_prompt: string;
   allow_ungrouped_key_scheduling: boolean;
@@ -225,6 +230,11 @@ function buildForm(settings: SystemSettings): SettingsForm {
     fallback_model_openai: String(settings.fallback_model_openai || ''),
     fallback_model_gemini: String(settings.fallback_model_gemini || ''),
     fallback_model_antigravity: String(settings.fallback_model_antigravity || ''),
+    news_translation_api_key: '',
+    news_translation_base_url: String(settings.news_translation_base_url || ''),
+    news_translation_model: String(settings.news_translation_model || ''),
+    news_translation_timeout_seconds: String(settings.news_translation_timeout_seconds ?? 60),
+    news_translation_temperature: String(settings.news_translation_temperature ?? 0.2),
     enable_identity_patch: Boolean(settings.enable_identity_patch),
     identity_patch_prompt: String(settings.identity_patch_prompt || ''),
     allow_ungrouped_key_scheduling: Boolean(settings.allow_ungrouped_key_scheduling),
@@ -433,6 +443,10 @@ export default function AdminSettingsPage() {
       {
         label: t('admin.settings.summary.smtpPassword'),
         value: settings.smtp_password_configured ? t('admin.settings.summary.configured') : t('admin.settings.summary.notConfigured'),
+      },
+      {
+        label: '资讯 AI',
+        value: settings.news_translation_api_key_configured ? '已配置' : '未配置',
       },
       {
         label: t('admin.settings.summary.adminApiKey'),
@@ -716,6 +730,11 @@ export default function AdminSettingsPage() {
         fallback_model_openai: form.fallback_model_openai.trim(),
         fallback_model_gemini: form.fallback_model_gemini.trim(),
         fallback_model_antigravity: form.fallback_model_antigravity.trim(),
+        news_translation_api_key: form.news_translation_api_key.trim(),
+        news_translation_base_url: form.news_translation_base_url.trim(),
+        news_translation_model: form.news_translation_model.trim(),
+        news_translation_timeout_seconds: Number(form.news_translation_timeout_seconds || 60),
+        news_translation_temperature: Number(form.news_translation_temperature || 0.2),
         enable_identity_patch: form.enable_identity_patch,
         identity_patch_prompt: form.identity_patch_prompt,
         allow_ungrouped_key_scheduling: form.allow_ungrouped_key_scheduling,
@@ -1733,6 +1752,66 @@ export default function AdminSettingsPage() {
             onChange={(e) => updateForm('identity_patch_prompt', e.target.value)}
             className="w-full rounded-lg border border-gray-200 bg-transparent px-3 py-2 text-sm dark:border-gray-700 dark:text-white"
           />
+        </div>
+      </SummaryCard>
+
+      <SummaryCard title="资讯 AI 翻译">
+        <div className="rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-700 dark:border-blue-900/40 dark:bg-blue-900/20 dark:text-blue-300">
+          这里的配置用于资讯管理里的 “AI 翻译生成” 按钮。建议填写兼容 OpenAI `chat/completions` 的接口地址、模型和密钥。
+        </div>
+        <div className="rounded-xl bg-gray-50 p-3 text-sm text-gray-600 dark:bg-gray-900/40 dark:text-gray-300">
+          当前密钥状态：{settings?.news_translation_api_key_configured ? '已配置，留空保存则继续沿用原密钥' : '未配置'}
+        </div>
+        <div className="grid gap-4 md:grid-cols-2">
+          <div>
+            <FieldLabel>接口 Base URL</FieldLabel>
+            <input
+              value={form.news_translation_base_url}
+              onChange={(e) => updateForm('news_translation_base_url', e.target.value)}
+              placeholder="https://api.openai.com/v1"
+              className="w-full rounded-lg border border-gray-200 bg-transparent px-3 py-2 text-sm dark:border-gray-700 dark:text-white"
+            />
+          </div>
+          <div>
+            <FieldLabel>模型名称</FieldLabel>
+            <input
+              value={form.news_translation_model}
+              onChange={(e) => updateForm('news_translation_model', e.target.value)}
+              placeholder="例如：gpt-4o-mini"
+              className="w-full rounded-lg border border-gray-200 bg-transparent px-3 py-2 text-sm dark:border-gray-700 dark:text-white"
+            />
+          </div>
+          <div>
+            <FieldLabel>API Key</FieldLabel>
+            <input
+              type="password"
+              value={form.news_translation_api_key}
+              onChange={(e) => updateForm('news_translation_api_key', e.target.value)}
+              placeholder={settings?.news_translation_api_key_configured ? '留空则保留原密钥' : '输入 AI 服务密钥'}
+              className="w-full rounded-lg border border-gray-200 bg-transparent px-3 py-2 text-sm dark:border-gray-700 dark:text-white"
+            />
+          </div>
+          <div>
+            <FieldLabel>请求超时（秒）</FieldLabel>
+            <input
+              type="number"
+              min="1"
+              value={form.news_translation_timeout_seconds}
+              onChange={(e) => updateForm('news_translation_timeout_seconds', e.target.value)}
+              className="w-full rounded-lg border border-gray-200 bg-transparent px-3 py-2 text-sm dark:border-gray-700 dark:text-white"
+            />
+          </div>
+          <div>
+            <FieldLabel>Temperature</FieldLabel>
+            <input
+              type="number"
+              min="0"
+              step="0.1"
+              value={form.news_translation_temperature}
+              onChange={(e) => updateForm('news_translation_temperature', e.target.value)}
+              className="w-full rounded-lg border border-gray-200 bg-transparent px-3 py-2 text-sm dark:border-gray-700 dark:text-white"
+            />
+          </div>
         </div>
       </SummaryCard>
 

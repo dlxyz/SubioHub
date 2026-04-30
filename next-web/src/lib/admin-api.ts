@@ -33,6 +33,40 @@ export interface AdminDashboardSnapshot {
   groups?: Array<Record<string, unknown>>;
 }
 
+export interface AdminSystemReleaseAsset {
+  name: string;
+  download_url: string;
+  size: number;
+}
+
+export interface AdminSystemReleaseInfo {
+  name: string;
+  body: string;
+  published_at: string;
+  html_url: string;
+  assets?: AdminSystemReleaseAsset[];
+}
+
+export interface AdminSystemUpdateInfo {
+  current_version: string;
+  latest_version: string;
+  has_update: boolean;
+  release_info?: AdminSystemReleaseInfo | null;
+  cached?: boolean;
+  warning?: string;
+  build_type?: 'source' | 'release' | string;
+}
+
+export interface AdminSystemVersionInfo {
+  version: string;
+}
+
+export interface AdminSystemOperationResult {
+  message?: string;
+  need_restart?: boolean;
+  operation_id?: string;
+}
+
 export interface PaginatedResult<T> {
   items: T[];
   total: number;
@@ -522,6 +556,12 @@ export interface SystemSettings {
   fallback_model_openai?: string;
   fallback_model_gemini?: string;
   fallback_model_antigravity?: string;
+  news_translation_api_key?: string;
+  news_translation_api_key_configured?: boolean;
+  news_translation_base_url?: string;
+  news_translation_model?: string;
+  news_translation_timeout_seconds?: number;
+  news_translation_temperature?: number;
   enable_identity_patch?: boolean;
   identity_patch_prompt?: string;
   allow_ungrouped_key_scheduling?: boolean;
@@ -574,6 +614,43 @@ export interface AdminAnnouncement {
   created_at?: string;
   starts_at?: string | null;
   ends_at?: string | null;
+}
+
+export interface AdminNewsTranslation {
+  id?: number;
+  news_post_id?: number;
+  locale: string;
+  title: string;
+  summary: string;
+  content: string;
+  seo_title?: string | null;
+  seo_description?: string | null;
+  translation_status?: string;
+  translation_provider?: string | null;
+  translated_from_locale?: string | null;
+  last_translated_at?: string | null;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface AdminNewsPost {
+  id: number;
+  slug: string;
+  status: string;
+  default_locale: string;
+  cover_image_url?: string | null;
+  author_name?: string | null;
+  published_at?: string | null;
+  created_by?: number | null;
+  updated_by?: number | null;
+  created_at?: string;
+  updated_at?: string;
+  translations: AdminNewsTranslation[];
+}
+
+export interface AdminNewsAITranslateResult {
+  post: AdminNewsPost;
+  translation: AdminNewsTranslation;
 }
 
 export interface AdminCommissionLog {
@@ -1072,6 +1149,28 @@ export async function getAdminDashboardSnapshot(): Promise<AdminDashboardSnapsho
   return { stats };
 }
 
+export async function getAdminSystemVersion(): Promise<AdminSystemVersionInfo> {
+  return (await api.get('/admin/system/version')) as AdminSystemVersionInfo;
+}
+
+export async function checkAdminSystemUpdates(force = false): Promise<AdminSystemUpdateInfo> {
+  return (await api.get('/admin/system/check-updates', {
+    params: force ? { force: 'true' } : undefined,
+  })) as AdminSystemUpdateInfo;
+}
+
+export async function performAdminSystemUpdate(): Promise<AdminSystemOperationResult> {
+  return (await api.post('/admin/system/update', {})) as AdminSystemOperationResult;
+}
+
+export async function rollbackAdminSystemUpdate(): Promise<AdminSystemOperationResult> {
+  return (await api.post('/admin/system/rollback', {})) as AdminSystemOperationResult;
+}
+
+export async function restartAdminSystemService(): Promise<AdminSystemOperationResult> {
+  return (await api.post('/admin/system/restart', {})) as AdminSystemOperationResult;
+}
+
 export async function listAdminUsers(params?: Record<string, unknown>): Promise<PaginatedResult<AdminUser>> {
   const payload = (await api.get('/admin/users', { params })) as unknown;
   return normalizePaginated<AdminUser>(payload);
@@ -1530,6 +1629,66 @@ export async function createAdminAnnouncement(payload: {
   notify_mode?: string;
 }): Promise<AdminAnnouncement> {
   return (await api.post('/admin/announcements', payload)) as AdminAnnouncement;
+}
+
+export async function listAdminNews(params?: Record<string, unknown>): Promise<PaginatedResult<AdminNewsPost>> {
+  const payload = (await api.get('/admin/news', { params })) as unknown;
+  return normalizePaginated<AdminNewsPost>(payload);
+}
+
+export async function createAdminNews(payload: {
+  slug: string;
+  status?: string;
+  default_locale: string;
+  cover_image_url?: string | null;
+  author_name?: string | null;
+  published_at?: number | null;
+  translations: Array<{
+    locale: string;
+    title: string;
+    summary: string;
+    content: string;
+    seo_title?: string | null;
+    seo_description?: string | null;
+    translation_status?: string;
+  }>;
+}): Promise<AdminNewsPost> {
+  return (await api.post('/admin/news', payload)) as AdminNewsPost;
+}
+
+export async function updateAdminNews(
+  id: number,
+  payload: {
+    slug?: string;
+    status?: string;
+    default_locale?: string;
+    cover_image_url?: string | null;
+    author_name?: string | null;
+    published_at?: number | null;
+    translations?: Array<{
+      locale: string;
+      title: string;
+      summary: string;
+      content: string;
+      seo_title?: string | null;
+      seo_description?: string | null;
+      translation_status?: string;
+    }>;
+  }
+): Promise<AdminNewsPost> {
+  return (await api.put(`/admin/news/${id}`, payload)) as AdminNewsPost;
+}
+
+export async function deleteAdminNews(id: number): Promise<{ message?: string }> {
+  return (await api.delete(`/admin/news/${id}`)) as { message?: string };
+}
+
+export async function aiTranslateAdminNews(
+  id: number,
+  locale: string,
+  payload?: { source_locale?: string }
+): Promise<AdminNewsAITranslateResult> {
+  return (await api.post(`/admin/news/${id}/translations/${encodeURIComponent(locale)}/ai-translate`, payload || {})) as AdminNewsAITranslateResult;
 }
 
 export async function listAdminAffiliateCommissions(

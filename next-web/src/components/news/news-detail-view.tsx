@@ -1,4 +1,4 @@
-﻿﻿'use client';
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿'use client';
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
@@ -42,7 +42,7 @@ export default function NewsDetailView({ id }: { id: string }) {
       setIsDark(document.documentElement.classList.contains('dark'));
     }, 0);
 
-    void getPublicNewsDetail(id)
+    void getPublicNewsDetail(id, { locale })
       .then((data) => {
         setItem(data);
         setError('');
@@ -56,7 +56,7 @@ export default function NewsDetailView({ id }: { id: string }) {
       });
 
     return () => window.clearTimeout(timer);
-  }, [id, t]);
+  }, [id, locale, t]);
 
   const toggleTheme = () => {
     const nextDark = !isDark;
@@ -134,15 +134,25 @@ export default function NewsDetailView({ id }: { id: string }) {
               {t('news.hero.badge')}
             </div>
             <h1 className="mt-4 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">{item.title}</h1>
-            <div className="mt-4 flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+            <div className="mt-4 flex flex-wrap items-center gap-3 text-sm text-gray-500 dark:text-gray-400">
               <CalendarDays className="h-4 w-4" />
-              <span>{t('news.detail.updatedAt', { date: formatDate(item.updated_at, locale) })}</span>
+              <span>
+                {t('news.detail.updatedAt', {
+                  date: formatDate(item.published_at || item.updated_at, locale),
+                })}
+              </span>
+              {item.author_name ? <span>{item.author_name}</span> : null}
             </div>
-            <div className="mt-8 whitespace-pre-wrap text-sm leading-7 text-gray-700 dark:text-gray-300">{item.content}</div>
+            {item.summary ? (
+              <p className="mt-4 text-base leading-7 text-gray-600 dark:text-gray-400">{item.summary}</p>
+            ) : null}
+            <div
+              className="mt-8 text-sm leading-7 text-gray-700 dark:text-gray-300 [&_a]:text-blue-600 [&_a]:underline [&_img]:rounded-2xl [&_img]:max-w-full"
+              dangerouslySetInnerHTML={{ __html: item.content }}
+            />
           </article>
         ) : null}
       </main>
     </div>
   );
 }
-

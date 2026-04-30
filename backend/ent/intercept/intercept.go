@@ -17,6 +17,8 @@ import (
 	"github.com/dlxyz/SubioHub/ent/errorpassthroughrule"
 	"github.com/dlxyz/SubioHub/ent/group"
 	"github.com/dlxyz/SubioHub/ent/idempotencyrecord"
+	"github.com/dlxyz/SubioHub/ent/newspost"
+	"github.com/dlxyz/SubioHub/ent/newsposttranslation"
 	"github.com/dlxyz/SubioHub/ent/paymentauditlog"
 	"github.com/dlxyz/SubioHub/ent/paymentorder"
 	"github.com/dlxyz/SubioHub/ent/paymentproviderinstance"
@@ -335,6 +337,60 @@ func (f TraverseIdempotencyRecord) Traverse(ctx context.Context, q ent.Query) er
 		return f(ctx, q)
 	}
 	return fmt.Errorf("unexpected query type %T. expect *ent.IdempotencyRecordQuery", q)
+}
+
+// The NewsPostFunc type is an adapter to allow the use of ordinary function as a Querier.
+type NewsPostFunc func(context.Context, *ent.NewsPostQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f NewsPostFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.NewsPostQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.NewsPostQuery", q)
+}
+
+// The TraverseNewsPost type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseNewsPost func(context.Context, *ent.NewsPostQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseNewsPost) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseNewsPost) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.NewsPostQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.NewsPostQuery", q)
+}
+
+// The NewsPostTranslationFunc type is an adapter to allow the use of ordinary function as a Querier.
+type NewsPostTranslationFunc func(context.Context, *ent.NewsPostTranslationQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f NewsPostTranslationFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.NewsPostTranslationQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.NewsPostTranslationQuery", q)
+}
+
+// The TraverseNewsPostTranslation type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseNewsPostTranslation func(context.Context, *ent.NewsPostTranslationQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseNewsPostTranslation) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseNewsPostTranslation) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.NewsPostTranslationQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.NewsPostTranslationQuery", q)
 }
 
 // The PaymentAuditLogFunc type is an adapter to allow the use of ordinary function as a Querier.
@@ -844,6 +900,10 @@ func NewQuery(q ent.Query) (Query, error) {
 		return &query[*ent.GroupQuery, predicate.Group, group.OrderOption]{typ: ent.TypeGroup, tq: q}, nil
 	case *ent.IdempotencyRecordQuery:
 		return &query[*ent.IdempotencyRecordQuery, predicate.IdempotencyRecord, idempotencyrecord.OrderOption]{typ: ent.TypeIdempotencyRecord, tq: q}, nil
+	case *ent.NewsPostQuery:
+		return &query[*ent.NewsPostQuery, predicate.NewsPost, newspost.OrderOption]{typ: ent.TypeNewsPost, tq: q}, nil
+	case *ent.NewsPostTranslationQuery:
+		return &query[*ent.NewsPostTranslationQuery, predicate.NewsPostTranslation, newsposttranslation.OrderOption]{typ: ent.TypeNewsPostTranslation, tq: q}, nil
 	case *ent.PaymentAuditLogQuery:
 		return &query[*ent.PaymentAuditLogQuery, predicate.PaymentAuditLog, paymentauditlog.OrderOption]{typ: ent.TypePaymentAuditLog, tq: q}, nil
 	case *ent.PaymentOrderQuery:

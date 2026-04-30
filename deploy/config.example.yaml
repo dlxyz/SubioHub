@@ -1063,3 +1063,8 @@ update:
   # Leave empty for direct connection (recommended for overseas servers)
   # 留空表示直连（适用于海外服务器）
   proxy_url: ""
+
+  # Optional GitHub token for release checks.
+  # Optional: set this if your server often hits anonymous GitHub API rate limits.
+  # 也可以使用环境变量 UPDATE_GITHUB_TOKEN 覆盖。
+  github_token: ""

@@ -1,9 +1,28 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
-import { Activity, Database, KeyRound, Server, Users } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import {
+  Activity,
+  Database,
+  KeyRound,
+  RefreshCw,
+  RotateCcw,
+  Server,
+  SquareArrowOutUpRight,
+  Users,
+  Wrench,
+} from 'lucide-react';
 import { useI18n } from '@/i18n/use-i18n';
-import { getAdminDashboardSnapshot, type AdminDashboardStats } from '@/lib/admin-api';
+import {
+  checkAdminSystemUpdates,
+  getAdminDashboardSnapshot,
+  getAdminSystemVersion,
+  performAdminSystemUpdate,
+  restartAdminSystemService,
+  rollbackAdminSystemUpdate,
+  type AdminDashboardStats,
+  type AdminSystemUpdateInfo,
+} from '@/lib/admin-api';
 
 function formatNumber(value: number | undefined, locale: string) {
   return new Intl.NumberFormat(locale).format(Number(value || 0));
@@ -19,28 +38,84 @@ function formatDuration(value?: number) {
   return `${Math.round(value)} ms`;
 }
 
+function formatDateTime(value: string | undefined, locale: string) {
+  if (!value) return '-';
+  try {
+    return new Intl.DateTimeFormat(locale, {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+    }).format(new Date(value));
+  } catch {
+    return value;
+  }
+}
+
+function getErrorMessage(error: unknown, fallback: string) {
+  if (error instanceof Error && error.message) {
+    return error.message;
+  }
+  return fallback;
+}
+
 export default function AdminDashboardPage() {
   const { locale, t } = useI18n();
   const [stats, setStats] = useState<AdminDashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [updateInfo, setUpdateInfo] = useState<AdminSystemUpdateInfo | null>(null);
+  const [versionLoading, setVersionLoading] = useState(true);
+  const [versionError, setVersionError] = useState('');
+  const [versionNotice, setVersionNotice] = useState('');
+  const [versionAction, setVersionAction] = useState<'check' | 'update' | 'rollback' | 'restart' | null>(null);
+
+  const loadDashboard = useCallback(async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const snapshot = await getAdminDashboardSnapshot();
+      setStats(snapshot.stats || null);
+    } catch (err: unknown) {
+      setError(getErrorMessage(err, t('admin.dashboard.loadFailed')));
+    } finally {
+      setLoading(false);
+    }
+  }, [t]);
+
+  const loadVersion = useCallback(async (force = false) => {
+    setVersionLoading(true);
+    setVersionError('');
+    try {
+      const info = await checkAdminSystemUpdates(force);
+      setUpdateInfo(info);
+    } catch (err: unknown) {
+      try {
+        const version = await getAdminSystemVersion();
+        setUpdateInfo({
+          current_version: version.version,
+          latest_version: version.version,
+          has_update: false,
+          build_type: 'unknown',
+        });
+      } catch {
+        setUpdateInfo(null);
+      }
+      setVersionError(getErrorMessage(err, t('admin.dashboard.version.loadFailed')));
+    } finally {
+      setVersionLoading(false);
+    }
+  }, [t]);
 
   useEffect(() => {
-    const load = async () => {
-      setLoading(true);
-      setError('');
-      try {
-        const snapshot = await getAdminDashboardSnapshot();
-        setStats(snapshot.stats || null);
-      } catch (err: unknown) {
-        setError(err instanceof Error && err.message ? err.message : t('admin.dashboard.loadFailed'));
-      } finally {
-        setLoading(false);
-      }
-    };
+    const timer = window.setTimeout(() => {
+      void loadDashboard();
+      void loadVersion(false);
+    }, 0);
 
-    load();
-  }, [t]);
+    return () => window.clearTimeout(timer);
+  }, [loadDashboard, loadVersion]);
 
   const cards = useMemo(
     () => [
@@ -93,6 +168,84 @@ export default function AdminDashboardPage() {
     [locale, stats, t]
   );
 
+  const buildType = updateInfo?.build_type || 'unknown';
+  const isReleaseBuild = buildType === 'release';
+  const hasUpdate = Boolean(updateInfo?.has_update);
+  const canRollback = isReleaseBuild;
+  const releaseInfo = updateInfo?.release_info;
+
+  const versionStatusLabel = versionLoading
+    ? t('admin.dashboard.version.checking')
+    : hasUpdate
+      ? t('admin.dashboard.version.statusHasUpdate')
+      : t('admin.dashboard.version.statusLatest');
+  const upgradeMethodLabel = isReleaseBuild
+    ? t('admin.dashboard.version.autoUpgrade')
+    : t('admin.dashboard.version.manualUpgrade');
+
+  const handleCheckUpdates = async () => {
+    setVersionAction('check');
+    setVersionNotice('');
+    await loadVersion(true);
+    setVersionAction(null);
+  };
+
+  const handlePerformUpdate = async () => {
+    if (!hasUpdate) {
+      return;
+    }
+    if (!window.confirm(t('admin.dashboard.version.confirmUpdate'))) {
+      return;
+    }
+    setVersionAction('update');
+    setVersionError('');
+    setVersionNotice('');
+    try {
+      const result = await performAdminSystemUpdate();
+      setVersionNotice(result.message || t('admin.dashboard.version.updateDone'));
+      await loadVersion(true);
+    } catch (err: unknown) {
+      setVersionError(getErrorMessage(err, t('admin.dashboard.version.updateFailed')));
+    } finally {
+      setVersionAction(null);
+    }
+  };
+
+  const handleRollback = async () => {
+    if (!window.confirm(t('admin.dashboard.version.confirmRollback'))) {
+      return;
+    }
+    setVersionAction('rollback');
+    setVersionError('');
+    setVersionNotice('');
+    try {
+      const result = await rollbackAdminSystemUpdate();
+      setVersionNotice(result.message || t('admin.dashboard.version.rollbackDone'));
+      await loadVersion(true);
+    } catch (err: unknown) {
+      setVersionError(getErrorMessage(err, t('admin.dashboard.version.rollbackFailed')));
+    } finally {
+      setVersionAction(null);
+    }
+  };
+
+  const handleRestart = async () => {
+    if (!window.confirm(t('admin.dashboard.version.confirmRestart'))) {
+      return;
+    }
+    setVersionAction('restart');
+    setVersionError('');
+    setVersionNotice('');
+    try {
+      const result = await restartAdminSystemService();
+      setVersionNotice(result.message || t('admin.dashboard.version.restartDone'));
+    } catch (err: unknown) {
+      setVersionError(getErrorMessage(err, t('admin.dashboard.version.restartFailed')));
+    } finally {
+      setVersionAction(null);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
@@ -120,7 +273,9 @@ export default function AdminDashboardPage() {
                 <p className="mt-3 text-3xl font-semibold text-gray-900 dark:text-white">
                   {loading ? '...' : card.value}
                 </p>
-                <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">{loading ? t('dashboard.common.loading') : card.sub}</p>
+                <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                  {loading ? t('dashboard.common.loading') : card.sub}
+                </p>
               </div>
               <card.icon className={`h-6 w-6 ${card.color}`} />
             </div>
@@ -157,6 +312,149 @@ export default function AdminDashboardPage() {
             {error ? t('admin.dashboard.panels.backendIssue') : t('admin.dashboard.panels.backendConnected')}
           </p>
           <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">{t('admin.dashboard.panels.backendHint')}</p>
+        </div>
+      </div>
+
+      <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-[#1A1A1A]">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <h3 className="text-base font-semibold text-gray-900 dark:text-white">{t('admin.dashboard.version.title')}</h3>
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{t('admin.dashboard.version.subtitle')}</p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => void handleCheckUpdates()}
+              disabled={versionAction !== null}
+              className="inline-flex items-center rounded-lg border border-gray-200 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-800"
+            >
+              <RefreshCw className={`mr-2 h-4 w-4 ${versionAction === 'check' ? 'animate-spin' : ''}`} />
+              {versionAction === 'check' ? t('admin.dashboard.version.checking') : t('admin.dashboard.version.actions.check')}
+            </button>
+            <button
+              type="button"
+              onClick={() => void handlePerformUpdate()}
+              disabled={versionAction !== null || !isReleaseBuild || !hasUpdate}
+              className="inline-flex items-center rounded-lg bg-gray-900 px-3 py-2 text-sm font-medium text-white hover:bg-black disabled:cursor-not-allowed disabled:opacity-60 dark:bg-white dark:text-gray-900"
+            >
+              <Wrench className="mr-2 h-4 w-4" />
+              {versionAction === 'update' ? t('admin.dashboard.version.updating') : t('admin.dashboard.version.actions.update')}
+            </button>
+            <button
+              type="button"
+              onClick={() => void handleRollback()}
+              disabled={versionAction !== null || !canRollback}
+              className="inline-flex items-center rounded-lg border border-amber-200 px-3 py-2 text-sm font-medium text-amber-700 hover:bg-amber-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-amber-900/60 dark:text-amber-300 dark:hover:bg-amber-950/20"
+            >
+              <RotateCcw className="mr-2 h-4 w-4" />
+              {versionAction === 'rollback' ? t('admin.dashboard.version.rollingBack') : t('admin.dashboard.version.actions.rollback')}
+            </button>
+            <button
+              type="button"
+              onClick={() => void handleRestart()}
+              disabled={versionAction !== null}
+              className="inline-flex items-center rounded-lg border border-blue-200 px-3 py-2 text-sm font-medium text-blue-700 hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-blue-900/60 dark:text-blue-300 dark:hover:bg-blue-950/20"
+            >
+              <Server className="mr-2 h-4 w-4" />
+              {versionAction === 'restart' ? t('admin.dashboard.version.restarting') : t('admin.dashboard.version.actions.restart')}
+            </button>
+          </div>
+        </div>
+
+        {versionError ? (
+          <div className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/60 dark:bg-red-950/40 dark:text-red-300">
+            {versionError}
+          </div>
+        ) : null}
+
+        {versionNotice ? (
+          <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/40 dark:text-emerald-300">
+            {versionNotice}
+          </div>
+        ) : null}
+
+        {updateInfo?.warning ? (
+          <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700 dark:border-amber-900/60 dark:bg-amber-950/20 dark:text-amber-300">
+            {updateInfo.warning}
+          </div>
+        ) : null}
+
+        <div className="mt-5 grid gap-4 lg:grid-cols-4">
+          <div className="rounded-xl border border-gray-200 p-4 dark:border-gray-800">
+            <p className="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
+              {t('admin.dashboard.version.current')}
+            </p>
+            <p className="mt-2 text-xl font-semibold text-gray-900 dark:text-white">
+              {versionLoading ? '...' : updateInfo?.current_version || '-'}
+            </p>
+          </div>
+          <div className="rounded-xl border border-gray-200 p-4 dark:border-gray-800">
+            <p className="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
+              {t('admin.dashboard.version.latest')}
+            </p>
+            <p className="mt-2 text-xl font-semibold text-gray-900 dark:text-white">
+              {versionLoading ? '...' : updateInfo?.latest_version || '-'}
+            </p>
+          </div>
+          <div className="rounded-xl border border-gray-200 p-4 dark:border-gray-800">
+            <p className="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
+              {t('admin.dashboard.version.status')}
+            </p>
+            <p className="mt-2 text-xl font-semibold text-gray-900 dark:text-white">{versionStatusLabel}</p>
+          </div>
+          <div className="rounded-xl border border-gray-200 p-4 dark:border-gray-800">
+            <p className="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
+              {t('admin.dashboard.version.method')}
+            </p>
+            <p className="mt-2 text-xl font-semibold text-gray-900 dark:text-white">{upgradeMethodLabel}</p>
+          </div>
+        </div>
+
+        <div className="mt-5 grid gap-4 lg:grid-cols-2">
+          <div className="rounded-xl border border-gray-200 p-4 dark:border-gray-800">
+            <p className="text-sm font-medium text-gray-900 dark:text-white">{t('admin.dashboard.version.buildType')}</p>
+            <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+              {isReleaseBuild ? t('admin.dashboard.version.releaseBuildHint') : t('admin.dashboard.version.sourceBuildHint')}
+            </p>
+            <p className="mt-3 text-sm text-gray-700 dark:text-gray-300">
+              {t('admin.dashboard.version.buildTypeValue', { value: buildType })}
+            </p>
+            <p className="mt-2 text-sm text-gray-700 dark:text-gray-300">
+              {isReleaseBuild
+                ? t('admin.dashboard.version.autoHint')
+                : t('admin.dashboard.version.manualHint')}
+            </p>
+          </div>
+
+          <div className="rounded-xl border border-gray-200 p-4 dark:border-gray-800">
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-sm font-medium text-gray-900 dark:text-white">{t('admin.dashboard.version.releaseNotes')}</p>
+              {releaseInfo?.html_url ? (
+                <a
+                  href={releaseInfo.html_url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400"
+                >
+                  {t('admin.dashboard.version.actions.openRelease')}
+                  <SquareArrowOutUpRight className="ml-1 h-4 w-4" />
+                </a>
+              ) : null}
+            </div>
+            <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+              {releaseInfo?.published_at
+                ? t('admin.dashboard.version.releasePublishedAt', {
+                    value: formatDateTime(releaseInfo.published_at, locale),
+                  })
+                : t('admin.dashboard.version.noReleaseInfo')}
+            </p>
+            <div className="mt-3 rounded-lg bg-gray-50 p-3 text-sm leading-6 text-gray-700 dark:bg-gray-900/40 dark:text-gray-300">
+              <div className="font-medium text-gray-900 dark:text-white">{releaseInfo?.name || updateInfo?.latest_version || '-'}</div>
+              <pre className="mt-2 whitespace-pre-wrap break-words font-sans text-sm">
+                {releaseInfo?.body?.trim() || t('admin.dashboard.version.noReleaseInfo')}
+              </pre>
+            </div>
+          </div>
         </div>
       </div>
     </div>

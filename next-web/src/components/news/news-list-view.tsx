@@ -1,4 +1,4 @@
-﻿﻿'use client';
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿'use client';
 
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
@@ -15,11 +15,12 @@ function getErrorMessage(error: unknown, fallback: string) {
 }
 
 function stripContent(content: string) {
-  return content.replace(/[#>*_`~-]/g, ' ').replace(/\s+/g, ' ').trim();
+  return content.replace(/<[^>]+>/g, ' ').replace(/[#>*_`~-]/g, ' ').replace(/\s+/g, ' ').trim();
 }
 
-function buildExcerpt(content: string, length = 160) {
-  const plain = stripContent(content);
+function buildExcerpt(item: Pick<PublicNewsItem, 'summary' | 'content'>, length = 160) {
+  const source = item.summary?.trim() || item.content;
+  const plain = stripContent(source);
   if (plain.length <= length) {
     return plain;
   }
@@ -54,7 +55,7 @@ export default function NewsListView() {
       setIsDark(document.documentElement.classList.contains('dark'));
     }, 0);
 
-    void listPublicNews()
+    void listPublicNews({ locale })
       .then((data) => {
         setItems(data);
         setError('');
@@ -68,7 +69,7 @@ export default function NewsListView() {
       });
 
     return () => window.clearTimeout(timer);
-  }, [t]);
+  }, [locale, t]);
 
   const toggleTheme = () => {
     const nextDark = !isDark;
@@ -86,9 +87,9 @@ export default function NewsListView() {
     () =>
       items.map((item) => ({
         ...item,
-        excerpt: buildExcerpt(item.content),
+        excerpt: buildExcerpt(item),
         detailPath: localizePath(`/news/${item.id}`, locale),
-        createdAtLabel: formatDate(item.created_at, locale),
+        createdAtLabel: formatDate(item.published_at || item.created_at, locale),
       })),
     [items, locale]
   );
@@ -223,4 +224,3 @@ export default function NewsListView() {
     </div>
   );
 }
-

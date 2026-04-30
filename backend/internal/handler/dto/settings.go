@@ -100,6 +100,12 @@ type SystemSettings struct {
 	FallbackModelGemini      string `json:"fallback_model_gemini"`
 	FallbackModelAntigravity string `json:"fallback_model_antigravity"`
 
+	NewsTranslationAPIKeyConfigured bool    `json:"news_translation_api_key_configured"`
+	NewsTranslationBaseURL          string  `json:"news_translation_base_url"`
+	NewsTranslationModel            string  `json:"news_translation_model"`
+	NewsTranslationTimeoutSeconds   int     `json:"news_translation_timeout_seconds"`
+	NewsTranslationTemperature      float64 `json:"news_translation_temperature"`
+
 	// Identity patch configuration (Claude -> Gemini)
 	EnableIdentityPatch bool   `json:"enable_identity_patch"`
 	IdentityPatchPrompt string `json:"identity_patch_prompt"`

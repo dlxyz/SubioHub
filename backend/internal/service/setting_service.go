@@ -599,6 +599,15 @@ func (s *SettingService) UpdateSettings(ctx context.Context, settings *SystemSet
 	updates[SettingKeyFallbackModelOpenAI] = settings.FallbackModelOpenAI
 	updates[SettingKeyFallbackModelGemini] = settings.FallbackModelGemini
 	updates[SettingKeyFallbackModelAntigravity] = settings.FallbackModelAntigravity
+	updates[SettingKeyNewsTranslationBaseURL] = strings.TrimSpace(settings.NewsTranslationBaseURL)
+	updates[SettingKeyNewsTranslationModel] = strings.TrimSpace(settings.NewsTranslationModel)
+	if settings.NewsTranslationAPIKey != "" {
+		updates[SettingKeyNewsTranslationAPIKey] = strings.TrimSpace(settings.NewsTranslationAPIKey)
+	}
+	if settings.NewsTranslationTimeoutSeconds > 0 {
+		updates[SettingKeyNewsTranslationTimeoutSeconds] = strconv.Itoa(settings.NewsTranslationTimeoutSeconds)
+	}
+	updates[SettingKeyNewsTranslationTemperature] = strconv.FormatFloat(settings.NewsTranslationTemperature, 'f', 4, 64)
 
 	// Identity patch configuration (Claude -> Gemini)
 	updates[SettingKeyEnableIdentityPatch] = strconv.FormatBool(settings.EnableIdentityPatch)
@@ -962,6 +971,15 @@ func (s *SettingService) InitializeDefaultSettings(ctx context.Context) error {
 		SettingKeyFallbackModelOpenAI:      "gpt-4o",
 		SettingKeyFallbackModelGemini:      "gemini-2.5-pro",
 		SettingKeyFallbackModelAntigravity: "gemini-2.5-pro",
+		SettingKeyNewsTranslationBaseURL:   defaultNewsTranslationBaseURL,
+		SettingKeyNewsTranslationModel:     strings.TrimSpace(s.cfg.NewsTranslation.Model),
+		SettingKeyNewsTranslationTimeoutSeconds: func() string {
+			if s.cfg.NewsTranslation.TimeoutSeconds > 0 {
+				return strconv.Itoa(s.cfg.NewsTranslation.TimeoutSeconds)
+			}
+			return "60"
+		}(),
+		SettingKeyNewsTranslationTemperature: strconv.FormatFloat(s.cfg.NewsTranslation.Temperature, 'f', 4, 64),
 		// Identity patch defaults
 		SettingKeyEnableIdentityPatch: "true",
 		SettingKeyIdentityPatchPrompt: "",
@@ -1220,6 +1238,34 @@ func (s *SettingService) parseSettings(settings map[string]string) *SystemSettin
 	result.FallbackModelOpenAI = s.getStringOrDefault(settings, SettingKeyFallbackModelOpenAI, "gpt-4o")
 	result.FallbackModelGemini = s.getStringOrDefault(settings, SettingKeyFallbackModelGemini, "gemini-2.5-pro")
 	result.FallbackModelAntigravity = s.getStringOrDefault(settings, SettingKeyFallbackModelAntigravity, "gemini-2.5-pro")
+	result.NewsTranslationBaseURL = s.getStringOrDefault(settings, SettingKeyNewsTranslationBaseURL, strings.TrimSpace(s.cfg.NewsTranslation.BaseURL))
+	if strings.TrimSpace(result.NewsTranslationBaseURL) == "" {
+		result.NewsTranslationBaseURL = defaultNewsTranslationBaseURL
+	}
+	result.NewsTranslationModel = s.getStringOrDefault(settings, SettingKeyNewsTranslationModel, strings.TrimSpace(s.cfg.NewsTranslation.Model))
+	result.NewsTranslationAPIKey = strings.TrimSpace(settings[SettingKeyNewsTranslationAPIKey])
+	if result.NewsTranslationAPIKey == "" {
+		result.NewsTranslationAPIKey = strings.TrimSpace(s.cfg.NewsTranslation.APIKey)
+	}
+	result.NewsTranslationAPIKeyConfigured = result.NewsTranslationAPIKey != ""
+	result.NewsTranslationTimeoutSeconds = s.cfg.NewsTranslation.TimeoutSeconds
+	if result.NewsTranslationTimeoutSeconds <= 0 {
+		result.NewsTranslationTimeoutSeconds = 60
+	}
+	if raw := strings.TrimSpace(settings[SettingKeyNewsTranslationTimeoutSeconds]); raw != "" {
+		if v, err := strconv.Atoi(raw); err == nil && v > 0 {
+			result.NewsTranslationTimeoutSeconds = v
+		}
+	}
+	result.NewsTranslationTemperature = s.cfg.NewsTranslation.Temperature
+	if result.NewsTranslationTemperature < 0 {
+		result.NewsTranslationTemperature = 0.2
+	}
+	if raw := strings.TrimSpace(settings[SettingKeyNewsTranslationTemperature]); raw != "" {
+		if v, err := strconv.ParseFloat(raw, 64); err == nil && v >= 0 {
+			result.NewsTranslationTemperature = v
+		}
+	}
 
 	// Identity patch settings (default: enabled, to preserve existing behavior)
 	if v, ok := settings[SettingKeyEnableIdentityPatch]; ok && v != "" {

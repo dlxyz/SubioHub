@@ -161,6 +161,11 @@ func (h *SettingHandler) GetSettings(c *gin.Context) {
 		FallbackModelOpenAI:                    settings.FallbackModelOpenAI,
 		FallbackModelGemini:                    settings.FallbackModelGemini,
 		FallbackModelAntigravity:               settings.FallbackModelAntigravity,
+		NewsTranslationAPIKeyConfigured:        settings.NewsTranslationAPIKeyConfigured,
+		NewsTranslationBaseURL:                 settings.NewsTranslationBaseURL,
+		NewsTranslationModel:                   settings.NewsTranslationModel,
+		NewsTranslationTimeoutSeconds:          settings.NewsTranslationTimeoutSeconds,
+		NewsTranslationTemperature:             settings.NewsTranslationTemperature,
 		EnableIdentityPatch:                    settings.EnableIdentityPatch,
 		IdentityPatchPrompt:                    settings.IdentityPatchPrompt,
 		OpsMonitoringEnabled:                   opsEnabled && settings.OpsMonitoringEnabled,
@@ -283,11 +288,16 @@ type UpdateSettingsRequest struct {
 	DefaultSubscriptions []dto.DefaultSubscriptionSetting `json:"default_subscriptions"`
 
 	// Model fallback configuration
-	EnableModelFallback      bool   `json:"enable_model_fallback"`
-	FallbackModelAnthropic   string `json:"fallback_model_anthropic"`
-	FallbackModelOpenAI      string `json:"fallback_model_openai"`
-	FallbackModelGemini      string `json:"fallback_model_gemini"`
-	FallbackModelAntigravity string `json:"fallback_model_antigravity"`
+	EnableModelFallback           bool     `json:"enable_model_fallback"`
+	FallbackModelAnthropic        string   `json:"fallback_model_anthropic"`
+	FallbackModelOpenAI           string   `json:"fallback_model_openai"`
+	FallbackModelGemini           string   `json:"fallback_model_gemini"`
+	FallbackModelAntigravity      string   `json:"fallback_model_antigravity"`
+	NewsTranslationAPIKey         *string  `json:"news_translation_api_key"`
+	NewsTranslationBaseURL        *string  `json:"news_translation_base_url"`
+	NewsTranslationModel          *string  `json:"news_translation_model"`
+	NewsTranslationTimeoutSeconds *int     `json:"news_translation_timeout_seconds"`
+	NewsTranslationTemperature    *float64 `json:"news_translation_temperature"`
 
 	// Identity patch configuration (Claude -> Gemini)
 	EnableIdentityPatch bool   `json:"enable_identity_patch"`
@@ -385,6 +395,35 @@ func (h *SettingHandler) UpdateSettings(c *gin.Context) {
 		req.SMTPPort = 587
 	}
 	req.DefaultSubscriptions = normalizeDefaultSubscriptions(req.DefaultSubscriptions)
+	newsTranslationBaseURL := previousSettings.NewsTranslationBaseURL
+	if req.NewsTranslationBaseURL != nil {
+		newsTranslationBaseURL = strings.TrimSpace(*req.NewsTranslationBaseURL)
+	}
+	newsTranslationModel := previousSettings.NewsTranslationModel
+	if req.NewsTranslationModel != nil {
+		newsTranslationModel = strings.TrimSpace(*req.NewsTranslationModel)
+	}
+	newsTranslationAPIKey := ""
+	if req.NewsTranslationAPIKey != nil {
+		newsTranslationAPIKey = strings.TrimSpace(*req.NewsTranslationAPIKey)
+	}
+	newsTranslationTimeoutSeconds := previousSettings.NewsTranslationTimeoutSeconds
+	if newsTranslationTimeoutSeconds <= 0 {
+		newsTranslationTimeoutSeconds = 60
+	}
+	if req.NewsTranslationTimeoutSeconds != nil {
+		newsTranslationTimeoutSeconds = *req.NewsTranslationTimeoutSeconds
+		if newsTranslationTimeoutSeconds <= 0 {
+			newsTranslationTimeoutSeconds = 60
+		}
+	}
+	newsTranslationTemperature := previousSettings.NewsTranslationTemperature
+	if newsTranslationTemperature < 0 {
+		newsTranslationTemperature = 0.2
+	}
+	if req.NewsTranslationTemperature != nil && *req.NewsTranslationTemperature >= 0 {
+		newsTranslationTemperature = *req.NewsTranslationTemperature
+	}
 
 	// SMTP 配置保护：如果请求中 smtp_host 为空但数据库中已有配置，则保留已有 SMTP 配置
 	// 防止前端加载设置失败时空表单覆盖已保存的 SMTP 配置
@@ -853,6 +892,11 @@ func (h *SettingHandler) UpdateSettings(c *gin.Context) {
 		FallbackModelOpenAI:              req.FallbackModelOpenAI,
 		FallbackModelGemini:              req.FallbackModelGemini,
 		FallbackModelAntigravity:         req.FallbackModelAntigravity,
+		NewsTranslationAPIKey:            newsTranslationAPIKey,
+		NewsTranslationBaseURL:           newsTranslationBaseURL,
+		NewsTranslationModel:             newsTranslationModel,
+		NewsTranslationTimeoutSeconds:    newsTranslationTimeoutSeconds,
+		NewsTranslationTemperature:       newsTranslationTemperature,
 		EnableIdentityPatch:              req.EnableIdentityPatch,
 		IdentityPatchPrompt:              req.IdentityPatchPrompt,
 		MinClaudeCodeVersion:             req.MinClaudeCodeVersion,
@@ -1078,6 +1122,11 @@ func (h *SettingHandler) UpdateSettings(c *gin.Context) {
 		FallbackModelOpenAI:                    updatedSettings.FallbackModelOpenAI,
 		FallbackModelGemini:                    updatedSettings.FallbackModelGemini,
 		FallbackModelAntigravity:               updatedSettings.FallbackModelAntigravity,
+		NewsTranslationAPIKeyConfigured:        updatedSettings.NewsTranslationAPIKeyConfigured,
+		NewsTranslationBaseURL:                 updatedSettings.NewsTranslationBaseURL,
+		NewsTranslationModel:                   updatedSettings.NewsTranslationModel,
+		NewsTranslationTimeoutSeconds:          updatedSettings.NewsTranslationTimeoutSeconds,
+		NewsTranslationTemperature:             updatedSettings.NewsTranslationTemperature,
 		EnableIdentityPatch:                    updatedSettings.EnableIdentityPatch,
 		IdentityPatchPrompt:                    updatedSettings.IdentityPatchPrompt,
 		OpsMonitoringEnabled:                   updatedSettings.OpsMonitoringEnabled,
@@ -1336,6 +1385,21 @@ func diffSettings(before *service.SystemSettings, after *service.SystemSettings,
 	}
 	if before.FallbackModelAntigravity != after.FallbackModelAntigravity {
 		changed = append(changed, "fallback_model_antigravity")
+	}
+	if before.NewsTranslationBaseURL != after.NewsTranslationBaseURL {
+		changed = append(changed, "news_translation_base_url")
+	}
+	if before.NewsTranslationModel != after.NewsTranslationModel {
+		changed = append(changed, "news_translation_model")
+	}
+	if before.NewsTranslationTimeoutSeconds != after.NewsTranslationTimeoutSeconds {
+		changed = append(changed, "news_translation_timeout_seconds")
+	}
+	if before.NewsTranslationTemperature != after.NewsTranslationTemperature {
+		changed = append(changed, "news_translation_temperature")
+	}
+	if req.NewsTranslationAPIKey != nil && strings.TrimSpace(*req.NewsTranslationAPIKey) != "" {
+		changed = append(changed, "news_translation_api_key")
 	}
 	if before.EnableIdentityPatch != after.EnableIdentityPatch {
 		changed = append(changed, "enable_identity_patch")

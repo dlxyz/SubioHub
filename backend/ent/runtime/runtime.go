@@ -14,6 +14,8 @@ import (
 	"github.com/dlxyz/SubioHub/ent/errorpassthroughrule"
 	"github.com/dlxyz/SubioHub/ent/group"
 	"github.com/dlxyz/SubioHub/ent/idempotencyrecord"
+	"github.com/dlxyz/SubioHub/ent/newspost"
+	"github.com/dlxyz/SubioHub/ent/newsposttranslation"
 	"github.com/dlxyz/SubioHub/ent/paymentauditlog"
 	"github.com/dlxyz/SubioHub/ent/paymentorder"
 	"github.com/dlxyz/SubioHub/ent/paymentproviderinstance"
@@ -540,6 +542,126 @@ func init() {
 	idempotencyrecordDescErrorReason := idempotencyrecordFields[6].Descriptor()
 	// idempotencyrecord.ErrorReasonValidator is a validator for the "error_reason" field. It is called by the builders before save.
 	idempotencyrecord.ErrorReasonValidator = idempotencyrecordDescErrorReason.Validators[0].(func(string) error)
+	newspostFields := schema.NewsPost{}.Fields()
+	_ = newspostFields
+	// newspostDescSlug is the schema descriptor for slug field.
+	newspostDescSlug := newspostFields[0].Descriptor()
+	// newspost.SlugValidator is a validator for the "slug" field. It is called by the builders before save.
+	newspost.SlugValidator = func() func(string) error {
+		validators := newspostDescSlug.Validators
+		fns := [...]func(string) error{
+			validators[0].(func(string) error),
+			validators[1].(func(string) error),
+		}
+		return func(slug string) error {
+			for _, fn := range fns {
+				if err := fn(slug); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
+	// newspostDescStatus is the schema descriptor for status field.
+	newspostDescStatus := newspostFields[1].Descriptor()
+	// newspost.DefaultStatus holds the default value on creation for the status field.
+	newspost.DefaultStatus = newspostDescStatus.Default.(string)
+	// newspost.StatusValidator is a validator for the "status" field. It is called by the builders before save.
+	newspost.StatusValidator = newspostDescStatus.Validators[0].(func(string) error)
+	// newspostDescDefaultLocale is the schema descriptor for default_locale field.
+	newspostDescDefaultLocale := newspostFields[2].Descriptor()
+	// newspost.DefaultDefaultLocale holds the default value on creation for the default_locale field.
+	newspost.DefaultDefaultLocale = newspostDescDefaultLocale.Default.(string)
+	// newspost.DefaultLocaleValidator is a validator for the "default_locale" field. It is called by the builders before save.
+	newspost.DefaultLocaleValidator = newspostDescDefaultLocale.Validators[0].(func(string) error)
+	// newspostDescCoverImageURL is the schema descriptor for cover_image_url field.
+	newspostDescCoverImageURL := newspostFields[3].Descriptor()
+	// newspost.CoverImageURLValidator is a validator for the "cover_image_url" field. It is called by the builders before save.
+	newspost.CoverImageURLValidator = newspostDescCoverImageURL.Validators[0].(func(string) error)
+	// newspostDescAuthorName is the schema descriptor for author_name field.
+	newspostDescAuthorName := newspostFields[4].Descriptor()
+	// newspost.AuthorNameValidator is a validator for the "author_name" field. It is called by the builders before save.
+	newspost.AuthorNameValidator = newspostDescAuthorName.Validators[0].(func(string) error)
+	// newspostDescCreatedAt is the schema descriptor for created_at field.
+	newspostDescCreatedAt := newspostFields[8].Descriptor()
+	// newspost.DefaultCreatedAt holds the default value on creation for the created_at field.
+	newspost.DefaultCreatedAt = newspostDescCreatedAt.Default.(func() time.Time)
+	// newspostDescUpdatedAt is the schema descriptor for updated_at field.
+	newspostDescUpdatedAt := newspostFields[9].Descriptor()
+	// newspost.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	newspost.DefaultUpdatedAt = newspostDescUpdatedAt.Default.(func() time.Time)
+	// newspost.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	newspost.UpdateDefaultUpdatedAt = newspostDescUpdatedAt.UpdateDefault.(func() time.Time)
+	newsposttranslationFields := schema.NewsPostTranslation{}.Fields()
+	_ = newsposttranslationFields
+	// newsposttranslationDescLocale is the schema descriptor for locale field.
+	newsposttranslationDescLocale := newsposttranslationFields[1].Descriptor()
+	// newsposttranslation.LocaleValidator is a validator for the "locale" field. It is called by the builders before save.
+	newsposttranslation.LocaleValidator = func() func(string) error {
+		validators := newsposttranslationDescLocale.Validators
+		fns := [...]func(string) error{
+			validators[0].(func(string) error),
+			validators[1].(func(string) error),
+		}
+		return func(locale string) error {
+			for _, fn := range fns {
+				if err := fn(locale); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
+	// newsposttranslationDescTitle is the schema descriptor for title field.
+	newsposttranslationDescTitle := newsposttranslationFields[2].Descriptor()
+	// newsposttranslation.TitleValidator is a validator for the "title" field. It is called by the builders before save.
+	newsposttranslation.TitleValidator = func() func(string) error {
+		validators := newsposttranslationDescTitle.Validators
+		fns := [...]func(string) error{
+			validators[0].(func(string) error),
+			validators[1].(func(string) error),
+		}
+		return func(title string) error {
+			for _, fn := range fns {
+				if err := fn(title); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
+	// newsposttranslationDescContent is the schema descriptor for content field.
+	newsposttranslationDescContent := newsposttranslationFields[4].Descriptor()
+	// newsposttranslation.ContentValidator is a validator for the "content" field. It is called by the builders before save.
+	newsposttranslation.ContentValidator = newsposttranslationDescContent.Validators[0].(func(string) error)
+	// newsposttranslationDescSeoTitle is the schema descriptor for seo_title field.
+	newsposttranslationDescSeoTitle := newsposttranslationFields[5].Descriptor()
+	// newsposttranslation.SeoTitleValidator is a validator for the "seo_title" field. It is called by the builders before save.
+	newsposttranslation.SeoTitleValidator = newsposttranslationDescSeoTitle.Validators[0].(func(string) error)
+	// newsposttranslationDescTranslationStatus is the schema descriptor for translation_status field.
+	newsposttranslationDescTranslationStatus := newsposttranslationFields[7].Descriptor()
+	// newsposttranslation.DefaultTranslationStatus holds the default value on creation for the translation_status field.
+	newsposttranslation.DefaultTranslationStatus = newsposttranslationDescTranslationStatus.Default.(string)
+	// newsposttranslation.TranslationStatusValidator is a validator for the "translation_status" field. It is called by the builders before save.
+	newsposttranslation.TranslationStatusValidator = newsposttranslationDescTranslationStatus.Validators[0].(func(string) error)
+	// newsposttranslationDescTranslationProvider is the schema descriptor for translation_provider field.
+	newsposttranslationDescTranslationProvider := newsposttranslationFields[8].Descriptor()
+	// newsposttranslation.TranslationProviderValidator is a validator for the "translation_provider" field. It is called by the builders before save.
+	newsposttranslation.TranslationProviderValidator = newsposttranslationDescTranslationProvider.Validators[0].(func(string) error)
+	// newsposttranslationDescTranslatedFromLocale is the schema descriptor for translated_from_locale field.
+	newsposttranslationDescTranslatedFromLocale := newsposttranslationFields[9].Descriptor()
+	// newsposttranslation.TranslatedFromLocaleValidator is a validator for the "translated_from_locale" field. It is called by the builders before save.
+	newsposttranslation.TranslatedFromLocaleValidator = newsposttranslationDescTranslatedFromLocale.Validators[0].(func(string) error)
+	// newsposttranslationDescCreatedAt is the schema descriptor for created_at field.
+	newsposttranslationDescCreatedAt := newsposttranslationFields[11].Descriptor()
+	// newsposttranslation.DefaultCreatedAt holds the default value on creation for the created_at field.
+	newsposttranslation.DefaultCreatedAt = newsposttranslationDescCreatedAt.Default.(func() time.Time)
+	// newsposttranslationDescUpdatedAt is the schema descriptor for updated_at field.
+	newsposttranslationDescUpdatedAt := newsposttranslationFields[12].Descriptor()
+	// newsposttranslation.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	newsposttranslation.DefaultUpdatedAt = newsposttranslationDescUpdatedAt.Default.(func() time.Time)
+	// newsposttranslation.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	newsposttranslation.UpdateDefaultUpdatedAt = newsposttranslationDescUpdatedAt.UpdateDefault.(func() time.Time)
 	paymentauditlogFields := schema.PaymentAuditLog{}.Fields()
 	_ = paymentauditlogFields
 	// paymentauditlogDescOrderID is the schema descriptor for order_id field.

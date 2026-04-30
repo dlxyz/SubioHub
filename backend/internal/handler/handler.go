@@ -11,6 +11,7 @@ type AdminHandlers struct {
 	Group                 *admin.GroupHandler
 	Account               *admin.AccountHandler
 	Announcement          *admin.AnnouncementHandler
+	News                  *admin.NewsHandler
 	DataManagement        *admin.DataManagementHandler
 	Backup                *admin.BackupHandler
 	OAuth                 *admin.OAuthHandler
@@ -44,6 +45,7 @@ type Handlers struct {
 	Redeem         *RedeemHandler
 	Subscription   *SubscriptionHandler
 	Announcement   *AnnouncementHandler
+	News           *NewsHandler
 	Admin          *AdminHandlers
 	Affiliate      *AffiliateHandler
 	Gateway        *GatewayHandler

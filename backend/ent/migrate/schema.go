@@ -530,6 +530,91 @@ var (
 			},
 		},
 	}
+	// NewsPostsColumns holds the columns for the "news_posts" table.
+	NewsPostsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt64, Increment: true},
+		{Name: "slug", Type: field.TypeString, Unique: true, Size: 120},
+		{Name: "status", Type: field.TypeString, Size: 20, Default: "draft"},
+		{Name: "default_locale", Type: field.TypeString, Size: 16, Default: "zh-CN"},
+		{Name: "cover_image_url", Type: field.TypeString, Nullable: true, Size: 500},
+		{Name: "author_name", Type: field.TypeString, Nullable: true, Size: 100},
+		{Name: "published_at", Type: field.TypeTime, Nullable: true, SchemaType: map[string]string{"postgres": "timestamptz"}},
+		{Name: "created_by", Type: field.TypeInt64, Nullable: true},
+		{Name: "updated_by", Type: field.TypeInt64, Nullable: true},
+		{Name: "created_at", Type: field.TypeTime, SchemaType: map[string]string{"postgres": "timestamptz"}},
+		{Name: "updated_at", Type: field.TypeTime, SchemaType: map[string]string{"postgres": "timestamptz"}},
+	}
+	// NewsPostsTable holds the schema information for the "news_posts" table.
+	NewsPostsTable = &schema.Table{
+		Name:       "news_posts",
+		Columns:    NewsPostsColumns,
+		PrimaryKey: []*schema.Column{NewsPostsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "newspost_status",
+				Unique:  false,
+				Columns: []*schema.Column{NewsPostsColumns[2]},
+			},
+			{
+				Name:    "newspost_published_at",
+				Unique:  false,
+				Columns: []*schema.Column{NewsPostsColumns[6]},
+			},
+			{
+				Name:    "newspost_created_at",
+				Unique:  false,
+				Columns: []*schema.Column{NewsPostsColumns[9]},
+			},
+		},
+	}
+	// NewsPostTranslationsColumns holds the columns for the "news_post_translations" table.
+	NewsPostTranslationsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt64, Increment: true},
+		{Name: "locale", Type: field.TypeString, Size: 16},
+		{Name: "title", Type: field.TypeString, Size: 200},
+		{Name: "summary", Type: field.TypeString, Nullable: true, SchemaType: map[string]string{"postgres": "text"}},
+		{Name: "content", Type: field.TypeString, SchemaType: map[string]string{"postgres": "text"}},
+		{Name: "seo_title", Type: field.TypeString, Nullable: true, Size: 200},
+		{Name: "seo_description", Type: field.TypeString, Nullable: true, SchemaType: map[string]string{"postgres": "text"}},
+		{Name: "translation_status", Type: field.TypeString, Size: 20, Default: "manual"},
+		{Name: "translation_provider", Type: field.TypeString, Nullable: true, Size: 100},
+		{Name: "translated_from_locale", Type: field.TypeString, Nullable: true, Size: 16},
+		{Name: "last_translated_at", Type: field.TypeTime, Nullable: true, SchemaType: map[string]string{"postgres": "timestamptz"}},
+		{Name: "created_at", Type: field.TypeTime, SchemaType: map[string]string{"postgres": "timestamptz"}},
+		{Name: "updated_at", Type: field.TypeTime, SchemaType: map[string]string{"postgres": "timestamptz"}},
+		{Name: "news_post_id", Type: field.TypeInt64},
+	}
+	// NewsPostTranslationsTable holds the schema information for the "news_post_translations" table.
+	NewsPostTranslationsTable = &schema.Table{
+		Name:       "news_post_translations",
+		Columns:    NewsPostTranslationsColumns,
+		PrimaryKey: []*schema.Column{NewsPostTranslationsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "news_post_translations_news_posts_translations",
+				Columns:    []*schema.Column{NewsPostTranslationsColumns[13]},
+				RefColumns: []*schema.Column{NewsPostsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "newsposttranslation_news_post_id",
+				Unique:  false,
+				Columns: []*schema.Column{NewsPostTranslationsColumns[13]},
+			},
+			{
+				Name:    "newsposttranslation_locale",
+				Unique:  false,
+				Columns: []*schema.Column{NewsPostTranslationsColumns[1]},
+			},
+			{
+				Name:    "newsposttranslation_news_post_id_locale",
+				Unique:  true,
+				Columns: []*schema.Column{NewsPostTranslationsColumns[13], NewsPostTranslationsColumns[1]},
+			},
+		},
+	}
 	// PaymentAuditLogsColumns holds the columns for the "payment_audit_logs" table.
 	PaymentAuditLogsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt64, Increment: true},
@@ -1380,6 +1465,8 @@ var (
 		ErrorPassthroughRulesTable,
 		GroupsTable,
 		IdempotencyRecordsTable,
+		NewsPostsTable,
+		NewsPostTranslationsTable,
 		PaymentAuditLogsTable,
 		PaymentOrdersTable,
 		PaymentProviderInstancesTable,
@@ -1438,6 +1525,13 @@ func init() {
 	}
 	IdempotencyRecordsTable.Annotation = &entsql.Annotation{
 		Table: "idempotency_records",
+	}
+	NewsPostsTable.Annotation = &entsql.Annotation{
+		Table: "news_posts",
+	}
+	NewsPostTranslationsTable.ForeignKeys[0].RefTable = NewsPostsTable
+	NewsPostTranslationsTable.Annotation = &entsql.Annotation{
+		Table: "news_post_translations",
 	}
 	PaymentAuditLogsTable.Annotation = &entsql.Annotation{
 		Table: "payment_audit_logs",
