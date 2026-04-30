@@ -433,7 +433,7 @@ export default function AdminDashboardPage() {
 
         {updateInfo?.warning ? (
           <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700 dark:border-amber-900/60 dark:bg-amber-950/20 dark:text-amber-300">
-            {updateInfo.warning}
+            {formatVersionError(updateInfo.warning, locale, t)}
           </div>
         ) : null}
 
