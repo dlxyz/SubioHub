@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿import type { MessageTree } from '@/i18n/schema';
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿import type { MessageTree } from '@/i18n/schema';
 
 const zhCN = {
   dashboard: {
@@ -547,6 +547,10 @@ const zhCN = {
         updateFailed: '自动升级失败',
         rollbackFailed: '版本回滚失败',
         restartFailed: '服务重启失败',
+        rateLimited: 'GitHub 检查更新过于频繁，已触发匿名访问限流。请稍后再试，或为后端配置 UPDATE_GITHUB_TOKEN。',
+        rateLimitedAt: 'GitHub 检查更新过于频繁，已触发匿名访问限流。请在 {time} 后重试，约 {relative} 可恢复；如需更稳定，建议为后端配置 UPDATE_GITHUB_TOKEN。',
+        forbidden: 'GitHub 拒绝了本次版本检查。请稍后重试，或检查后端的 UPDATE_GITHUB_TOKEN 配置。',
+        unauthorized: 'GitHub 令牌无效或已过期，请检查后端的 UPDATE_GITHUB_TOKEN 配置。',
         actions: {
           check: '检查更新',
           update: '自动升级',

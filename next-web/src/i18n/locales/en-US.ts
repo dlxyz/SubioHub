@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿import type { MessageTree } from '@/i18n/schema';
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿import type { MessageTree } from '@/i18n/schema';
 
 const enUS = {
   dashboard: {
@@ -547,6 +547,10 @@ const enUS = {
         updateFailed: 'Automatic upgrade failed',
         rollbackFailed: 'Rollback failed',
         restartFailed: 'Service restart failed',
+        rateLimited: 'GitHub update checks are being rate limited for anonymous requests. Please try again later, or configure UPDATE_GITHUB_TOKEN on the backend.',
+        rateLimitedAt: 'GitHub update checks are being rate limited for anonymous requests. Please retry after {time} ({relative}), or configure UPDATE_GITHUB_TOKEN on the backend for more stable checks.',
+        forbidden: 'GitHub rejected this release check. Please try again later or verify the backend UPDATE_GITHUB_TOKEN configuration.',
+        unauthorized: 'The GitHub token is invalid or expired. Please verify the backend UPDATE_GITHUB_TOKEN configuration.',
         actions: {
           check: 'Check Updates',
           update: 'Auto Upgrade',

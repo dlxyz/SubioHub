@@ -60,6 +60,64 @@ function getErrorMessage(error: unknown, fallback: string) {
   return fallback;
 }
 
+function formatDetailedDateTime(value: number, locale: string) {
+  try {
+    return new Intl.DateTimeFormat(locale, {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false,
+    }).format(new Date(value));
+  } catch {
+    return String(value);
+  }
+}
+
+function formatRetryAfter(targetMs: number, locale: string) {
+  const diffMs = Math.max(0, targetMs - Date.now());
+  const diffMinutes = Math.ceil(diffMs / 60000);
+
+  if (diffMinutes <= 1) {
+    return locale.startsWith('zh') ? '约 1 分钟后' : 'in about 1 minute';
+  }
+  if (diffMinutes < 60) {
+    return locale.startsWith('zh') ? `约 ${diffMinutes} 分钟后` : `in about ${diffMinutes} minutes`;
+  }
+
+  const diffHours = Math.ceil(diffMinutes / 60);
+  return locale.startsWith('zh') ? `约 ${diffHours} 小时后` : `in about ${diffHours} hours`;
+}
+
+function formatVersionError(message: string, locale: string, t: (key: string, params?: Record<string, string | number>) => string) {
+  const rateLimitMatch = message.match(/GitHub API rate limit reached; retry after reset time (\d{10,})/);
+  if (rateLimitMatch) {
+    const resetSeconds = Number(rateLimitMatch[1]);
+    if (Number.isFinite(resetSeconds)) {
+      const resetMs = resetSeconds * 1000;
+      return t('admin.dashboard.version.rateLimitedAt', {
+        time: formatDetailedDateTime(resetMs, locale),
+        relative: formatRetryAfter(resetMs, locale),
+      });
+    }
+    return t('admin.dashboard.version.rateLimited');
+  }
+
+  if (message.includes('GitHub API rate limit reached')) {
+    return t('admin.dashboard.version.rateLimited');
+  }
+  if (message.includes('GitHub release check unauthorized (401)')) {
+    return t('admin.dashboard.version.unauthorized');
+  }
+  if (message.includes('GitHub release check forbidden (403)')) {
+    return t('admin.dashboard.version.forbidden');
+  }
+
+  return message;
+}
+
 export default function AdminDashboardPage() {
   const { locale, t } = useI18n();
   const [stats, setStats] = useState<AdminDashboardStats | null>(null);
@@ -102,11 +160,11 @@ export default function AdminDashboardPage() {
       } catch {
         setUpdateInfo(null);
       }
-      setVersionError(getErrorMessage(err, t('admin.dashboard.version.loadFailed')));
+      setVersionError(formatVersionError(getErrorMessage(err, t('admin.dashboard.version.loadFailed')), locale, t));
     } finally {
       setVersionLoading(false);
     }
-  }, [t]);
+  }, [locale, t]);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -205,7 +263,7 @@ export default function AdminDashboardPage() {
       setVersionNotice(result.message || t('admin.dashboard.version.updateDone'));
       await loadVersion(true);
     } catch (err: unknown) {
-      setVersionError(getErrorMessage(err, t('admin.dashboard.version.updateFailed')));
+      setVersionError(formatVersionError(getErrorMessage(err, t('admin.dashboard.version.updateFailed')), locale, t));
     } finally {
       setVersionAction(null);
     }
@@ -223,7 +281,7 @@ export default function AdminDashboardPage() {
       setVersionNotice(result.message || t('admin.dashboard.version.rollbackDone'));
       await loadVersion(true);
     } catch (err: unknown) {
-      setVersionError(getErrorMessage(err, t('admin.dashboard.version.rollbackFailed')));
+      setVersionError(formatVersionError(getErrorMessage(err, t('admin.dashboard.version.rollbackFailed')), locale, t));
     } finally {
       setVersionAction(null);
     }
@@ -240,7 +298,7 @@ export default function AdminDashboardPage() {
       const result = await restartAdminSystemService();
       setVersionNotice(result.message || t('admin.dashboard.version.restartDone'));
     } catch (err: unknown) {
-      setVersionError(getErrorMessage(err, t('admin.dashboard.version.restartFailed')));
+      setVersionError(formatVersionError(getErrorMessage(err, t('admin.dashboard.version.restartFailed')), locale, t));
     } finally {
       setVersionAction(null);
     }
