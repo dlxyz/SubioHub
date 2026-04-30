@@ -8,9 +8,9 @@
 |------|------|
 | **上游仓库** | dlxyz/SubioHub |
 | **Fork 仓库** | bayma888/subiohub-bmai |
-| **技术栈** | Go 后端 (Ent ORM + Gin) + Next.js Web 端 (pnpm) |
+| **技术栈** | Go 后端 (Ent ORM + Gin) + Next.js Web 端 (`next-web`) |
 | **数据库** | PostgreSQL 16 + Redis |
-| **包管理** | 后端: go modules, `next-web`: **pnpm**（不是 npm） |
+| **包管理** | 后端: go modules, `next-web`: **npm** |
 
 ## 二、本地环境配置
 
@@ -37,8 +37,9 @@
 # golangci-lint v2.7
 go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.7
 
-# pnpm (Web 包管理)
-npm install -g pnpm
+# Node.js / npm
+node -v
+npm -v
 ```
 
 ## 三、CI/CD 流水线
@@ -48,13 +49,13 @@ npm install -g pnpm
 | Workflow | 触发条件 | 检查内容 |
 |----------|----------|----------|
 | **backend-ci.yml** | push, pull_request | 单元测试 + 集成测试 + golangci-lint v2.7 |
-| **security-scan.yml** | push, pull_request, 每周一 | govulncheck + gosec + pnpm audit |
+| **security-scan.yml** | push, pull_request, 每周一 | govulncheck + gosec + npm audit |
 | **release.yml** | tag `v*` | 构建发布（PR 不触发） |
 
 ### CI 要求
 
 - Go 版本必须是 **1.25.7**
-- Web 端使用 `pnpm install --frozen-lockfile`，必须提交 `pnpm-lock.yaml`
+- Web 端使用 `npm ci`，依赖锁文件为 `next-web/package-lock.json`
 
 ### 本地测试命令
 
@@ -68,37 +69,37 @@ cd backend && go test -tags=integration ./...
 # 代码质量检查
 cd backend && golangci-lint run ./...
 
-# next-web 依赖安装（必须用 pnpm）
-cd next-web && pnpm install
+# next-web 依赖安装
+cd next-web && npm install
 ```
 
 ## 四、常见坑点 & 解决方案
 
-### 坑 1：pnpm-lock.yaml 必须同步提交
+### 坑 1：package-lock.json 必须同步提交
 
-**问题**：`package.json` 新增依赖后，CI 的 `pnpm install --frozen-lockfile` 失败。
+**问题**：`package.json` 新增依赖后，CI 的 `npm ci` 失败。
 
-**原因**：上游 CI 使用 pnpm，lock 文件不同步会报错。
+**原因**：CI 依赖 `package-lock.json`，依赖声明和锁文件不同步会报错。
 
 **解决**：
 ```bash
 cd next-web
-pnpm install  # 更新 pnpm-lock.yaml
-git add pnpm-lock.yaml
-git commit -m "chore: update pnpm-lock.yaml"
+npm install  # 更新 package-lock.json
+git add package-lock.json
+git commit -m "chore: update package-lock.json"
 ```
 
 ---
 
-### 坑 2：npm 和 pnpm 的 node_modules 冲突
+### 坑 2：依赖目录与锁文件不一致
 
-**问题**：之前用 npm 装过 `node_modules`，pnpm install 报 `EPERM` 错误。
+**问题**：切换分支或中断安装后，`node_modules` 与 `package-lock.json` 状态不一致，可能导致安装失败或类型异常。
 
 **解决**：
 ```bash
 cd next-web
 rm -rf node_modules  # 或 PowerShell: Remove-Item -Recurse -Force node_modules
-pnpm install
+npm install
 ```
 
 ---
@@ -239,7 +240,7 @@ git add ent/       # 生成的文件也要提交
 - [ ] `go test -tags=unit ./...` 通过
 - [ ] `go test -tags=integration ./...` 通过
 - [ ] `golangci-lint run ./...` 无新增问题
-- [ ] `pnpm-lock.yaml` 已同步（如果改了 package.json）
+- [ ] `next-web/package-lock.json` 已同步（如果改了 package.json）
 - [ ] 所有 test stub 补全新接口方法（如果改了 interface）
 - [ ] Ent 生成的代码已提交（如果改了 schema）
 
@@ -281,15 +282,15 @@ git rebase upstream/main
 ### next-web 操作
 
 ```bash
-# 安装依赖（必须用 pnpm）
+# 安装依赖
 cd next-web
-pnpm install
+npm install
 
 # 开发服务器
-pnpm dev
+npm run dev
 
 # 构建
-pnpm build
+npm run build
 ```
 
 ### 后端操作
@@ -333,7 +334,7 @@ subiohub-bmai/
 │   │   ├── store/           # 状态管理
 │   │   └── i18n/            # 国际化
 │   ├── package.json         # 依赖配置
-│   └── pnpm-lock.yaml       # pnpm 锁文件（必须提交）
+│   └── package-lock.json    # npm 锁文件（必须提交）
 └── .claude/
     └── CLAUDE.md            # 本文档
 ```
@@ -343,5 +344,5 @@ subiohub-bmai/
 - [上游仓库](https://github.com/dlxyz/SubioHub)
 - [Ent 文档](https://entgo.io/docs/getting-started)
 - [Next.js 文档](https://nextjs.org/docs)
-- [pnpm 文档](https://pnpm.io/)
+- [npm 文档](https://docs.npmjs.com/)
 

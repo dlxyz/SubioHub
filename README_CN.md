@@ -321,13 +321,10 @@ rm -rf data/ postgres_data/ redis_data/
 git clone https://github.com/dlxyz/SubioHub.git
 cd subiohub
 
-# 2. 安装 pnpm（如果还没有安装）
-npm install -g pnpm
-
-# 3. 编译 Next.js Web 应用
+# 2. 安装 next-web 依赖
 cd next-web
-pnpm install
-pnpm run build
+npm install
+npm run build
 
 # 4. 编译后端 API 服务
 cd ../backend
@@ -503,7 +500,7 @@ go run ./cmd/server
 
 # next-web（支持热重载）
 cd ../next-web
-pnpm run dev
+npm run dev
 ```
 
 默认情况下：

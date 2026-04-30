@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿# SubioHub
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿# SubioHub
 
 <div align="center">
 
@@ -309,13 +309,10 @@ rm -rf data/ postgres_data/ redis_data/
 git clone https://github.com/dlxyz/SubioHub.git
 cd subiohub
 
-# 2. pnpm をインストール（未インストールの場合）
-npm install -g pnpm
-
-# 3. Next.js Web アプリをビルド
+# 2. next-web の依存関係をインストール
 cd next-web
-pnpm install
-pnpm run build
+npm install
+npm run build
 
 # 4. バックエンド API サービスをビルド
 cd ../backend
@@ -439,7 +436,7 @@ go run ./cmd/server
 
 # next-web（ホットリロード付き）
 cd ../next-web
-pnpm run dev
+npm run dev
 ```
 
 デフォルトでは:

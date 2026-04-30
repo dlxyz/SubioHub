@@ -309,13 +309,10 @@ Build and run from source code for development or customization.
 git clone https://github.com/dlxyz/SubioHub.git
 cd subiohub
 
-# 2. Install pnpm (if not already installed)
-npm install -g pnpm
-
-# 3. Build the Next.js web app
+# 2. Install next-web dependencies
 cd next-web
-pnpm install
-pnpm run build
+npm install
+npm run build
 
 # 4. Build backend API service
 cd ../backend
@@ -439,7 +436,7 @@ go run ./cmd/server
 
 # next-web (with hot reload)
 cd ../next-web
-pnpm run dev
+npm run dev
 ```
 
 By default:

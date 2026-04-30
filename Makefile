@@ -1,29 +1,34 @@
-.PHONY: build build-backend build-frontend build-datamanagementd test test-backend test-frontend test-datamanagementd secret-scan
+.PHONY: build build-backend build-web build-frontend build-datamanagementd test test-backend test-web test-frontend test-datamanagementd secret-scan
 
 # 一键编译前后端
-build: build-backend build-frontend
+build: build-backend build-web
 
 # 编译后端（复用 backend/Makefile）
 build-backend:
 	@$(MAKE) -C backend build
 
-# 编译前端（需要已安装依赖）
-build-frontend:
-	@pnpm --dir frontend run build
+# 编译 Web 应用
+build-web:
+	@npm --prefix next-web run build
+
+# 兼容旧目标名
+build-frontend: build-web
 
 # 编译 datamanagementd（宿主机数据管理进程）
 build-datamanagementd:
 	@cd datamanagement && go build -o datamanagementd ./cmd/datamanagementd
 
-# 运行测试（后端 + 前端）
-test: test-backend test-frontend
+# 运行测试（后端 + Web）
+test: test-backend test-web
 
 test-backend:
 	@$(MAKE) -C backend test
 
-test-frontend:
-	@pnpm --dir frontend run lint:check
-	@pnpm --dir frontend run typecheck
+test-web:
+	@cd next-web && npm run lint && npx tsc --noEmit
+
+# 兼容旧目标名
+test-frontend: test-web
 
 test-datamanagementd:
 	@cd datamanagement && go test ./...
