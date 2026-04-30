@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿import type { MessageTree } from '@/i18n/schema';
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿import type { MessageTree } from '@/i18n/schema';
 
 const enUS = {
   dashboard: {
@@ -477,7 +477,7 @@ const enUS = {
     layout: {
       titleFallback: 'Admin Console',
       brandTag: 'Next.js Admin Console',
-      migrationHint: 'Migrating feature by feature from the Vue admin console',
+      migrationHint: 'Unified admin management entry',
       checking: 'Checking admin permission',
       redirecting: 'Redirecting you to an accessible page.',
       role: 'Role',
@@ -488,7 +488,7 @@ const enUS = {
     },
     dashboard: {
       title: 'Admin Overview',
-      subtitle: 'High-frequency Vue admin metrics are migrated first, with charts and deeper panels coming next.',
+      subtitle: 'View core platform metrics, runtime status, and version details.',
       loadFailed: 'Failed to load admin overview',
       cards: {
         totalUsers: 'Total Users',
@@ -663,7 +663,7 @@ const enUS = {
     },
     settings: {
       title: 'System Settings',
-      subtitle: 'Migrates the high-frequency parts of the Vue system settings page into Next.js, including registration switches, site info, SMTP, payment basics, default user config, and gateway behaviors.',
+      subtitle: 'Manage registration switches, site info, SMTP, payment basics, default user config, and gateway behaviors in one place.',
       save: 'Save Settings',
       saving: 'Saving',
       loading: 'Loading system settings...',
@@ -724,7 +724,7 @@ const enUS = {
     },
     promoCodes: {
       title: 'Promo Codes',
-      subtitle: 'Aligned with the Vue promo code page and supports search, filtering, sorting, create, edit, delete, and usage records.',
+      subtitle: 'Supports search, filtering, sorting, create, edit, delete, and usage records.',
       searchPlaceholder: 'Search promo codes...',
       allStatus: 'All Statuses',
       active: 'Active',
@@ -808,7 +808,7 @@ const enUS = {
     },
     orders: {
       title: 'Order Management',
-      subtitle: 'Aligned with the Vue admin payment order list and currently covers search, filters, details, and implemented order actions.',
+      subtitle: 'Supports order search, filters, detail view, and the implemented order actions.',
       summary: {
         total: 'Filtered Total',
         paidAmount: 'Actual Paid on This Page',
@@ -906,7 +906,7 @@ const enUS = {
     },
     ops: {
       title: 'Operations',
-      subtitle: 'Migrates the Vue admin ops overview and system log capabilities, starting with overview metrics, thresholds, runtime log config, and searchable log cleanup.',
+      subtitle: 'View operations overview, thresholds, runtime log settings, and searchable log cleanup.',
       loading: 'Loading operations page...',
       disabledTitle: 'Operations Monitoring Disabled',
       disabledDescription: 'Operations monitoring is currently disabled. Enable it in system settings before opening this page.',
@@ -1257,9 +1257,9 @@ const enUS = {
       },
     },
     placeholder: {
-      description: 'This admin page route has been added to the Next.js migration, while the full interaction is still being rewritten page by page.',
+      description: 'This admin page entry is available, and the detailed interactions are being refined continuously.',
       currentRoute: 'Current Route: {path}',
-      routeHint: 'This route is already included in the sidebar aligned with the Vue admin console, and real functionality will be migrated in navigation order.',
+      routeHint: 'This route is already included in the current admin navigation and will continue to be improved by feature priority.',
       backDashboard: 'Back to Admin Overview',
       goUsers: 'Go to User Management',
       goOrders: 'Go to Order Management',

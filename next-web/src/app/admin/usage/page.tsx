@@ -288,7 +288,7 @@ export default function AdminUsagePage() {
         <div>
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white">调用记录</h2>
           <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-            对齐原 Vue 管理后台 UsageView，先覆盖调用统计、关键筛选、日志列表与清理任务入口。
+            查看调用统计、关键筛选、日志列表与清理任务入口。
           </p>
         </div>
       </div>

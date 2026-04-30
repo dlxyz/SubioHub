@@ -122,7 +122,7 @@ export default function AdminPaymentDashboardPage() {
         <div>
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white">支付看板</h2>
           <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-            对齐原 Vue 管理后台支付统计页，先覆盖时间维度切换、核心指标、收入趋势、支付方式分布和 Top 用户。
+            查看时间维度切换、核心指标、收入趋势、支付方式分布和 Top 用户。
           </p>
         </div>
 

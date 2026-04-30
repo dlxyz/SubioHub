@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿import type { MessageTree } from '@/i18n/schema';
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿import type { MessageTree } from '@/i18n/schema';
 
 const zhCN = {
   dashboard: {
@@ -477,7 +477,7 @@ const zhCN = {
     layout: {
       titleFallback: '管理后台',
       brandTag: 'Next.js 管理后台',
-      migrationHint: '仿照现有 Vue 管理后台逐步迁移',
+      migrationHint: '统一后台管理入口',
       checking: '管理权限校验中',
       redirecting: '正在为您跳转到可访问的页面。',
       role: '角色',
@@ -488,7 +488,7 @@ const zhCN = {
     },
     dashboard: {
       title: '管理总览',
-      subtitle: '先复刻 Vue 管理后台高频指标，后续再补图表和更细分看板。',
+      subtitle: '查看平台核心指标、运行状态与版本信息。',
       loadFailed: '加载管理总览失败',
       cards: {
         totalUsers: '总用户数',
@@ -663,7 +663,7 @@ const zhCN = {
     },
     settings: {
       title: '系统设置',
-      subtitle: '将原 Vue 系统设置页的高频功能迁移到 Next.js，包括注册开关、站点信息、SMTP、支付基础、默认用户配置和网关行为。',
+      subtitle: '集中管理注册开关、站点信息、SMTP、支付基础、默认用户配置和网关行为。',
       save: '保存设置',
       saving: '保存中',
       loading: '正在加载系统设置...',
@@ -724,7 +724,7 @@ const zhCN = {
     },
     promoCodes: {
       title: '优惠码管理',
-      subtitle: '对齐原 Vue 优惠码页面，支持搜索、筛选、排序、创建、编辑、删除和查看使用记录。',
+      subtitle: '支持搜索、筛选、排序、创建、编辑、删除和查看使用记录。',
       searchPlaceholder: '搜索优惠码...',
       allStatus: '全部状态',
       active: '启用',
@@ -808,7 +808,7 @@ const zhCN = {
     },
     orders: {
       title: '订单管理',
-      subtitle: '对齐原 Vue 管理后台的支付订单列表，先覆盖检索、筛选、详情查看和已实现的订单管理动作。',
+      subtitle: '支持订单检索、筛选、详情查看和已实现的订单管理动作。',
       summary: {
         total: '当前筛选总数',
         paidAmount: '当前页实付金额',
@@ -906,7 +906,7 @@ const zhCN = {
     },
     ops: {
       title: '运维监控',
-      subtitle: '迁移 Vue 后台的运维总览与系统日志能力，先补齐监控总览、阈值展示、日志配置和日志查询清理。',
+      subtitle: '查看运维总览、阈值配置、系统日志和清理能力。',
       loading: '正在加载运维监控...',
       disabledTitle: '运维监控未启用',
       disabledDescription: '当前系统已关闭运维监控功能，请先到系统设置中开启后再访问该页面。',
@@ -1257,9 +1257,9 @@ const zhCN = {
       },
     },
     placeholder: {
-      description: '该管理页面已纳入 Next.js 迁移路由，但详细交互还在逐页复写中。',
+      description: '该管理页面入口已预留，详细交互功能正在持续完善。',
       currentRoute: '当前路由: {path}',
-      routeHint: '该路由已纳入与 Vue 管理后台对齐后的左侧导航，接下来会按导航顺序逐页迁移真实功能。',
+      routeHint: '该路由已加入当前后台导航，后续会按功能优先级持续完善。',
       backDashboard: '返回管理总览',
       goUsers: '去用户管理',
       goOrders: '去订单管理',

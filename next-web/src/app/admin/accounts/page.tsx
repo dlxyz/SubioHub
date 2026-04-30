@@ -2893,7 +2893,7 @@ export default function AdminAccountsPage() {
               <div className="space-y-4 rounded-3xl border border-blue-200 bg-blue-50/40 p-5 dark:border-blue-900/40 dark:bg-blue-950/20">
                 <div>
                   <div className="text-base font-semibold text-gray-900 dark:text-white">Gemini OAuth 配置</div>
-                  <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">按 Vue 的 Gemini OAuth 流程，先选 OAuth 子类型与账号等级，再进入下一步完成授权。</p>
+                  <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">先选择 OAuth 子类型与账号等级，再进入下一步完成授权。</p>
                 </div>
 
                 <div>
@@ -3446,7 +3446,7 @@ export default function AdminAccountsPage() {
                 <div>
                   <div className="text-base font-semibold text-gray-900 dark:text-white">Antigravity 配置</div>
                   <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                    按 Vue 原表单迁移：支持 `OAuth` 和 `API Key` 两种方式，模型限制固定为映射模式，并保留默认映射与快捷预设。
+                    支持 `OAuth` 和 `API Key` 两种方式，模型限制固定为映射模式，并保留默认映射与快捷预设。
                   </p>
                 </div>
 
@@ -4445,7 +4445,7 @@ export default function AdminAccountsPage() {
                 <div>
                   <div className="text-base font-semibold text-gray-900 dark:text-white">Claude Console 配置</div>
                   <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                    按 Vue 原页面把 Claude Console 的 API Key 和高级控制项直接前置到当前页，选中后立刻可见。
+                    将 Claude Console 的 API Key 和高级控制项直接集中在当前页，选中后立刻可见。
                   </p>
                 </div>
 
@@ -4907,7 +4907,7 @@ export default function AdminAccountsPage() {
                 <div>
                   <div className="text-base font-semibold text-gray-900 dark:text-white">Claude Code 专属控制项</div>
                   <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                    这一组字段直接对齐原 Vue 的 Anthropic OAuth / Setup Token 路径，提交时写入 `extra`。
+                    这一组字段用于 Anthropic OAuth / Setup Token 场景，提交时写入 `extra`。
                   </p>
                 </div>
 
@@ -5595,7 +5595,7 @@ export default function AdminAccountsPage() {
                 Anthropic / Claude Code / {wizardForm.authMethod === 'setup-token' ? 'Setup Token' : 'OAuth'}
               </div>
               <p className="mt-2 text-sm text-orange-700/90 dark:text-orange-300/90">
-                这一步已经接入真实授权流程：先生成授权链接，再回填授权码，最后按 Vue 的 `credentials + extra` 结构创建账号。
+                这一步已经接入真实授权流程：先生成授权链接，再回填授权码，最后按当前 `credentials + extra` 结构创建账号。
               </p>
             </div>
 
@@ -5728,7 +5728,7 @@ export default function AdminAccountsPage() {
             <div className="rounded-2xl border border-purple-200 bg-purple-50 p-5 dark:border-purple-900/30 dark:bg-purple-950/20">
               <div className="text-base font-medium text-purple-700 dark:text-purple-300">Anthropic / Claude Console / API Key</div>
               <p className="mt-2 text-sm text-purple-700/90 dark:text-purple-300/90">
-                这里继续按 Vue 原表单补齐，可直接配置模型限制、模型映射、池模式、自定义错误码以及 Anthropic 专属开关。
+                这里可直接配置模型限制、模型映射、池模式、自定义错误码以及 Anthropic 专属开关。
               </p>
             </div>
 
@@ -5793,13 +5793,13 @@ export default function AdminAccountsPage() {
                     <option value="enabled">enabled</option>
                     <option value="disabled">disabled</option>
                   </select>
-                  <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">与 Vue 一致，默认跟随全局配置，也可以按账号强制开关。</p>
+                  <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">默认跟随全局配置，也可以按账号强制开关。</p>
                 </div>
 
                 <div className="rounded-2xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-[#111111]">
                   <div className="mb-3">
                     <div className="text-sm font-medium text-gray-900 dark:text-white">模型限制（可选）</div>
-                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">支持白名单和模型映射两种模式，和 Vue 的 Claude Console 表单保持一致。</p>
+                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">支持白名单和模型映射两种模式，可按账号能力灵活配置。</p>
                   </div>
                   <div className="mb-4 flex gap-2">
                     <button
@@ -6014,7 +6014,7 @@ export default function AdminAccountsPage() {
                   <div className="flex items-center justify-between gap-4">
                     <div>
                       <div className="text-sm font-medium text-gray-900 dark:text-white">自定义错误码</div>
-                      <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">对接 Vue 的错误码白名单，命中后可按账号规则特殊处理。</p>
+                      <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">配置错误码白名单后，命中时可按账号规则特殊处理。</p>
                     </div>
                     <button
                       type="button"
@@ -6291,13 +6291,13 @@ export default function AdminAccountsPage() {
                     placeholder="粘贴授权完成后拿到的 code，若复制了完整回调链接，这里也会自动解析 code 参数。"
                     className="w-full rounded-2xl border border-gray-200 bg-transparent px-4 py-3 text-sm outline-none transition focus:border-emerald-400 dark:border-gray-700 dark:text-white"
                   />
-                  <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">保留和 Vue 一样的 OAuth 主流程，支持直接粘贴完整回调链接自动提取 `code`。</p>
+                  <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">支持直接粘贴完整回调链接并自动提取 `code`。</p>
                 </div>
 
                 <div className="rounded-2xl border border-violet-200 bg-violet-50/60 p-4 dark:border-violet-900/30 dark:bg-violet-950/20">
                   <div className="text-sm font-medium text-violet-700 dark:text-violet-300">或使用 Refresh Token 创建</div>
                   <p className="mt-1 text-xs text-violet-700/90 dark:text-violet-300/90">
-                    与 Vue 一样支持手动输入 Refresh Token。可一次粘贴多个，每行一个，系统会逐条校验并批量创建账号。
+                    支持手动输入 Refresh Token。可一次粘贴多个，每行一个，系统会逐条校验并批量创建账号。
                   </p>
                   <textarea
                     rows={6}

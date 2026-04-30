@@ -183,7 +183,7 @@ export default function AdminPaymentPlansPage() {
         <div>
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white">套餐管理</h2>
           <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-            对齐原 Vue 管理后台订阅套餐页，先覆盖套餐列表、创建编辑、上下架和删除。
+            管理套餐列表、创建编辑、上下架和删除操作。
           </p>
         </div>
         <div className="flex gap-2">
