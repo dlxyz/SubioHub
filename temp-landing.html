@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SubioHub | AI 模型网关与内容平台</title>
+  <meta
+    name="description"
+    content="SubioHub 网站展示首页，聚焦 AI 模型网关、内容运营、多语言发布与统一管理能力。"
+  />
+  <style>
+    :root {
+      --bg: #07111f;
+      --bg-soft: rgba(10, 18, 34, 0.72);
+      --card: rgba(255, 255, 255, 0.08);
+      --card-border: rgba(255, 255, 255, 0.12);
+      --text: #f8fbff;
+      --text-soft: rgba(248, 251, 255, 0.72);
+      --primary: #5aa2ff;
+      --primary-2: #8f7cff;
+      --success: #62d6a5;
+      --shadow: 0 24px 80px rgba(2, 8, 20, 0.42);
+      --max-width: 1180px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(90, 162, 255, 0.26), transparent 28%),
+        radial-gradient(circle at top right, rgba(143, 124, 255, 0.22), transparent 24%),
+        linear-gradient(180deg, #08101d 0%, #07111f 45%, #091626 100%);
+      min-height: 100vh;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .container {
+      width: min(var(--max-width), calc(100% - 40px));
+      margin: 0 auto;
+    }
+
+    .hero-wrap {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-wrap::before,
+    .hero-wrap::after {
+      content: "";
+      position: absolute;
+      border-radius: 999px;
+      filter: blur(100px);
+      pointer-events: none;
+    }
+
+    .hero-wrap::before {
+      width: 320px;
+      height: 320px;
+      top: 40px;
+      left: -40px;
+      background: rgba(56, 189, 248, 0.18);
+    }
+
+    .hero-wrap::after {
+      width: 360px;
+      height: 360px;
+      right: -40px;
+      top: 120px;
+      background: rgba(139, 92, 246, 0.18);
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      padding: 18px 22px;
+      margin-top: 24px;
+      border: 1px solid var(--card-border);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.06);
+      backdrop-filter: blur(18px);
+      box-shadow: 0 8px 30px rgba(2, 8, 20, 0.16);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .brand-mark {
+      width: 42px;
+      height: 42px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--primary), var(--primary-2));
+      box-shadow: 0 12px 30px rgba(90, 162, 255, 0.28);
+    }
+
+    .brand-title {
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+
+    .brand-subtitle {
+      font-size: 12px;
+      color: var(--text-soft);
+      margin-top: 2px;
+    }
+
+    .nav {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      color: var(--text-soft);
+      font-size: 14px;
+    }
+
+    .nav a:hover {
+      color: var(--text);
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 36px;
+      align-items: center;
+      padding: 88px 0 72px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 16px;
+      border-radius: 999px;
+      border: 1px solid rgba(90, 162, 255, 0.34);
+      background: rgba(90, 162, 255, 0.12);
+      color: #d9ebff;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    h1 {
+      margin: 22px 0 0;
+      font-size: 60px;
+      line-height: 1.08;
+      letter-spacing: -0.03em;
+    }
+
+    .hero-highlight {
+      display: block;
+      background: linear-gradient(90deg, #78bdff 0%, #9e8eff 55%, #78f1ff 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .hero-desc {
+      max-width: 660px;
+      margin-top: 24px;
+      font-size: 18px;
+      line-height: 1.9;
+      color: var(--text-soft);
+    }
+
+    .chip-list,
+    .button-row,
+    .info-list,
+    .card-grid,
+    .timeline-list,
+    .footer-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+    }
+
+    .chip-list {
+      margin-top: 28px;
+    }
+
+    .chip {
+      padding: 11px 16px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--card-border);
+      color: #eef6ff;
+      font-size: 14px;
+      box-shadow: 0 6px 18px rgba(2, 8, 20, 0.12);
+    }
+
+    .button-row {
+      margin-top: 34px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      min-height: 50px;
+      padding: 0 22px;
+      border-radius: 999px;
+      border: 1px solid transparent;
+      font-size: 15px;
+      font-weight: 600;
+      transition: transform 0.2s ease, opacity 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary), var(--primary-2));
+      color: #fff;
+      box-shadow: 0 18px 36px rgba(90, 162, 255, 0.22);
+    }
+
+    .btn-secondary {
+      border-color: var(--card-border);
+      background: rgba(255, 255, 255, 0.05);
+      color: #eef6ff;
+    }
+
+    .status-card,
+    .section-panel,
+    .timeline-item,
+    .feature-card,
+    .cta-panel {
+      border: 1px solid var(--card-border);
+      background: var(--bg-soft);
+      box-shadow: var(--shadow);
+    }
+
+    .status-card {
+      border-radius: 28px;
+      padding: 28px;
+    }
+
+    .status-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+    }
+
+    .status-title {
+      font-size: 14px;
+      color: var(--text-soft);
+    }
+
+    .status-value {
+      margin-top: 10px;
+      font-size: 32px;
+      font-weight: 700;
+      line-height: 1.25;
+    }
+
+    .badge {
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(98, 214, 165, 0.14);
+      color: #b9f7da;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+    }
+
+    .info-list {
+      margin-top: 24px;
+      flex-direction: column;
+    }
+
+    .info-item {
+      display: flex;
+      gap: 12px;
+      padding: 16px 18px;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: #edf6ff;
+      line-height: 1.8;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #7dd3fc, #a78bfa);
+      margin-top: 10px;
+      flex: 0 0 auto;
+    }
+
+    .tip-box {
+      margin-top: 22px;
+      padding: 18px;
+      border-radius: 22px;
+      border: 1px dashed rgba(120, 189, 255, 0.42);
+      background: rgba(90, 162, 255, 0.08);
+      color: #d9ebff;
+      line-height: 1.8;
+    }
+
+    section {
+      padding: 26px 0;
+    }
+
+    .section-head {
+      max-width: 760px;
+      margin-bottom: 24px;
+    }
+
+    .eyebrow {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: #87bbff;
+    }
+
+    .section-title {
+      margin: 12px 0 0;
+      font-size: 38px;
+      line-height: 1.2;
+      letter-spacing: -0.02em;
+    }
+
+    .section-desc {
+      margin: 16px 0 0;
+      font-size: 17px;
+      line-height: 1.9;
+      color: var(--text-soft);
+    }
+
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 18px;
+      margin-top: 24px;
+    }
+
+    .feature-card {
+      border-radius: 24px;
+      padding: 26px;
+    }
+
+    .feature-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 16px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, rgba(90, 162, 255, 0.22), rgba(143, 124, 255, 0.22));
+      font-size: 22px;
+    }
+
+    .feature-title {
+      margin-top: 18px;
+      font-size: 21px;
+      font-weight: 700;
+    }
+
+    .feature-desc {
+      margin-top: 12px;
+      color: var(--text-soft);
+      line-height: 1.85;
+      font-size: 15px;
+    }
+
+    .section-panel {
+      border-radius: 30px;
+      padding: 34px;
+    }
+
+    .timeline-list {
+      flex-direction: column;
+      margin-top: 26px;
+    }
+
+    .timeline-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      border-radius: 24px;
+      padding: 20px 22px;
+    }
+
+    .timeline-no {
+      width: 36px;
+      height: 36px;
+      flex: 0 0 auto;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      background: rgba(143, 124, 255, 0.18);
+      color: #dfd5ff;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .timeline-text {
+      line-height: 1.9;
+      color: #edf6ff;
+      font-size: 15px;
+    }
+
+    .cta-panel {
+      border-radius: 30px;
+      padding: 36px;
+      margin: 34px 0 56px;
+      background:
+        radial-gradient(circle at top left, rgba(120, 189, 255, 0.14), transparent 35%),
+        linear-gradient(135deg, rgba(14, 23, 40, 0.92), rgba(11, 18, 34, 0.94));
+    }
+
+    .cta-title {
+      margin: 16px 0 0;
+      font-size: 38px;
+      line-height: 1.2;
+      letter-spacing: -0.02em;
+    }
+
+    .cta-desc {
+      max-width: 760px;
+      margin-top: 16px;
+      color: var(--text-soft);
+      line-height: 1.9;
+      font-size: 16px;
+    }
+
+    .footer {
+      padding: 0 0 42px;
+      color: var(--text-soft);
+      font-size: 14px;
+    }
+
+    .site-map {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+      margin-top: 26px;
+    }
+
+    .site-map-item {
+      padding: 20px;
+      border-radius: 22px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    .site-map-no {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 42px;
+      height: 28px;
+      padding: 0 10px;
+      border-radius: 999px;
+      background: rgba(120, 189, 255, 0.14);
+      color: #dbeafe;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+    }
+
+    .site-map-title {
+      margin-top: 14px;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .site-map-desc {
+      margin-top: 10px;
+      color: var(--text-soft);
+      line-height: 1.8;
+      font-size: 14px;
+    }
+
+    .footer-line {
+      padding-top: 24px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      flex-wrap: wrap;
+    }
+
+    @media (max-width: 980px) {
+      .hero {
+        grid-template-columns: 1fr;
+        padding-top: 60px;
+      }
+
+      .card-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .site-map {
+        grid-template-columns: 1fr;
+      }
+
+      h1,
+      .section-title,
+      .cta-title {
+        font-size: 42px;
+      }
+
+      .topbar {
+        border-radius: 24px;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .container {
+        width: min(var(--max-width), calc(100% - 24px));
+      }
+
+      .topbar,
+      .hero,
+      .section-panel,
+      .status-card,
+      .feature-card,
+      .cta-panel {
+        padding-left: 18px;
+        padding-right: 18px;
+      }
+
+      .nav {
+        display: none;
+      }
+
+      h1,
+      .section-title,
+      .cta-title {
+        font-size: 32px;
+      }
+
+      .hero-desc,
+      .section-desc,
+      .cta-desc {
+        font-size: 15px;
+      }
+
+      .button-row .btn {
+        width: 100%;
+      }
+
+      .footer-line {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="hero-wrap">
+    <div class="container">
+      <header class="topbar">
+        <div class="brand">
+          <div class="brand-mark">S</div>
+          <div>
+            <div class="brand-title">SubioHub</div>
+            <div class="brand-subtitle">AI Gateway & Content Platform</div>
+          </div>
+        </div>
+        <nav class="nav">
+          <a href="#features">能力概览</a>
+          <a href="#timeline">平台规划</a>
+          <a href="#contact">网站结构</a>
+        </nav>
+      </header>
+
+      <section class="hero">
+        <div>
+          <div class="tag">统一模型接入、内容发布与平台运营能力</div>
+          <h1>
+            SubioHub
+            <span class="hero-highlight">AI 模型网关与内容运营平台</span>
+          </h1>
+          <p class="hero-desc">
+            SubioHub 致力于为 AI 模型聚合接入、调用分发、内容运营和多语言发布提供统一平台。
+            通过一套清晰的站点入口，连接模型能力展示、资讯系统、用户控制台与后台管理。
+          </p>
+
+          <div class="chip-list">
+            <span class="chip">Next.js Web 主站</span>
+            <span class="chip">Go + Gin + Ent 后端架构</span>
+            <span class="chip">统一模型网关与管理后台</span>
+            <span class="chip">后续接入资讯管理与多语言发布</span>
+          </div>
+
+          <div class="button-row">
+            <a class="btn btn-primary" href="https://github.com/dlxyz/SubioHub" target="_blank" rel="noreferrer">
+              查看 GitHub 仓库
+            </a>
+            <a class="btn btn-secondary" href="#contact">
+              查看网站结构
+            </a>
+          </div>
+        </div>
+
+        <aside class="status-card">
+          <div class="status-top">
+            <div>
+              <div class="status-title">平台定位</div>
+              <div class="status-value">正式官网展示首页</div>
+            </div>
+            <div class="badge">READY</div>
+          </div>
+
+          <div class="info-list">
+            <div class="info-item">
+              <span class="dot"></span>
+              <span>统一展示平台定位、核心能力与产品功能结构。</span>
+            </div>
+            <div class="info-item">
+              <span class="dot"></span>
+              <span>支持资讯管理、多语言内容发布与公开站内容输出。</span>
+            </div>
+            <div class="info-item">
+              <span class="dot"></span>
+              <span>面向模型网关运营、内容建设和用户访问的统一入口。</span>
+            </div>
+          </div>
+
+          <div class="tip-box">
+            页面采用纯静态 HTML 结构，可直接部署到任意静态空间或对象存储站点，用作项目展示首页、品牌官网首页或产品介绍页。
+          </div>
+        </aside>
+      </section>
+    </div>
+  </div>
+
+  <main class="container">
+    <section id="features">
+      <div class="section-head">
+        <div class="eyebrow">Project Snapshot</div>
+        <h2 class="section-title">围绕模型接入、内容发布与平台运营构建统一官网展示</h2>
+        <p class="section-desc">
+          网站首页聚焦产品介绍和能力说明，对外清晰呈现平台价值，并为后续接入资讯、模型广场、用户中心和后台系统预留统一认知入口。
+        </p>
+      </div>
+
+      <div class="card-grid">
+        <article class="feature-card">
+          <div class="feature-icon">AI</div>
+          <div class="feature-title">统一 AI 接入层</div>
+          <div class="feature-desc">
+            兼容 OpenAI 协议，聚合多模型渠道，便于统一接入、切换与扩展。
+          </div>
+        </article>
+        <article class="feature-card">
+          <div class="feature-icon">OP</div>
+          <div class="feature-title">稳定分发与运维</div>
+          <div class="feature-desc">
+            支持路由分发、额度控制、风控与运维管理，适合长期稳定运营。
+          </div>
+        </article>
+        <article class="feature-card">
+          <div class="feature-icon">CN</div>
+          <div class="feature-title">模型与内容双主线</div>
+          <div class="feature-desc">
+            模型广场、资讯系统、多语言内容和公开站能力会逐步统一到正式官网。
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section id="timeline">
+      <div class="section-panel">
+        <div class="section-head">
+          <div class="eyebrow">Platform Roadmap</div>
+          <h2 class="section-title">从模型能力展示到内容运营，逐步形成完整平台能力</h2>
+          <p class="section-desc">
+            SubioHub 的官网结构不仅承载产品说明，也会逐步扩展为模型展示、资讯输出、多语言内容分发和用户访问入口的统一承载层。
+          </p>
+        </div>
+
+        <div class="timeline-list">
+          <div class="timeline-item">
+            <div class="timeline-no">1</div>
+            <div class="timeline-text">展示平台定位、核心能力、接入方式与整体产品结构。</div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-no">2</div>
+            <div class="timeline-text">逐步接入资讯管理、多语言资讯发布、模型展示与内容运营能力。</div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-no">3</div>
+            <div class="timeline-text">形成面向用户访问、产品介绍、内容传播和后台协同的一体化官网体系。</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="contact">
+      <div class="cta-panel">
+        <div class="eyebrow">About SubioHub</div>
+        <h2 class="cta-title">SubioHub 使用 Next.js 前端开发，围绕模型中转、国际化 SEO、资讯 SEO 与分销代理打造完整官网能力</h2>
+        <p class="cta-desc">
+          SubioHub 集成了各种 API 中转站的优点，具备多语言国际化 SEO、资讯 SEO 推广功能，并整合分销管理能力，
+          方便用户直接转成代理场景。官网展示不仅承担品牌与产品说明，也承载用户访问、内容传播、转化获客和代理拓展。
+        </p>
+
+        <div class="site-map">
+          <div class="site-map-item">
+            <div class="site-map-no">01</div>
+            <div class="site-map-title">首页展示</div>
+            <div class="site-map-desc">展示平台定位、核心优势、支持能力、使用场景和整体产品价值。</div>
+          </div>
+          <div class="site-map-item">
+            <div class="site-map-no">02</div>
+            <div class="site-map-title">模型与 API 页面</div>
+            <div class="site-map-desc">介绍模型聚合、中转分发、协议兼容、调用方式和接入说明。</div>
+          </div>
+          <div class="site-map-item">
+            <div class="site-map-no">03</div>
+            <div class="site-map-title">资讯中心</div>
+            <div class="site-map-desc">承载资讯发布、SEO 内容推广、多语言文章输出和搜索流量沉淀。</div>
+          </div>
+          <div class="site-map-item">
+            <div class="site-map-no">04</div>
+            <div class="site-map-title">分销代理</div>
+            <div class="site-map-desc">支持用户升级为代理，查看分销规则、收益方式和推广合作方案。</div>
+          </div>
+          <div class="site-map-item">
+            <div class="site-map-no">05</div>
+            <div class="site-map-title">开发文档</div>
+            <div class="site-map-desc">提供快速接入、接口示例、鉴权方式、错误说明和开发者文档入口。</div>
+          </div>
+          <div class="site-map-item">
+            <div class="site-map-no">06</div>
+            <div class="site-map-title">用户中心与后台</div>
+            <div class="site-map-desc">覆盖用户控制台、密钥管理、额度统计、渠道配置和运营管理入口。</div>
+          </div>
+        </div>
+
+        <div class="button-row">
+          <a class="btn btn-primary" href="https://github.com/dlxyz/SubioHub" target="_blank" rel="noreferrer">
+            打开项目仓库
+          </a>
+          <a class="btn btn-secondary" href="mailto:hello@example.com">
+            商务联系入口
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <div class="footer-line">
+        <div>&copy; 2026 SubioHub. 网站展示首页已就绪，可继续扩展为完整官网。</div>
+        <div class="footer-links">
+          <a href="#features">能力概览</a>
+          <a href="#timeline">平台规划</a>
+          <a href="#contact">网站结构</a>
+        </div>
+      </div>
+    </footer>
+  </main>
+</body>
+</html>

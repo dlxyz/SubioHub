@@ -1,0 +1,28 @@
+{
+	auto_https off
+}
+
+{$CADDY_SITE_ADDRESS::80} {
+	encode zstd gzip
+
+	@backend path \
+		/api/* \
+		/v1/* \
+		/v1beta/* \
+		/responses \
+		/responses/* \
+		/chat/completions \
+		/antigravity/* \
+		/health \
+		/api/event_logging/batch \
+		/setup \
+		/setup/*
+
+	handle @backend {
+		reverse_proxy subiohub:8080
+	}
+
+	handle {
+		reverse_proxy next-web:3000
+	}
+}

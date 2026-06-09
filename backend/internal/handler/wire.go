@@ -1,0 +1,183 @@
+package handler
+
+import (
+	"github.com/dlxyz/SubioHub/internal/handler/admin"
+	"github.com/dlxyz/SubioHub/internal/service"
+
+	"github.com/google/wire"
+)
+
+// ProvideAdminHandlers creates the AdminHandlers struct
+func ProvideAdminHandlers(
+	dashboardHandler *admin.DashboardHandler,
+	userHandler *admin.UserHandler,
+	groupHandler *admin.GroupHandler,
+	accountHandler *admin.AccountHandler,
+	announcementHandler *admin.AnnouncementHandler,
+	newsHandler *admin.NewsHandler,
+	dataManagementHandler *admin.DataManagementHandler,
+	backupHandler *admin.BackupHandler,
+	oauthHandler *admin.OAuthHandler,
+	openaiOAuthHandler *admin.OpenAIOAuthHandler,
+	geminiOAuthHandler *admin.GeminiOAuthHandler,
+	antigravityOAuthHandler *admin.AntigravityOAuthHandler,
+	proxyHandler *admin.ProxyHandler,
+	redeemHandler *admin.RedeemHandler,
+	promoHandler *admin.PromoHandler,
+	settingHandler *admin.SettingHandler,
+	opsHandler *admin.OpsHandler,
+	systemHandler *admin.SystemHandler,
+	subscriptionHandler *admin.SubscriptionHandler,
+	usageHandler *admin.UsageHandler,
+	userAttributeHandler *admin.UserAttributeHandler,
+	errorPassthroughHandler *admin.ErrorPassthroughHandler,
+	tlsFingerprintProfileHandler *admin.TLSFingerprintProfileHandler,
+	apiKeyHandler *admin.AdminAPIKeyHandler,
+	scheduledTestHandler *admin.ScheduledTestHandler,
+	channelHandler *admin.ChannelHandler,
+	paymentHandler *admin.PaymentHandler,
+	affiliateHandler *admin.AffiliateHandler,
+) *AdminHandlers {
+	return &AdminHandlers{
+		Dashboard:             dashboardHandler,
+		User:                  userHandler,
+		Group:                 groupHandler,
+		Account:               accountHandler,
+		Announcement:          announcementHandler,
+		News:                  newsHandler,
+		DataManagement:        dataManagementHandler,
+		Backup:                backupHandler,
+		OAuth:                 oauthHandler,
+		OpenAIOAuth:           openaiOAuthHandler,
+		GeminiOAuth:           geminiOAuthHandler,
+		AntigravityOAuth:      antigravityOAuthHandler,
+		Proxy:                 proxyHandler,
+		Redeem:                redeemHandler,
+		Promo:                 promoHandler,
+		Setting:               settingHandler,
+		Ops:                   opsHandler,
+		System:                systemHandler,
+		Subscription:          subscriptionHandler,
+		Usage:                 usageHandler,
+		UserAttribute:         userAttributeHandler,
+		ErrorPassthrough:      errorPassthroughHandler,
+		TLSFingerprintProfile: tlsFingerprintProfileHandler,
+		APIKey:                apiKeyHandler,
+		ScheduledTest:         scheduledTestHandler,
+		Channel:               channelHandler,
+		Payment:               paymentHandler,
+		Affiliate:             affiliateHandler,
+	}
+}
+
+// ProvideSystemHandler creates admin.SystemHandler with UpdateService
+func ProvideSystemHandler(updateService *service.UpdateService, lockService *service.SystemOperationLockService) *admin.SystemHandler {
+	return admin.NewSystemHandler(updateService, lockService)
+}
+
+// ProvideSettingHandler creates SettingHandler with version from BuildInfo
+func ProvideSettingHandler(
+	settingService *service.SettingService,
+	gatewayService *service.GatewayService,
+	pricingService *service.PricingService,
+	billingService *service.BillingService,
+	channelService *service.ChannelService,
+	buildInfo BuildInfo,
+) *SettingHandler {
+	return NewSettingHandler(settingService, gatewayService, pricingService, billingService, channelService, buildInfo.Version)
+}
+
+// ProvideHandlers creates the Handlers struct
+func ProvideHandlers(
+	authHandler *AuthHandler,
+	userHandler *UserHandler,
+	apiKeyHandler *APIKeyHandler,
+	usageHandler *UsageHandler,
+	redeemHandler *RedeemHandler,
+	subscriptionHandler *SubscriptionHandler,
+	announcementHandler *AnnouncementHandler,
+	newsHandler *NewsHandler,
+	adminHandlers *AdminHandlers,
+	affiliateHandler *AffiliateHandler,
+	gatewayHandler *GatewayHandler,
+	openaiGatewayHandler *OpenAIGatewayHandler,
+	settingHandler *SettingHandler,
+	totpHandler *TotpHandler,
+	paymentHandler *PaymentHandler,
+	paymentWebhookHandler *PaymentWebhookHandler,
+	_ *service.IdempotencyCoordinator,
+	_ *service.IdempotencyCleanupService,
+) *Handlers {
+	return &Handlers{
+		Auth:           authHandler,
+		User:           userHandler,
+		APIKey:         apiKeyHandler,
+		Usage:          usageHandler,
+		Redeem:         redeemHandler,
+		Subscription:   subscriptionHandler,
+		Announcement:   announcementHandler,
+		News:           newsHandler,
+		Admin:          adminHandlers,
+		Affiliate:      affiliateHandler,
+		Gateway:        gatewayHandler,
+		OpenAIGateway:  openaiGatewayHandler,
+		Setting:        settingHandler,
+		Totp:           totpHandler,
+		Payment:        paymentHandler,
+		PaymentWebhook: paymentWebhookHandler,
+	}
+}
+
+// ProviderSet is the Wire provider set for all handlers
+var ProviderSet = wire.NewSet(
+	// Top-level handlers
+	NewAuthHandler,
+	NewUserHandler,
+	NewAPIKeyHandler,
+	NewUsageHandler,
+	NewRedeemHandler,
+	NewSubscriptionHandler,
+	NewAnnouncementHandler,
+	NewNewsHandler,
+	NewGatewayHandler,
+	NewOpenAIGatewayHandler,
+	NewTotpHandler,
+	ProvideSettingHandler,
+	NewPaymentHandler,
+	NewPaymentWebhookHandler,
+	NewAffiliateHandler,
+
+	// Admin handlers
+	admin.NewDashboardHandler,
+	admin.NewUserHandler,
+	admin.NewGroupHandler,
+	admin.NewAccountHandler,
+	admin.NewAnnouncementHandler,
+	admin.NewNewsHandler,
+	admin.NewDataManagementHandler,
+	admin.NewBackupHandler,
+	admin.NewOAuthHandler,
+	admin.NewOpenAIOAuthHandler,
+	admin.NewGeminiOAuthHandler,
+	admin.NewAntigravityOAuthHandler,
+	admin.NewProxyHandler,
+	admin.NewRedeemHandler,
+	admin.NewPromoHandler,
+	admin.NewSettingHandler,
+	admin.NewOpsHandler,
+	ProvideSystemHandler,
+	admin.NewSubscriptionHandler,
+	admin.NewUsageHandler,
+	admin.NewUserAttributeHandler,
+	admin.NewErrorPassthroughHandler,
+	admin.NewTLSFingerprintProfileHandler,
+	admin.NewAdminAPIKeyHandler,
+	admin.NewScheduledTestHandler,
+	admin.NewChannelHandler,
+	admin.NewPaymentHandler,
+	admin.NewAffiliateHandler,
+
+	// AdminHandlers and Handlers constructors
+	ProvideAdminHandlers,
+	ProvideHandlers,
+)
