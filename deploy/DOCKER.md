@@ -1,8 +1,10 @@
 # SubioHub Docker Images
 
-SubioHub is now released as two Docker images:
+SubioHub is now released as two Docker images for a complete AI gateway and model relay stack:
 - `guoziji/subiohub`: API service and admin backend
 - `guoziji/subiohub-next-web`: public Next.js web app for SSR, SEO, i18n, and news pages
+
+The stack is not limited to account auth or subscription resale. It also supports unified upstream API key / OAuth integration, OpenAI-compatible model relay, channel routing, quota control, and operations management.
 
 ## Quick Start
 

@@ -2,7 +2,7 @@
 
 <div align="center">
 
-**A Unified AI Gateway Platform for Model Routing, Quota Control, and Operations**
+**A Unified AI Gateway and Model Relay Platform for API Keys, Accounts, Routing, and Operations**
 
 English | [中文](README_CN.md) | [日本語](README_JA.md)
 
@@ -12,24 +12,26 @@ English | [中文](README_CN.md) | [日本語](README_JA.md)
 
 ## Overview
 
-SubioHub is a self-hosted AI API gateway platform built for unified upstream access, account scheduling, API key distribution, usage metering, and operational management. It helps teams expose a consistent OpenAI-compatible interface while handling provider integration, routing, billing rules, and admin workflows in one place.
+SubioHub is a self-hosted AI gateway platform built for unified upstream access, API key and OAuth account integration, model relay, usage metering, and operational management. It helps teams expose a consistent OpenAI-compatible interface while handling provider onboarding, key-based model forwarding, account pools, routing policies, billing rules, and admin workflows in one place.
 
 ## Features
 
-- **Multi-Account Management** - Support multiple upstream account types (OAuth, API Key)
-- **API Key Distribution** - Generate and manage API Keys for users
-- **Precise Billing** - Token-level usage tracking and cost calculation
-- **Smart Scheduling** - Intelligent account selection with sticky sessions
+- **Multi-Upstream Access** - Support multiple upstream account types and provider credentials, including OAuth and API Key
+- **OpenAI-Compatible Model Relay** - Expose unified relay endpoints for model forwarding, key passthrough, and provider abstraction
+- **API Key Distribution** - Generate and manage user-facing API Keys, quotas, and access scopes
+- **Model Routing and Scheduling** - Route requests by model, channel, policy, and sticky session strategies
+- **Precise Billing** - Token-level usage tracking, pricing rules, and cost calculation
 - **Concurrency Control** - Per-user and per-account concurrency limits
 - **Rate Limiting** - Configurable request and token rate limits
 - **Built-in Payment System** - Supports EasyPay, Alipay, WeChat Pay, and Stripe for user self-service top-up, no separate payment service needed ([Configuration Guide](docs/PAYMENT.md))
-- **Admin Dashboard** - Web interface for monitoring and management
+- **Admin Dashboard** - Web interface for channels, accounts, models, usage, payments, and operational management
 - **External System Integration** - Embed external systems (e.g. ticketing) via iframe to extend the admin dashboard
 
 ## Use Cases
 
 - **Team Gateway** - Unify multiple AI providers behind one internal API endpoint
-- **Subscription Resale** - Allocate quota and keys to downstream users with billing controls
+- **API Key to Model Relay** - Use your own upstream keys/accounts to relay Claude, Gemini, OpenAI-compatible, and other model traffic through one platform
+- **Subscription Resale** - Allocate quota, keys, and routing policies to downstream users with billing controls
 - **Operations Console** - Manage accounts, channels, proxies, limits, and monitoring from one dashboard
 - **Localized Content Delivery** - Support multilingual announcements and news presentation on the public site
 

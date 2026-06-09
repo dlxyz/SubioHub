@@ -1,11 +1,13 @@
-﻿# SubioHub Deployment Files
+# SubioHub Deployment Files
 
 This directory contains files for deploying SubioHub on Linux servers.
 
 The Docker release stack now uses:
 - `web` (`Caddy`) as the public reverse proxy
 - `next-web` for public SSR pages, SEO, i18n, and news pages
-- `subiohub` for API and admin backend services
+- `subiohub` for API, admin backend, model relay, and upstream integration services
+
+SubioHub is no longer just an account auth or subscription forwarding system. The deployment stack also covers upstream API key / OAuth access, OpenAI-compatible relay, model routing, quota control, payment, and operations workflows.
 
 ## Deployment Methods
 
