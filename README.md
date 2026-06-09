@@ -152,7 +152,7 @@ curl -sSL https://raw.githubusercontent.com/dlxyz/SubioHub/main/deploy/docker-de
 # Start services
 docker compose up -d
 
-# View logs
+# View logs (copy the output to Notepad or another text editor to find the login password; username: `admin@subiohub.com`)
 docker compose logs -f subiohub
 ```
 

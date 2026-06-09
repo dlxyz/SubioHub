@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿# SubioHub
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿# SubioHub
 
 <div align="center">
 
@@ -152,7 +152,7 @@ curl -sSL https://raw.githubusercontent.com/dlxyz/SubioHub/main/deploy/docker-de
 # サービスを起動
 docker compose up -d
 
-# ログを表示
+# ログを表示（出力をメモ帳などにコピーするとログイン用パスワードを見つけやすいです。ユーザー名: `admin@subiohub.com`）
 docker compose logs -f subiohub
 ```
 
