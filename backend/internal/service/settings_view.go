@@ -127,9 +127,9 @@ type SystemSettings struct {
 	AffiliateManualPayoutSettlementEnabled bool
 
 	// Key account definition
-	KeyAccountVIPRechargeThreshold        float64
-	KeyAccountEnterpriseRechargeThreshold float64
-	KeyAccountVIPMonthlyCostThreshold     float64
+	KeyAccountVIPRechargeThreshold           float64
+	KeyAccountEnterpriseRechargeThreshold    float64
+	KeyAccountVIPMonthlyCostThreshold        float64
 	KeyAccountEnterpriseMonthlyCostThreshold float64
 	KeyAccountVIPDefaultDiscountRate         float64
 	KeyAccountEnterpriseDefaultDiscountRate  float64

@@ -8,11 +8,11 @@ import (
 	"strings"
 	"time"
 
+	"entgo.io/ent/dialect/sql"
 	dbent "github.com/dlxyz/SubioHub/ent"
 	"github.com/dlxyz/SubioHub/ent/commissionrule"
 	"github.com/dlxyz/SubioHub/ent/commissionsplitlog"
 	"github.com/dlxyz/SubioHub/ent/promotionrelation"
-	"entgo.io/ent/dialect/sql"
 )
 
 const (
@@ -334,15 +334,15 @@ func upsertCommissionSplitLogsForOrder(ctx context.Context, client *dbent.Client
 
 	for _, plan := range plans {
 		snapshot := map[string]any{
-			"direct_parent_user_id": relation.DirectParentUserID,
-			"direct_parent_role":    relation.DirectParentRole,
-			"binding_source":        relation.BindingSource,
-			"agent_user_id":         relation.AgentUserID,
-			"distributor_user_id":   relation.DistributorUserID,
-			"rule_id":               rule.ID,
-			"rule_scope_type":       rule.ScopeType,
-			"calc_mode":             rule.CalcMode,
-			"agent_target_rate":     rule.AgentTargetRate,
+			"direct_parent_user_id":   relation.DirectParentUserID,
+			"direct_parent_role":      relation.DirectParentRole,
+			"binding_source":          relation.BindingSource,
+			"agent_user_id":           relation.AgentUserID,
+			"distributor_user_id":     relation.DistributorUserID,
+			"rule_id":                 rule.ID,
+			"rule_scope_type":         rule.ScopeType,
+			"calc_mode":               rule.CalcMode,
+			"agent_target_rate":       rule.AgentTargetRate,
 			"distributor_target_rate": rule.DistributorTargetRate,
 		}
 
