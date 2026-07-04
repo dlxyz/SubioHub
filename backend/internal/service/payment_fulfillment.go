@@ -13,6 +13,7 @@ import (
 	"github.com/dlxyz/SubioHub/ent/commissionlog"
 	"github.com/dlxyz/SubioHub/ent/paymentauditlog"
 	"github.com/dlxyz/SubioHub/ent/paymentorder"
+	"github.com/dlxyz/SubioHub/ent/promotionrelation"
 	"github.com/dlxyz/SubioHub/internal/payment"
 	infraerrors "github.com/dlxyz/SubioHub/internal/pkg/errors"
 )
@@ -262,6 +263,9 @@ func (s *PaymentService) recordPendingCommissionIfNeeded(ctx context.Context, o 
 }
 
 func (s *PaymentService) markCompleted(ctx context.Context, o *dbent.PaymentOrder, auditAction string) error {
+	if err := s.recordCommissionSplitsIfNeeded(ctx, o); err != nil {
+		return err
+	}
 	if err := s.recordPendingCommissionIfNeeded(ctx, o); err != nil {
 		return err
 	}
@@ -278,6 +282,35 @@ func (s *PaymentService) markCompleted(ctx context.Context, o *dbent.PaymentOrde
 	})
 
 	return nil
+}
+
+func (s *PaymentService) recordCommissionSplitsIfNeeded(ctx context.Context, o *dbent.PaymentOrder) error {
+	if s.entClient == nil || o == nil {
+		return nil
+	}
+	if o.OrderType != payment.OrderTypeBalance && o.OrderType != payment.OrderTypeSubscription {
+		return nil
+	}
+
+	relation, err := s.entClient.PromotionRelation.Query().
+		Where(promotionrelation.UserIDEQ(o.UserID)).
+		Only(ctx)
+	if err != nil {
+		if dbent.IsNotFound(err) {
+			return nil
+		}
+		return fmt.Errorf("query promotion relation: %w", err)
+	}
+
+	rule, err := getActiveGlobalCommissionRule(ctx, s.entClient)
+	if err != nil {
+		return err
+	}
+	if rule == nil {
+		return nil
+	}
+
+	return upsertCommissionSplitLogsForOrder(ctx, s.entClient, o, relation, rule)
 }
 
 func (s *PaymentService) ExecuteSubscriptionFulfillment(ctx context.Context, oid int64) error {

@@ -117,6 +117,16 @@ type SettingsForm = {
   account_quota_notify_enabled: boolean;
   affiliate_auto_settlement_enabled: boolean;
   affiliate_manual_payout_settlement_enabled: boolean;
+  key_account_vip_recharge_threshold: string;
+  key_account_enterprise_recharge_threshold: string;
+  key_account_vip_monthly_cost_threshold: string;
+  key_account_enterprise_monthly_cost_threshold: string;
+  key_account_vip_default_discount_rate: string;
+  key_account_enterprise_default_discount_rate: string;
+  key_account_vip_default_rebate_rate: string;
+  key_account_enterprise_default_rebate_rate: string;
+  key_account_auto_upgrade_enabled: boolean;
+  key_account_auto_downgrade_enabled: boolean;
   test_email_target: string;
 };
 
@@ -269,6 +279,16 @@ function buildForm(settings: SystemSettings): SettingsForm {
     account_quota_notify_enabled: Boolean(settings.account_quota_notify_enabled),
     affiliate_auto_settlement_enabled: Boolean(settings.affiliate_auto_settlement_enabled),
     affiliate_manual_payout_settlement_enabled: Boolean(settings.affiliate_manual_payout_settlement_enabled ?? true),
+    key_account_vip_recharge_threshold: String(settings.key_account_vip_recharge_threshold ?? 5000),
+    key_account_enterprise_recharge_threshold: String(settings.key_account_enterprise_recharge_threshold ?? 20000),
+    key_account_vip_monthly_cost_threshold: String(settings.key_account_vip_monthly_cost_threshold ?? 3000),
+    key_account_enterprise_monthly_cost_threshold: String(settings.key_account_enterprise_monthly_cost_threshold ?? 10000),
+    key_account_vip_default_discount_rate: String(settings.key_account_vip_default_discount_rate ?? 0.95),
+    key_account_enterprise_default_discount_rate: String(settings.key_account_enterprise_default_discount_rate ?? 0.9),
+    key_account_vip_default_rebate_rate: String(settings.key_account_vip_default_rebate_rate ?? 0.05),
+    key_account_enterprise_default_rebate_rate: String(settings.key_account_enterprise_default_rebate_rate ?? 0.08),
+    key_account_auto_upgrade_enabled: Boolean(settings.key_account_auto_upgrade_enabled),
+    key_account_auto_downgrade_enabled: Boolean(settings.key_account_auto_downgrade_enabled),
     test_email_target: '',
   };
 }
@@ -769,6 +789,16 @@ export default function AdminSettingsPage() {
         account_quota_notify_enabled: form.account_quota_notify_enabled,
         affiliate_auto_settlement_enabled: form.affiliate_auto_settlement_enabled,
         affiliate_manual_payout_settlement_enabled: form.affiliate_manual_payout_settlement_enabled,
+        key_account_vip_recharge_threshold: Number(form.key_account_vip_recharge_threshold || 0),
+        key_account_enterprise_recharge_threshold: Number(form.key_account_enterprise_recharge_threshold || 0),
+        key_account_vip_monthly_cost_threshold: Number(form.key_account_vip_monthly_cost_threshold || 0),
+        key_account_enterprise_monthly_cost_threshold: Number(form.key_account_enterprise_monthly_cost_threshold || 0),
+        key_account_vip_default_discount_rate: Number(form.key_account_vip_default_discount_rate || 0),
+        key_account_enterprise_default_discount_rate: Number(form.key_account_enterprise_default_discount_rate || 0),
+        key_account_vip_default_rebate_rate: Number(form.key_account_vip_default_rebate_rate || 0),
+        key_account_enterprise_default_rebate_rate: Number(form.key_account_enterprise_default_rebate_rate || 0),
+        key_account_auto_upgrade_enabled: form.key_account_auto_upgrade_enabled,
+        key_account_auto_downgrade_enabled: form.key_account_auto_downgrade_enabled,
       };
 
       const updated = await updateAdminSettings(payload);
@@ -1621,6 +1651,132 @@ export default function AdminSettingsPage() {
             当前两种结算方式都已关闭，新的冻结佣金将继续停留在 `pending` 状态，需先开启至少一种结算方式再处理。
           </div>
         ) : null}
+      </SummaryCard>
+
+      <SummaryCard title="大客户定义标准">
+        <div className="rounded-xl border border-violet-200 bg-violet-50 px-4 py-3 text-sm text-violet-700 dark:border-violet-900/40 dark:bg-violet-900/20 dark:text-violet-300">
+          这里负责定义 VIP / 企业大客户的默认门槛和策略；`大客户管理` 页面负责具体客户的人工标记、运营跟进和个性化调整。
+        </div>
+        <div className="grid gap-4 md:grid-cols-2">
+          <div>
+            <FieldLabel>VIP 累计充值门槛</FieldLabel>
+            <input
+              type="number"
+              min="0"
+              step="0.01"
+              value={form.key_account_vip_recharge_threshold}
+              onChange={(e) => updateForm('key_account_vip_recharge_threshold', e.target.value)}
+              className="w-full rounded-lg border border-gray-200 bg-transparent px-3 py-2 text-sm dark:border-gray-700 dark:text-white"
+            />
+          </div>
+          <div>
+            <FieldLabel>企业累计充值门槛</FieldLabel>
+            <input
+              type="number"
+              min="0"
+              step="0.01"
+              value={form.key_account_enterprise_recharge_threshold}
+              onChange={(e) => updateForm('key_account_enterprise_recharge_threshold', e.target.value)}
+              className="w-full rounded-lg border border-gray-200 bg-transparent px-3 py-2 text-sm dark:border-gray-700 dark:text-white"
+            />
+          </div>
+          <div>
+            <FieldLabel>VIP 月消费门槛</FieldLabel>
+            <input
+              type="number"
+              min="0"
+              step="0.01"
+              value={form.key_account_vip_monthly_cost_threshold}
+              onChange={(e) => updateForm('key_account_vip_monthly_cost_threshold', e.target.value)}
+              className="w-full rounded-lg border border-gray-200 bg-transparent px-3 py-2 text-sm dark:border-gray-700 dark:text-white"
+            />
+          </div>
+          <div>
+            <FieldLabel>企业月消费门槛</FieldLabel>
+            <input
+              type="number"
+              min="0"
+              step="0.01"
+              value={form.key_account_enterprise_monthly_cost_threshold}
+              onChange={(e) => updateForm('key_account_enterprise_monthly_cost_threshold', e.target.value)}
+              className="w-full rounded-lg border border-gray-200 bg-transparent px-3 py-2 text-sm dark:border-gray-700 dark:text-white"
+            />
+          </div>
+          <div>
+            <FieldLabel>VIP 默认折扣系数</FieldLabel>
+            <input
+              type="number"
+              min="0"
+              step="0.01"
+              value={form.key_account_vip_default_discount_rate}
+              onChange={(e) => updateForm('key_account_vip_default_discount_rate', e.target.value)}
+              placeholder="例如 0.95"
+              className="w-full rounded-lg border border-gray-200 bg-transparent px-3 py-2 text-sm dark:border-gray-700 dark:text-white"
+            />
+          </div>
+          <div>
+            <FieldLabel>企业默认折扣系数</FieldLabel>
+            <input
+              type="number"
+              min="0"
+              step="0.01"
+              value={form.key_account_enterprise_default_discount_rate}
+              onChange={(e) => updateForm('key_account_enterprise_default_discount_rate', e.target.value)}
+              placeholder="例如 0.90"
+              className="w-full rounded-lg border border-gray-200 bg-transparent px-3 py-2 text-sm dark:border-gray-700 dark:text-white"
+            />
+          </div>
+          <div>
+            <FieldLabel>VIP 默认返点系数</FieldLabel>
+            <input
+              type="number"
+              min="0"
+              step="0.01"
+              value={form.key_account_vip_default_rebate_rate}
+              onChange={(e) => updateForm('key_account_vip_default_rebate_rate', e.target.value)}
+              placeholder="例如 0.05"
+              className="w-full rounded-lg border border-gray-200 bg-transparent px-3 py-2 text-sm dark:border-gray-700 dark:text-white"
+            />
+          </div>
+          <div>
+            <FieldLabel>企业默认返点系数</FieldLabel>
+            <input
+              type="number"
+              min="0"
+              step="0.01"
+              value={form.key_account_enterprise_default_rebate_rate}
+              onChange={(e) => updateForm('key_account_enterprise_default_rebate_rate', e.target.value)}
+              placeholder="例如 0.08"
+              className="w-full rounded-lg border border-gray-200 bg-transparent px-3 py-2 text-sm dark:border-gray-700 dark:text-white"
+            />
+          </div>
+        </div>
+        <div className="grid gap-4 md:grid-cols-2">
+          <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+            <input
+              type="checkbox"
+              checked={form.key_account_auto_upgrade_enabled}
+              onChange={(e) => updateForm('key_account_auto_upgrade_enabled', e.target.checked)}
+            />
+            开启自动升级
+          </label>
+          <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+            <input
+              type="checkbox"
+              checked={form.key_account_auto_downgrade_enabled}
+              onChange={(e) => updateForm('key_account_auto_downgrade_enabled', e.target.checked)}
+            />
+            开启自动降级
+          </label>
+        </div>
+        <div className="grid gap-3 md:grid-cols-2">
+          <div className="rounded-xl bg-gray-50 px-4 py-3 text-sm text-gray-600 dark:bg-gray-900/40 dark:text-gray-300">
+            当前自动升级：{form.key_account_auto_upgrade_enabled ? '已开启' : '已关闭'}
+          </div>
+          <div className="rounded-xl bg-gray-50 px-4 py-3 text-sm text-gray-600 dark:bg-gray-900/40 dark:text-gray-300">
+            当前自动降级：{form.key_account_auto_downgrade_enabled ? '已开启' : '已关闭'}
+          </div>
+        </div>
       </SummaryCard>
 
       <SummaryCard title={t('admin.settings.sections.gatewayNotice')}>

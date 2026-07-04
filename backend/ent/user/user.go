@@ -63,6 +63,16 @@ const (
 	FieldCommissionBalance = "commission_balance"
 	// FieldTotalCommissionEarned holds the string denoting the total_commission_earned field in the database.
 	FieldTotalCommissionEarned = "total_commission_earned"
+	// FieldIsKeyAccount holds the string denoting the is_key_account field in the database.
+	FieldIsKeyAccount = "is_key_account"
+	// FieldKeyAccountLevel holds the string denoting the key_account_level field in the database.
+	FieldKeyAccountLevel = "key_account_level"
+	// FieldKeyAccountDiscountRate holds the string denoting the key_account_discount_rate field in the database.
+	FieldKeyAccountDiscountRate = "key_account_discount_rate"
+	// FieldKeyAccountRebateRate holds the string denoting the key_account_rebate_rate field in the database.
+	FieldKeyAccountRebateRate = "key_account_rebate_rate"
+	// FieldKeyAccountManagerNotes holds the string denoting the key_account_manager_notes field in the database.
+	FieldKeyAccountManagerNotes = "key_account_manager_notes"
 	// EdgeInviter holds the string denoting the inviter edge name in mutations.
 	EdgeInviter = "inviter"
 	// EdgeInvitees holds the string denoting the invitees edge name in mutations.
@@ -212,6 +222,11 @@ var Columns = []string{
 	FieldCommissionRate,
 	FieldCommissionBalance,
 	FieldTotalCommissionEarned,
+	FieldIsKeyAccount,
+	FieldKeyAccountLevel,
+	FieldKeyAccountDiscountRate,
+	FieldKeyAccountRebateRate,
+	FieldKeyAccountManagerNotes,
 }
 
 var (
@@ -284,6 +299,18 @@ var (
 	DefaultCommissionBalance float64
 	// DefaultTotalCommissionEarned holds the default value on creation for the "total_commission_earned" field.
 	DefaultTotalCommissionEarned float64
+	// DefaultIsKeyAccount holds the default value on creation for the "is_key_account" field.
+	DefaultIsKeyAccount bool
+	// DefaultKeyAccountLevel holds the default value on creation for the "key_account_level" field.
+	DefaultKeyAccountLevel string
+	// KeyAccountLevelValidator is a validator for the "key_account_level" field. It is called by the builders before save.
+	KeyAccountLevelValidator func(string) error
+	// DefaultKeyAccountDiscountRate holds the default value on creation for the "key_account_discount_rate" field.
+	DefaultKeyAccountDiscountRate float64
+	// DefaultKeyAccountRebateRate holds the default value on creation for the "key_account_rebate_rate" field.
+	DefaultKeyAccountRebateRate float64
+	// DefaultKeyAccountManagerNotes holds the default value on creation for the "key_account_manager_notes" field.
+	DefaultKeyAccountManagerNotes string
 )
 
 // OrderOption defines the ordering options for the User queries.
@@ -412,6 +439,31 @@ func ByCommissionBalance(opts ...sql.OrderTermOption) OrderOption {
 // ByTotalCommissionEarned orders the results by the total_commission_earned field.
 func ByTotalCommissionEarned(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTotalCommissionEarned, opts...).ToFunc()
+}
+
+// ByIsKeyAccount orders the results by the is_key_account field.
+func ByIsKeyAccount(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldIsKeyAccount, opts...).ToFunc()
+}
+
+// ByKeyAccountLevel orders the results by the key_account_level field.
+func ByKeyAccountLevel(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldKeyAccountLevel, opts...).ToFunc()
+}
+
+// ByKeyAccountDiscountRate orders the results by the key_account_discount_rate field.
+func ByKeyAccountDiscountRate(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldKeyAccountDiscountRate, opts...).ToFunc()
+}
+
+// ByKeyAccountRebateRate orders the results by the key_account_rebate_rate field.
+func ByKeyAccountRebateRate(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldKeyAccountRebateRate, opts...).ToFunc()
+}
+
+// ByKeyAccountManagerNotes orders the results by the key_account_manager_notes field.
+func ByKeyAccountManagerNotes(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldKeyAccountManagerNotes, opts...).ToFunc()
 }
 
 // ByInviterField orders the results by inviter field.

@@ -2,6 +2,8 @@ package admin
 
 import (
 	"context"
+	"errors"
+	"io"
 	"strconv"
 	"strings"
 
@@ -46,14 +48,20 @@ type CreateUserRequest struct {
 // UpdateUserRequest represents admin update user request
 // 使用指针类型来区分"未提供"和"设置为0"
 type UpdateUserRequest struct {
-	Email         string   `json:"email" binding:"omitempty,email"`
-	Password      string   `json:"password" binding:"omitempty,min=6"`
-	Username      *string  `json:"username"`
-	Notes         *string  `json:"notes"`
-	Balance       *float64 `json:"balance"`
-	Concurrency   *int     `json:"concurrency"`
-	Status        string   `json:"status" binding:"omitempty,oneof=active disabled"`
-	AllowedGroups *[]int64 `json:"allowed_groups"`
+	Email                  string   `json:"email" binding:"omitempty,email"`
+	Password               string   `json:"password" binding:"omitempty,min=6"`
+	Role                   *string  `json:"role" binding:"omitempty,oneof=user agent distributor"`
+	Username               *string  `json:"username"`
+	Notes                  *string  `json:"notes"`
+	Balance                *float64 `json:"balance"`
+	Concurrency            *int     `json:"concurrency"`
+	Status                 string   `json:"status" binding:"omitempty,oneof=active disabled"`
+	AllowedGroups          *[]int64 `json:"allowed_groups"`
+	IsKeyAccount           *bool    `json:"is_key_account"`
+	KeyAccountLevel        *string  `json:"key_account_level" binding:"omitempty,oneof=standard vip enterprise"`
+	KeyAccountDiscountRate *float64 `json:"key_account_discount_rate" binding:"omitempty,min=0,max=1"`
+	KeyAccountRebateRate   *float64 `json:"key_account_rebate_rate" binding:"omitempty,min=0,max=1"`
+	KeyAccountManagerNotes *string  `json:"key_account_manager_notes"`
 	// GroupRates 用户专属分组倍率配置
 	// map[groupID]*rate，nil 表示删除该分组的专属倍率
 	GroupRates map[int64]*float64 `json:"group_rates"`
@@ -64,6 +72,10 @@ type UpdateBalanceRequest struct {
 	Balance   float64 `json:"balance" binding:"required,gt=0"`
 	Operation string  `json:"operation" binding:"required,oneof=set add subtract"`
 	Notes     string  `json:"notes"`
+}
+
+type SyncKeyAccountsRequest struct {
+	DryRun bool `json:"dry_run"`
 }
 
 // List handles listing all users with pagination
@@ -85,11 +97,17 @@ func (h *UserHandler) List(c *gin.Context) {
 	}
 
 	filters := service.UserListFilters{
-		Status:     c.Query("status"),
-		Role:       c.Query("role"),
-		Search:     search,
-		GroupName:  strings.TrimSpace(c.Query("group_name")),
-		Attributes: parseAttributeFilters(c),
+		Status:          c.Query("status"),
+		Role:            c.Query("role"),
+		Search:          search,
+		KeyAccountLevel: strings.TrimSpace(c.Query("key_account_level")),
+		GroupName:       strings.TrimSpace(c.Query("group_name")),
+		Attributes:      parseAttributeFilters(c),
+	}
+	if raw, ok := c.GetQuery("is_key_account"); ok {
+		if parsed := parseOptionalBool(raw); parsed != nil {
+			filters.IsKeyAccount = parsed
+		}
 	}
 	sortBy := c.DefaultQuery("sort_by", "created_at")
 	sortOrder := c.DefaultQuery("sort_order", "desc")
@@ -154,6 +172,20 @@ func parseAttributeFilters(c *gin.Context) map[int64]string {
 	return result
 }
 
+func parseOptionalBool(raw string) *bool {
+	value := strings.ToLower(strings.TrimSpace(raw))
+	switch value {
+	case "1", "true", "yes", "on":
+		v := true
+		return &v
+	case "0", "false", "no", "off":
+		v := false
+		return &v
+	default:
+		return nil
+	}
+}
+
 // GetByID handles getting a user by ID
 // GET /api/v1/admin/users/:id
 func (h *UserHandler) GetByID(c *gin.Context) {
@@ -215,15 +247,21 @@ func (h *UserHandler) Update(c *gin.Context) {
 
 	// 使用指针类型直接传递，nil 表示未提供该字段
 	user, err := h.adminService.UpdateUser(c.Request.Context(), userID, &service.UpdateUserInput{
-		Email:         req.Email,
-		Password:      req.Password,
-		Username:      req.Username,
-		Notes:         req.Notes,
-		Balance:       req.Balance,
-		Concurrency:   req.Concurrency,
-		Status:        req.Status,
-		AllowedGroups: req.AllowedGroups,
-		GroupRates:    req.GroupRates,
+		Email:                  req.Email,
+		Password:               req.Password,
+		Role:                   req.Role,
+		Username:               req.Username,
+		Notes:                  req.Notes,
+		Balance:                req.Balance,
+		Concurrency:            req.Concurrency,
+		Status:                 req.Status,
+		AllowedGroups:          req.AllowedGroups,
+		IsKeyAccount:           req.IsKeyAccount,
+		KeyAccountLevel:        req.KeyAccountLevel,
+		KeyAccountDiscountRate: req.KeyAccountDiscountRate,
+		KeyAccountRebateRate:   req.KeyAccountRebateRate,
+		KeyAccountManagerNotes: req.KeyAccountManagerNotes,
+		GroupRates:             req.GroupRates,
 	})
 	if err != nil {
 		response.ErrorFrom(c, err)
@@ -326,6 +364,27 @@ func (h *UserHandler) GetUserUsage(c *gin.Context) {
 	}
 
 	response.Success(c, stats)
+}
+
+// SyncKeyAccounts handles syncing key account levels based on configured thresholds.
+// POST /api/v1/admin/users/key-accounts/auto-sync
+func (h *UserHandler) SyncKeyAccounts(c *gin.Context) {
+	var req SyncKeyAccountsRequest
+	if err := c.ShouldBindJSON(&req); err != nil && !errors.Is(err, io.EOF) {
+		response.BadRequest(c, "Invalid request: "+err.Error())
+		return
+	}
+
+	payload := struct {
+		DryRun bool `json:"dry_run"`
+	}{
+		DryRun: req.DryRun,
+	}
+	executeAdminIdempotentJSON(c, "admin.users.key_accounts.auto_sync", payload, service.DefaultWriteIdempotencyTTL(), func(ctx context.Context) (any, error) {
+		return h.adminService.SyncKeyAccounts(ctx, service.KeyAccountSyncOptions{
+			DryRun: req.DryRun,
+		})
+	})
 }
 
 // GetBalanceHistory handles getting user's balance/concurrency change history

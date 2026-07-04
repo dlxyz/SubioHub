@@ -2,7 +2,10 @@ package handler
 
 import (
 	"net/http"
+	"strconv"
+	"strings"
 
+	"github.com/dlxyz/SubioHub/internal/handler/dto"
 	"github.com/dlxyz/SubioHub/internal/pkg/pagination"
 	"github.com/dlxyz/SubioHub/internal/pkg/response"
 
@@ -14,13 +17,26 @@ import (
 type AffiliateHandler struct {
 	affiliateService *service.AffiliateService
 	userService      *service.UserService
+	adminService     service.AdminService
 }
 
-func NewAffiliateHandler(affiliateService *service.AffiliateService, userService *service.UserService) *AffiliateHandler {
+func NewAffiliateHandler(
+	affiliateService *service.AffiliateService,
+	userService *service.UserService,
+	adminService service.AdminService,
+) *AffiliateHandler {
 	return &AffiliateHandler{
 		affiliateService: affiliateService,
 		userService:      userService,
+		adminService:     adminService,
 	}
+}
+
+type CreateAgentDistributorRequest struct {
+	Email    string `json:"email" binding:"required,email"`
+	Password string `json:"password" binding:"required,min=6"`
+	Username string `json:"username"`
+	Notes    string `json:"notes"`
 }
 
 // GetAffiliateInfo 获取分销信息面板
@@ -104,4 +120,150 @@ func (h *AffiliateHandler) TransferCommissionToBalance(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "Transfer successful"})
+}
+
+// CreateDistributor creates a distributor user from the agent console.
+func (h *AffiliateHandler) CreateDistributor(c *gin.Context) {
+	subject, authenticated := middleware2.GetAuthSubjectFromContext(c)
+	role, ok := middleware2.GetUserRoleFromContext(c)
+	if !ok || !authenticated {
+		response.Unauthorized(c, "Unauthorized")
+		return
+	}
+	if role != service.RoleAdmin && role != service.RoleAgent {
+		response.Forbidden(c, "当前账号没有创建分销用户权限")
+		return
+	}
+
+	var req CreateAgentDistributorRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		response.BadRequest(c, "Invalid request: "+err.Error())
+		return
+	}
+
+	created, err := h.adminService.CreateUser(c.Request.Context(), &service.CreateUserInput{
+		Email:    req.Email,
+		Password: req.Password,
+		Username: req.Username,
+		Notes:    req.Notes,
+	})
+	if err != nil {
+		response.ErrorFrom(c, err)
+		return
+	}
+
+	distributorRole := service.RoleDistributor
+	updated, err := h.adminService.UpdateUser(c.Request.Context(), created.ID, &service.UpdateUserInput{
+		Role: &distributorRole,
+	})
+	if err != nil {
+		_ = h.adminService.DeleteUser(c.Request.Context(), created.ID)
+		response.ErrorFrom(c, err)
+		return
+	}
+	if role == service.RoleAgent {
+		if err := h.affiliateService.BindInviter(c.Request.Context(), updated.ID, subject.UserID); err != nil {
+			_ = h.adminService.DeleteUser(c.Request.Context(), updated.ID)
+			response.ErrorFrom(c, err)
+			return
+		}
+	}
+
+	response.Created(c, dto.UserFromServiceAdmin(updated))
+}
+
+func (h *AffiliateHandler) ListDistributors(c *gin.Context) {
+	page, pageSize := response.ParsePagination(c)
+	search := strings.TrimSpace(c.Query("search"))
+	status := strings.TrimSpace(c.Query("status"))
+
+	users, total, err := h.adminService.ListUsers(
+		c.Request.Context(),
+		page,
+		pageSize,
+		service.UserListFilters{
+			Role:   service.RoleDistributor,
+			Search: search,
+			Status: status,
+		},
+		"created_at",
+		"desc",
+	)
+	if err != nil {
+		response.ErrorFrom(c, err)
+		return
+	}
+
+	out := make([]*dto.AdminUser, len(users))
+	for i := range users {
+		out[i] = dto.UserFromServiceAdmin(&users[i])
+	}
+	response.Paginated(c, out, total, page, pageSize)
+}
+
+func (h *AffiliateHandler) UpdateDistributorStatus(c *gin.Context) {
+	role, ok := middleware2.GetUserRoleFromContext(c)
+	if !ok {
+		response.Unauthorized(c, "Unauthorized")
+		return
+	}
+	if role != service.RoleAdmin && role != service.RoleAgent {
+		response.Forbidden(c, "当前账号没有更新分销用户状态权限")
+		return
+	}
+
+	userID, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		response.BadRequest(c, "Invalid user ID")
+		return
+	}
+
+	var req struct {
+		Status string `json:"status" binding:"required,oneof=active disabled"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		response.BadRequest(c, "Invalid request: "+err.Error())
+		return
+	}
+
+	updated, err := h.adminService.UpdateUser(c.Request.Context(), userID, &service.UpdateUserInput{
+		Status: req.Status,
+	})
+	if err != nil {
+		response.ErrorFrom(c, err)
+		return
+	}
+	response.Success(c, dto.UserFromServiceAdmin(updated))
+}
+
+func (h *AffiliateHandler) SetDistributorRate(c *gin.Context) {
+	role, ok := middleware2.GetUserRoleFromContext(c)
+	if !ok {
+		response.Unauthorized(c, "Unauthorized")
+		return
+	}
+	if role != service.RoleAdmin && role != service.RoleAgent {
+		response.Forbidden(c, "当前账号没有更新分销用户提成权限")
+		return
+	}
+
+	userID, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		response.BadRequest(c, "Invalid user ID")
+		return
+	}
+
+	var req struct {
+		Rate float64 `json:"rate" binding:"required,min=0,max=1"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		response.BadRequest(c, "Invalid request: "+err.Error())
+		return
+	}
+
+	if err := h.affiliateService.AdminUpdateUserCommissionRate(c.Request.Context(), userID, req.Rate); err != nil {
+		response.ErrorFrom(c, err)
+		return
+	}
+	response.Success(c, gin.H{"message": "Commission rate updated successfully"})
 }

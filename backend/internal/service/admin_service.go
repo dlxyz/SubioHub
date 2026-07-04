@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"log/slog"
+	"math"
 	"net/http"
 	"strings"
 	"time"
@@ -15,6 +16,7 @@ import (
 	"github.com/dlxyz/SubioHub/internal/pkg/httpclient"
 	"github.com/dlxyz/SubioHub/internal/pkg/logger"
 	"github.com/dlxyz/SubioHub/internal/pkg/pagination"
+	"github.com/dlxyz/SubioHub/internal/pkg/timezone"
 	"github.com/dlxyz/SubioHub/internal/util/httputil"
 )
 
@@ -33,6 +35,7 @@ type AdminService interface {
 	// codeType is optional - pass empty string to return all types.
 	// Also returns totalRecharged (sum of all positive balance top-ups).
 	GetUserBalanceHistory(ctx context.Context, userID int64, page, pageSize int, codeType string) ([]RedeemCode, int64, float64, error)
+	SyncKeyAccounts(ctx context.Context, options KeyAccountSyncOptions) (*KeyAccountSyncResult, error)
 
 	// Group management
 	ListGroups(ctx context.Context, page, pageSize int, platform, status, search string, isExclusive *bool, sortBy, sortOrder string) ([]Group, int64, error)
@@ -114,17 +117,59 @@ type CreateUserInput struct {
 }
 
 type UpdateUserInput struct {
-	Email         string
-	Password      string
-	Username      *string
-	Notes         *string
-	Balance       *float64 // 使用指针区分"未提供"和"设置为0"
-	Concurrency   *int     // 使用指针区分"未提供"和"设置为0"
-	Status        string
-	AllowedGroups *[]int64 // 使用指针区分"未提供"和"设置为空数组"
+	Email                  string
+	Password               string
+	Role                   *string
+	Username               *string
+	Notes                  *string
+	Balance                *float64 // 使用指针区分"未提供"和"设置为0"
+	Concurrency            *int     // 使用指针区分"未提供"和"设置为0"
+	Status                 string
+	AllowedGroups          *[]int64 // 使用指针区分"未提供"和"设置为空数组"
+	IsKeyAccount           *bool
+	KeyAccountLevel        *string
+	KeyAccountDiscountRate *float64
+	KeyAccountRebateRate   *float64
+	KeyAccountManagerNotes *string
 	// GroupRates 用户专属分组倍率配置
 	// map[groupID]*rate，nil 表示删除该分组的专属倍率
 	GroupRates map[int64]*float64
+}
+
+type KeyAccountSyncOptions struct {
+	DryRun   bool
+	PageSize int
+}
+
+type KeyAccountSyncItem struct {
+	UserID                 int64   `json:"user_id"`
+	Email                  string  `json:"email"`
+	BeforeIsKeyAccount     bool    `json:"before_is_key_account"`
+	AfterIsKeyAccount      bool    `json:"after_is_key_account"`
+	BeforeLevel            string  `json:"before_level"`
+	AfterLevel             string  `json:"after_level"`
+	TotalRecharged         float64 `json:"total_recharged"`
+	MonthlyActualCost      float64 `json:"monthly_actual_cost"`
+	Action                 string  `json:"action"`
+	Reason                 string  `json:"reason"`
+	AppliedDefaultStrategy bool    `json:"applied_default_strategy"`
+	Error                  string  `json:"error,omitempty"`
+}
+
+type KeyAccountSyncResult struct {
+	DryRun                 bool                 `json:"dry_run"`
+	AutoUpgradeEnabled     bool                 `json:"auto_upgrade_enabled"`
+	AutoDowngradeEnabled   bool                 `json:"auto_downgrade_enabled"`
+	Scanned                int                  `json:"scanned"`
+	Eligible               int                  `json:"eligible"`
+	Changed                int                  `json:"changed"`
+	Upgraded               int                  `json:"upgraded"`
+	Downgraded             int                  `json:"downgraded"`
+	PromotedToKeyAccount   int                  `json:"promoted_to_key_account"`
+	RemovedFromKeyAccount  int                  `json:"removed_from_key_account"`
+	AppliedDefaultStrategy int                  `json:"applied_default_strategy"`
+	Failed                 int                  `json:"failed"`
+	Items                  []KeyAccountSyncItem `json:"items"`
 }
 
 type CreateGroupInput struct {
@@ -432,6 +477,7 @@ type adminServiceImpl struct {
 	apiKeyRepo           APIKeyRepository
 	redeemCodeRepo       RedeemCodeRepository
 	userGroupRateRepo    UserGroupRateRepository
+	usageLogRepo         UsageLogRepository
 	billingCacheService  *BillingCacheService
 	proxyProber          ProxyExitInfoProber
 	proxyLatencyCache    ProxyLatencyCache
@@ -456,6 +502,7 @@ func NewAdminService(
 	apiKeyRepo APIKeyRepository,
 	redeemCodeRepo RedeemCodeRepository,
 	userGroupRateRepo UserGroupRateRepository,
+	usageLogRepo UsageLogRepository,
 	billingCacheService *BillingCacheService,
 	proxyProber ProxyExitInfoProber,
 	proxyLatencyCache ProxyLatencyCache,
@@ -474,6 +521,7 @@ func NewAdminService(
 		apiKeyRepo:           apiKeyRepo,
 		redeemCodeRepo:       redeemCodeRepo,
 		userGroupRateRepo:    userGroupRateRepo,
+		usageLogRepo:         usageLogRepo,
 		billingCacheService:  billingCacheService,
 		proxyProber:          proxyProber,
 		proxyLatencyCache:    proxyLatencyCache,
@@ -610,6 +658,18 @@ func (s *adminServiceImpl) UpdateUser(ctx context.Context, id int64, input *Upda
 			return nil, err
 		}
 	}
+	if input.Role != nil {
+		nextRole := strings.TrimSpace(*input.Role)
+		switch nextRole {
+		case RoleUser, RoleAgent, RoleDistributor:
+			if user.Role == RoleAdmin {
+				return nil, errors.New("cannot change admin role")
+			}
+			user.Role = nextRole
+		default:
+			return nil, errors.New("invalid role")
+		}
+	}
 
 	if input.Username != nil {
 		user.Username = *input.Username
@@ -624,6 +684,24 @@ func (s *adminServiceImpl) UpdateUser(ctx context.Context, id int64, input *Upda
 
 	if input.Concurrency != nil {
 		user.Concurrency = *input.Concurrency
+	}
+	if input.IsKeyAccount != nil {
+		user.IsKeyAccount = *input.IsKeyAccount
+	}
+	if input.KeyAccountLevel != nil {
+		user.KeyAccountLevel = strings.TrimSpace(*input.KeyAccountLevel)
+		if user.KeyAccountLevel == "" {
+			user.KeyAccountLevel = "standard"
+		}
+	}
+	if input.KeyAccountDiscountRate != nil {
+		user.KeyAccountDiscountRate = *input.KeyAccountDiscountRate
+	}
+	if input.KeyAccountRebateRate != nil {
+		user.KeyAccountRebateRate = *input.KeyAccountRebateRate
+	}
+	if input.KeyAccountManagerNotes != nil {
+		user.KeyAccountManagerNotes = *input.KeyAccountManagerNotes
 	}
 
 	if input.AllowedGroups != nil {
@@ -765,13 +843,26 @@ func (s *adminServiceImpl) GetUserAPIKeys(ctx context.Context, userID int64, pag
 }
 
 func (s *adminServiceImpl) GetUserUsageStats(ctx context.Context, userID int64, period string) (any, error) {
-	// Return mock data for now
+	startTime, endTime, normalizedPeriod := resolveUsagePeriodRange(period, timezone.Now())
+	if s.usageLogRepo == nil {
+		return map[string]any{
+			"period":          normalizedPeriod,
+			"total_requests":  0,
+			"total_cost":      0.0,
+			"total_tokens":    0,
+			"avg_duration_ms": 0,
+		}, nil
+	}
+	stats, err := s.usageLogRepo.GetUserStatsAggregated(ctx, userID, startTime, endTime)
+	if err != nil {
+		return nil, err
+	}
 	return map[string]any{
-		"period":          period,
-		"total_requests":  0,
-		"total_cost":      0.0,
-		"total_tokens":    0,
-		"avg_duration_ms": 0,
+		"period":          normalizedPeriod,
+		"total_requests":  stats.TotalRequests,
+		"total_cost":      stats.TotalActualCost,
+		"total_tokens":    stats.TotalTokens,
+		"avg_duration_ms": stats.AverageDurationMs,
 	}, nil
 }
 
@@ -788,6 +879,303 @@ func (s *adminServiceImpl) GetUserBalanceHistory(ctx context.Context, userID int
 		return nil, 0, 0, err
 	}
 	return codes, result.Total, totalRecharged, nil
+}
+
+func (s *adminServiceImpl) SyncKeyAccounts(ctx context.Context, options KeyAccountSyncOptions) (*KeyAccountSyncResult, error) {
+	if s.settingService == nil {
+		return nil, errors.New("setting service not configured")
+	}
+	settings, err := s.settingService.GetAllSettings(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	pageSize := options.PageSize
+	if pageSize <= 0 {
+		pageSize = 200
+	}
+
+	result := &KeyAccountSyncResult{
+		DryRun:               options.DryRun,
+		AutoUpgradeEnabled:   settings.KeyAccountAutoUpgradeEnabled,
+		AutoDowngradeEnabled: settings.KeyAccountAutoDowngradeEnabled,
+		Items:                make([]KeyAccountSyncItem, 0),
+	}
+
+	page := 1
+	includeSubscriptions := false
+	startTime := timezone.StartOfMonth(timezone.Now())
+	endTime := timezone.Now()
+
+	for {
+		users, paginationResult, err := s.userRepo.ListWithFilters(ctx, pagination.PaginationParams{
+			Page:      page,
+			PageSize:  pageSize,
+			SortBy:    "id",
+			SortOrder: "asc",
+		}, UserListFilters{
+			IncludeSubscriptions: &includeSubscriptions,
+		})
+		if err != nil {
+			return nil, err
+		}
+		if len(users) == 0 {
+			break
+		}
+
+		userIDs := make([]int64, 0, len(users))
+		for _, user := range users {
+			if user.Role == RoleAdmin {
+				continue
+			}
+			userIDs = append(userIDs, user.ID)
+		}
+
+		usageByUser := map[int64]float64{}
+		if s.usageLogRepo != nil && len(userIDs) > 0 {
+			batchStats, batchErr := s.usageLogRepo.GetBatchUserUsageStats(ctx, userIDs, startTime, endTime)
+			if batchErr != nil {
+				return nil, batchErr
+			}
+			for userID, stats := range batchStats {
+				if stats != nil {
+					usageByUser[userID] = stats.TotalActualCost
+				}
+			}
+		}
+
+		for i := range users {
+			user := &users[i]
+			if user.Role == RoleAdmin {
+				continue
+			}
+			result.Scanned++
+			monthlyActualCost := usageByUser[user.ID]
+			currentLevel := normalizeKeyAccountLevel(user.KeyAccountLevel)
+			targetLevel := resolveTargetKeyAccountLevel(user.TotalRecharged, monthlyActualCost, settings)
+			targetIsKeyAccount := targetLevel != "standard"
+			reason := buildKeyAccountSyncReason(user.TotalRecharged, monthlyActualCost, settings, targetLevel)
+
+			shouldChange, action := evaluateKeyAccountTransition(
+				user.IsKeyAccount,
+				currentLevel,
+				targetIsKeyAccount,
+				targetLevel,
+				settings.KeyAccountAutoUpgradeEnabled,
+				settings.KeyAccountAutoDowngradeEnabled,
+			)
+			if !shouldChange {
+				continue
+			}
+
+			result.Eligible++
+			item := KeyAccountSyncItem{
+				UserID:             user.ID,
+				Email:              user.Email,
+				BeforeIsKeyAccount: user.IsKeyAccount,
+				AfterIsKeyAccount:  targetIsKeyAccount,
+				BeforeLevel:        currentLevel,
+				AfterLevel:         targetLevel,
+				TotalRecharged:     user.TotalRecharged,
+				MonthlyActualCost:  monthlyActualCost,
+				Action:             action,
+				Reason:             reason,
+			}
+
+			if options.DryRun {
+				result.Items = append(result.Items, item)
+				result.Changed++
+				applyKeyAccountSyncCounters(result, item)
+				continue
+			}
+
+			updatedUser := *user
+			updatedUser.IsKeyAccount = targetIsKeyAccount
+			updatedUser.KeyAccountLevel = targetLevel
+
+			applyDefaults := shouldApplyKeyAccountDefaultStrategy(*user, currentLevel, targetLevel, settings)
+			item.AppliedDefaultStrategy = applyDefaults
+			if targetLevel == "standard" {
+				updatedUser.KeyAccountDiscountRate = 1
+				updatedUser.KeyAccountRebateRate = 0
+				item.AppliedDefaultStrategy = true
+			} else if applyDefaults {
+				discountRate, rebateRate := resolveKeyAccountDefaultStrategy(targetLevel, settings)
+				updatedUser.KeyAccountDiscountRate = discountRate
+				updatedUser.KeyAccountRebateRate = rebateRate
+			}
+
+			if err := s.userRepo.Update(ctx, &updatedUser); err != nil {
+				item.Error = err.Error()
+				result.Failed++
+				result.Items = append(result.Items, item)
+				continue
+			}
+
+			result.Changed++
+			applyKeyAccountSyncCounters(result, item)
+			result.Items = append(result.Items, item)
+		}
+
+		if paginationResult == nil || page >= paginationResult.Pages {
+			break
+		}
+		page++
+	}
+
+	return result, nil
+}
+
+func resolveUsagePeriodRange(period string, now time.Time) (time.Time, time.Time, string) {
+	normalized := strings.ToLower(strings.TrimSpace(period))
+	switch normalized {
+	case "day", "today":
+		return timezone.Today(), now, "day"
+	case "week":
+		return timezone.StartOfWeek(now), now, "week"
+	case "all", "total":
+		return time.Time{}, now, "all"
+	case "month", "":
+		fallthrough
+	default:
+		return timezone.StartOfMonth(now), now, "month"
+	}
+}
+
+func normalizeKeyAccountLevel(level string) string {
+	switch strings.ToLower(strings.TrimSpace(level)) {
+	case "vip":
+		return "vip"
+	case "enterprise":
+		return "enterprise"
+	default:
+		return "standard"
+	}
+}
+
+func resolveTargetKeyAccountLevel(totalRecharged, monthlyActualCost float64, settings *SystemSettings) string {
+	if totalRecharged >= settings.KeyAccountEnterpriseRechargeThreshold ||
+		monthlyActualCost >= settings.KeyAccountEnterpriseMonthlyCostThreshold {
+		return "enterprise"
+	}
+	if totalRecharged >= settings.KeyAccountVIPRechargeThreshold ||
+		monthlyActualCost >= settings.KeyAccountVIPMonthlyCostThreshold {
+		return "vip"
+	}
+	return "standard"
+}
+
+func buildKeyAccountSyncReason(totalRecharged, monthlyActualCost float64, settings *SystemSettings, level string) string {
+	reasons := make([]string, 0, 2)
+	switch level {
+	case "enterprise":
+		if totalRecharged >= settings.KeyAccountEnterpriseRechargeThreshold {
+			reasons = append(reasons, "enterprise_recharge_threshold")
+		}
+		if monthlyActualCost >= settings.KeyAccountEnterpriseMonthlyCostThreshold {
+			reasons = append(reasons, "enterprise_monthly_cost_threshold")
+		}
+	case "vip":
+		if totalRecharged >= settings.KeyAccountVIPRechargeThreshold {
+			reasons = append(reasons, "vip_recharge_threshold")
+		}
+		if monthlyActualCost >= settings.KeyAccountVIPMonthlyCostThreshold {
+			reasons = append(reasons, "vip_monthly_cost_threshold")
+		}
+	}
+	if len(reasons) == 0 {
+		return "below_all_thresholds"
+	}
+	return strings.Join(reasons, ",")
+}
+
+func evaluateKeyAccountTransition(currentIsKey bool, currentLevel string, targetIsKey bool, targetLevel string, autoUpgradeEnabled, autoDowngradeEnabled bool) (bool, string) {
+	currentRank := keyAccountLevelRank(currentLevel)
+	targetRank := keyAccountLevelRank(targetLevel)
+
+	if targetRank > currentRank {
+		if !autoUpgradeEnabled {
+			return false, ""
+		}
+		if !currentIsKey && targetIsKey {
+			return true, "promote"
+		}
+		return true, "upgrade"
+	}
+	if targetRank < currentRank {
+		if !autoDowngradeEnabled {
+			return false, ""
+		}
+		if currentIsKey && !targetIsKey {
+			return true, "remove"
+		}
+		return true, "downgrade"
+	}
+	if currentIsKey != targetIsKey {
+		if targetIsKey {
+			if !autoUpgradeEnabled {
+				return false, ""
+			}
+			return true, "promote"
+		}
+		if !autoDowngradeEnabled {
+			return false, ""
+		}
+		return true, "remove"
+	}
+	return false, ""
+}
+
+func keyAccountLevelRank(level string) int {
+	switch normalizeKeyAccountLevel(level) {
+	case "vip":
+		return 1
+	case "enterprise":
+		return 2
+	default:
+		return 0
+	}
+}
+
+func resolveKeyAccountDefaultStrategy(level string, settings *SystemSettings) (float64, float64) {
+	switch normalizeKeyAccountLevel(level) {
+	case "enterprise":
+		return settings.KeyAccountEnterpriseDefaultDiscountRate, settings.KeyAccountEnterpriseDefaultRebateRate
+	case "vip":
+		return settings.KeyAccountVIPDefaultDiscountRate, settings.KeyAccountVIPDefaultRebateRate
+	default:
+		return 1, 0
+	}
+}
+
+func shouldApplyKeyAccountDefaultStrategy(user User, currentLevel, targetLevel string, settings *SystemSettings) bool {
+	if !user.IsKeyAccount {
+		return true
+	}
+	currentDiscount, currentRebate := resolveKeyAccountDefaultStrategy(currentLevel, settings)
+	return almostEqualFloat(user.KeyAccountDiscountRate, currentDiscount) && almostEqualFloat(user.KeyAccountRebateRate, currentRebate)
+}
+
+func almostEqualFloat(a, b float64) bool {
+	return math.Abs(a-b) < 0.000001
+}
+
+func applyKeyAccountSyncCounters(result *KeyAccountSyncResult, item KeyAccountSyncItem) {
+	switch item.Action {
+	case "promote":
+		result.PromotedToKeyAccount++
+		result.Upgraded++
+	case "upgrade":
+		result.Upgraded++
+	case "downgrade":
+		result.Downgraded++
+	case "remove":
+		result.RemovedFromKeyAccount++
+		result.Downgraded++
+	}
+	if item.AppliedDefaultStrategy {
+		result.AppliedDefaultStrategy++
+	}
 }
 
 // Group management implementations

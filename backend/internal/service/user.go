@@ -38,11 +38,16 @@ type User struct {
 	TotalRecharged             float64
 
 	// 分销相关
-	InviterID             *int64
-	InviteCode            string
-	CommissionRate        float64
-	CommissionBalance     float64
-	TotalCommissionEarned float64
+	InviterID              *int64
+	InviteCode             string
+	CommissionRate         float64
+	CommissionBalance      float64
+	TotalCommissionEarned  float64
+	IsKeyAccount           bool
+	KeyAccountLevel        string
+	KeyAccountDiscountRate float64
+	KeyAccountRebateRate   float64
+	KeyAccountManagerNotes string
 
 	APIKeys       []APIKey
 	Subscriptions []UserSubscription
@@ -50,6 +55,18 @@ type User struct {
 
 func (u *User) IsAdmin() bool {
 	return u.Role == RoleAdmin
+}
+
+func (u *User) IsAgent() bool {
+	return u.Role == RoleAgent
+}
+
+func (u *User) IsDistributor() bool {
+	return u.Role == RoleDistributor
+}
+
+func (u *User) CanAccessDistributionConsole() bool {
+	return u.IsAdmin() || u.IsAgent() || u.IsDistributor()
 }
 
 func (u *User) IsActive() bool {

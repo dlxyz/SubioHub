@@ -26,6 +26,10 @@ type Tx struct {
 	AnnouncementRead *AnnouncementReadClient
 	// CommissionLog is the client for interacting with the CommissionLog builders.
 	CommissionLog *CommissionLogClient
+	// CommissionRule is the client for interacting with the CommissionRule builders.
+	CommissionRule *CommissionRuleClient
+	// CommissionSplitLog is the client for interacting with the CommissionSplitLog builders.
+	CommissionSplitLog *CommissionSplitLogClient
 	// ErrorPassthroughRule is the client for interacting with the ErrorPassthroughRule builders.
 	ErrorPassthroughRule *ErrorPassthroughRuleClient
 	// Group is the client for interacting with the Group builders.
@@ -46,6 +50,8 @@ type Tx struct {
 	PromoCode *PromoCodeClient
 	// PromoCodeUsage is the client for interacting with the PromoCodeUsage builders.
 	PromoCodeUsage *PromoCodeUsageClient
+	// PromotionRelation is the client for interacting with the PromotionRelation builders.
+	PromotionRelation *PromotionRelationClient
 	// Proxy is the client for interacting with the Proxy builders.
 	Proxy *ProxyClient
 	// RedeemCode is the client for interacting with the RedeemCode builders.
@@ -209,6 +215,8 @@ func (tx *Tx) init() {
 	tx.Announcement = NewAnnouncementClient(tx.config)
 	tx.AnnouncementRead = NewAnnouncementReadClient(tx.config)
 	tx.CommissionLog = NewCommissionLogClient(tx.config)
+	tx.CommissionRule = NewCommissionRuleClient(tx.config)
+	tx.CommissionSplitLog = NewCommissionSplitLogClient(tx.config)
 	tx.ErrorPassthroughRule = NewErrorPassthroughRuleClient(tx.config)
 	tx.Group = NewGroupClient(tx.config)
 	tx.IdempotencyRecord = NewIdempotencyRecordClient(tx.config)
@@ -219,6 +227,7 @@ func (tx *Tx) init() {
 	tx.PaymentProviderInstance = NewPaymentProviderInstanceClient(tx.config)
 	tx.PromoCode = NewPromoCodeClient(tx.config)
 	tx.PromoCodeUsage = NewPromoCodeUsageClient(tx.config)
+	tx.PromotionRelation = NewPromotionRelationClient(tx.config)
 	tx.Proxy = NewProxyClient(tx.config)
 	tx.RedeemCode = NewRedeemCodeClient(tx.config)
 	tx.SecuritySecret = NewSecuritySecretClient(tx.config)

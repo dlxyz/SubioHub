@@ -35,7 +35,12 @@ type User struct {
 type AdminUser struct {
 	User
 
-	Notes string `json:"notes"`
+	Notes                  string  `json:"notes"`
+	IsKeyAccount           bool    `json:"is_key_account"`
+	KeyAccountLevel        string  `json:"key_account_level"`
+	KeyAccountDiscountRate float64 `json:"key_account_discount_rate"`
+	KeyAccountRebateRate   float64 `json:"key_account_rebate_rate"`
+	KeyAccountManagerNotes string  `json:"key_account_manager_notes"`
 	// GroupRates 用户专属分组倍率配置
 	// map[groupID]rateMultiplier
 	GroupRates map[int64]float64 `json:"group_rates,omitempty"`

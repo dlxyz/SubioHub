@@ -174,7 +174,12 @@ func (r *userRepository) Update(ctx context.Context, userIn *service.User) error
 		SetBalanceNotifyThresholdType(userIn.BalanceNotifyThresholdType).
 		SetNillableBalanceNotifyThreshold(userIn.BalanceNotifyThreshold).
 		SetBalanceNotifyExtraEmails(marshalExtraEmails(userIn.BalanceNotifyExtraEmails)).
-		SetTotalRecharged(userIn.TotalRecharged)
+		SetTotalRecharged(userIn.TotalRecharged).
+		SetIsKeyAccount(userIn.IsKeyAccount).
+		SetKeyAccountLevel(userIn.KeyAccountLevel).
+		SetKeyAccountDiscountRate(userIn.KeyAccountDiscountRate).
+		SetKeyAccountRebateRate(userIn.KeyAccountRebateRate).
+		SetKeyAccountManagerNotes(userIn.KeyAccountManagerNotes)
 	if userIn.InviterID != nil {
 		updateOp = updateOp.SetInviterID(*userIn.InviterID)
 	} else {
@@ -228,6 +233,12 @@ func (r *userRepository) ListWithFilters(ctx context.Context, params pagination.
 	}
 	if filters.Role != "" {
 		q = q.Where(dbuser.RoleEQ(filters.Role))
+	}
+	if filters.IsKeyAccount != nil {
+		q = q.Where(dbuser.IsKeyAccountEQ(*filters.IsKeyAccount))
+	}
+	if filters.KeyAccountLevel != "" {
+		q = q.Where(dbuser.KeyAccountLevelEQ(filters.KeyAccountLevel))
 	}
 	if filters.Search != "" {
 		q = q.Where(
@@ -611,6 +622,11 @@ func applyUserEntityToService(dst *service.User, src *dbent.User) {
 	dst.CommissionRate = src.CommissionRate
 	dst.CommissionBalance = src.CommissionBalance
 	dst.TotalCommissionEarned = src.TotalCommissionEarned
+	dst.IsKeyAccount = src.IsKeyAccount
+	dst.KeyAccountLevel = src.KeyAccountLevel
+	dst.KeyAccountDiscountRate = src.KeyAccountDiscountRate
+	dst.KeyAccountRebateRate = src.KeyAccountRebateRate
+	dst.KeyAccountManagerNotes = src.KeyAccountManagerNotes
 	dst.CreatedAt = src.CreatedAt
 	dst.UpdatedAt = src.UpdatedAt
 }

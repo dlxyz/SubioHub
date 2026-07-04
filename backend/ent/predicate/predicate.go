@@ -24,6 +24,12 @@ type AnnouncementRead func(*sql.Selector)
 // CommissionLog is the predicate function for commissionlog builders.
 type CommissionLog func(*sql.Selector)
 
+// CommissionRule is the predicate function for commissionrule builders.
+type CommissionRule func(*sql.Selector)
+
+// CommissionSplitLog is the predicate function for commissionsplitlog builders.
+type CommissionSplitLog func(*sql.Selector)
+
 // ErrorPassthroughRule is the predicate function for errorpassthroughrule builders.
 type ErrorPassthroughRule func(*sql.Selector)
 
@@ -53,6 +59,9 @@ type PromoCode func(*sql.Selector)
 
 // PromoCodeUsage is the predicate function for promocodeusage builders.
 type PromoCodeUsage func(*sql.Selector)
+
+// PromotionRelation is the predicate function for promotionrelation builders.
+type PromotionRelation func(*sql.Selector)
 
 // Proxy is the predicate function for proxy builders.
 type Proxy func(*sql.Selector)

@@ -111,6 +111,27 @@ func (User) Fields() []ent.Field {
 			SchemaType(map[string]string{dialect.Postgres: "decimal(20,8)"}).
 			Default(0).
 			Comment("历史累计赚取的总佣金"),
+
+		// ------------------ 大客户管理字段 ------------------
+		field.Bool("is_key_account").
+			Default(false).
+			Comment("是否为大客户"),
+		field.String("key_account_level").
+			MaxLen(20).
+			Default("standard").
+			Comment("大客户等级 standard / vip / enterprise"),
+		field.Float("key_account_discount_rate").
+			SchemaType(map[string]string{dialect.Postgres: "decimal(5,4)"}).
+			Default(1).
+			Comment("大客户专属折扣系数，1 表示无折扣"),
+		field.Float("key_account_rebate_rate").
+			SchemaType(map[string]string{dialect.Postgres: "decimal(5,4)"}).
+			Default(0).
+			Comment("大客户专属返点比例"),
+		field.String("key_account_manager_notes").
+			SchemaType(map[string]string{dialect.Postgres: "text"}).
+			Default("").
+			Comment("大客户运营备注"),
 	}
 }
 
@@ -143,5 +164,7 @@ func (User) Indexes() []ent.Index {
 		// email 字段已在 Fields() 中声明 Unique()，无需重复索引
 		index.Fields("status"),
 		index.Fields("deleted_at"),
+		index.Fields("is_key_account"),
+		index.Fields("key_account_level"),
 	}
 }

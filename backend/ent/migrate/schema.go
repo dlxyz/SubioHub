@@ -383,6 +383,177 @@ var (
 			},
 		},
 	}
+	// CommissionRulesColumns holds the columns for the "commission_rules" table.
+	CommissionRulesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt64, Increment: true},
+		{Name: "created_at", Type: field.TypeTime, SchemaType: map[string]string{"postgres": "timestamptz"}},
+		{Name: "updated_at", Type: field.TypeTime, SchemaType: map[string]string{"postgres": "timestamptz"}},
+		{Name: "name", Type: field.TypeString, Size: 100},
+		{Name: "status", Type: field.TypeString, Size: 20, Default: "active"},
+		{Name: "calc_mode", Type: field.TypeString, Size: 20, Default: "diff"},
+		{Name: "agent_target_rate", Type: field.TypeFloat64, Default: 0, SchemaType: map[string]string{"postgres": "decimal(5,4)"}},
+		{Name: "distributor_target_rate", Type: field.TypeFloat64, Default: 0, SchemaType: map[string]string{"postgres": "decimal(5,4)"}},
+		{Name: "freeze_hours", Type: field.TypeInt, Default: 168},
+		{Name: "settlement_mode", Type: field.TypeString, Size: 20, Default: "manual"},
+		{Name: "scope_type", Type: field.TypeString, Size: 20, Default: "global"},
+		{Name: "scope_id", Type: field.TypeInt64, Nullable: true},
+		{Name: "priority", Type: field.TypeInt, Default: 0},
+		{Name: "effective_at", Type: field.TypeTime, Nullable: true, SchemaType: map[string]string{"postgres": "timestamptz"}},
+		{Name: "expired_at", Type: field.TypeTime, Nullable: true, SchemaType: map[string]string{"postgres": "timestamptz"}},
+		{Name: "config_json", Type: field.TypeJSON, Nullable: true, SchemaType: map[string]string{"postgres": "jsonb"}},
+	}
+	// CommissionRulesTable holds the schema information for the "commission_rules" table.
+	CommissionRulesTable = &schema.Table{
+		Name:       "commission_rules",
+		Columns:    CommissionRulesColumns,
+		PrimaryKey: []*schema.Column{CommissionRulesColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "commissionrule_status",
+				Unique:  false,
+				Columns: []*schema.Column{CommissionRulesColumns[4]},
+			},
+			{
+				Name:    "commissionrule_calc_mode",
+				Unique:  false,
+				Columns: []*schema.Column{CommissionRulesColumns[5]},
+			},
+			{
+				Name:    "commissionrule_scope_type_scope_id",
+				Unique:  false,
+				Columns: []*schema.Column{CommissionRulesColumns[10], CommissionRulesColumns[11]},
+			},
+			{
+				Name:    "commissionrule_priority",
+				Unique:  false,
+				Columns: []*schema.Column{CommissionRulesColumns[12]},
+			},
+			{
+				Name:    "commissionrule_effective_at",
+				Unique:  false,
+				Columns: []*schema.Column{CommissionRulesColumns[13]},
+			},
+			{
+				Name:    "commissionrule_expired_at",
+				Unique:  false,
+				Columns: []*schema.Column{CommissionRulesColumns[14]},
+			},
+		},
+	}
+	// CommissionSplitLogsColumns holds the columns for the "commission_split_logs" table.
+	CommissionSplitLogsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt64, Increment: true},
+		{Name: "created_at", Type: field.TypeTime, SchemaType: map[string]string{"postgres": "timestamptz"}},
+		{Name: "updated_at", Type: field.TypeTime, SchemaType: map[string]string{"postgres": "timestamptz"}},
+		{Name: "beneficiary_role", Type: field.TypeString, Size: 20, Default: "user"},
+		{Name: "level", Type: field.TypeInt, Default: 1},
+		{Name: "calc_mode", Type: field.TypeString, Size: 20, Default: "diff"},
+		{Name: "base_amount", Type: field.TypeFloat64, Default: 0, SchemaType: map[string]string{"postgres": "decimal(20,8)"}},
+		{Name: "target_rate", Type: field.TypeFloat64, Default: 0, SchemaType: map[string]string{"postgres": "decimal(5,4)"}},
+		{Name: "parent_rate", Type: field.TypeFloat64, Default: 0, SchemaType: map[string]string{"postgres": "decimal(5,4)"}},
+		{Name: "commission_amount", Type: field.TypeFloat64, Default: 0, SchemaType: map[string]string{"postgres": "decimal(20,8)"}},
+		{Name: "status", Type: field.TypeString, Size: 20, Default: "pending"},
+		{Name: "settled_at", Type: field.TypeTime, Nullable: true, SchemaType: map[string]string{"postgres": "timestamptz"}},
+		{Name: "relation_snapshot", Type: field.TypeJSON, Nullable: true, SchemaType: map[string]string{"postgres": "jsonb"}},
+		{Name: "remark", Type: field.TypeString, Nullable: true, SchemaType: map[string]string{"postgres": "text"}},
+		{Name: "order_id", Type: field.TypeInt64, Nullable: true},
+		{Name: "consumer_user_id", Type: field.TypeInt64},
+		{Name: "beneficiary_user_id", Type: field.TypeInt64},
+		{Name: "agent_user_id", Type: field.TypeInt64, Nullable: true},
+		{Name: "distributor_user_id", Type: field.TypeInt64, Nullable: true},
+		{Name: "rule_id", Type: field.TypeInt64, Nullable: true},
+	}
+	// CommissionSplitLogsTable holds the schema information for the "commission_split_logs" table.
+	CommissionSplitLogsTable = &schema.Table{
+		Name:       "commission_split_logs",
+		Columns:    CommissionSplitLogsColumns,
+		PrimaryKey: []*schema.Column{CommissionSplitLogsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "commission_split_logs_payment_orders_payment_order",
+				Columns:    []*schema.Column{CommissionSplitLogsColumns[14]},
+				RefColumns: []*schema.Column{PaymentOrdersColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "commission_split_logs_users_consumer_user",
+				Columns:    []*schema.Column{CommissionSplitLogsColumns[15]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "commission_split_logs_users_beneficiary_user",
+				Columns:    []*schema.Column{CommissionSplitLogsColumns[16]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "commission_split_logs_users_agent_user",
+				Columns:    []*schema.Column{CommissionSplitLogsColumns[17]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "commission_split_logs_users_distributor_user",
+				Columns:    []*schema.Column{CommissionSplitLogsColumns[18]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "commission_split_logs_commission_rules_commission_rule",
+				Columns:    []*schema.Column{CommissionSplitLogsColumns[19]},
+				RefColumns: []*schema.Column{CommissionRulesColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "commissionsplitlog_order_id",
+				Unique:  false,
+				Columns: []*schema.Column{CommissionSplitLogsColumns[14]},
+			},
+			{
+				Name:    "commissionsplitlog_consumer_user_id",
+				Unique:  false,
+				Columns: []*schema.Column{CommissionSplitLogsColumns[15]},
+			},
+			{
+				Name:    "commissionsplitlog_beneficiary_user_id_status",
+				Unique:  false,
+				Columns: []*schema.Column{CommissionSplitLogsColumns[16], CommissionSplitLogsColumns[10]},
+			},
+			{
+				Name:    "commissionsplitlog_agent_user_id",
+				Unique:  false,
+				Columns: []*schema.Column{CommissionSplitLogsColumns[17]},
+			},
+			{
+				Name:    "commissionsplitlog_distributor_user_id",
+				Unique:  false,
+				Columns: []*schema.Column{CommissionSplitLogsColumns[18]},
+			},
+			{
+				Name:    "commissionsplitlog_rule_id",
+				Unique:  false,
+				Columns: []*schema.Column{CommissionSplitLogsColumns[19]},
+			},
+			{
+				Name:    "commissionsplitlog_calc_mode",
+				Unique:  false,
+				Columns: []*schema.Column{CommissionSplitLogsColumns[5]},
+			},
+			{
+				Name:    "commissionsplitlog_created_at",
+				Unique:  false,
+				Columns: []*schema.Column{CommissionSplitLogsColumns[1]},
+			},
+			{
+				Name:    "commissionsplitlog_order_id_beneficiary_user_id_level",
+				Unique:  true,
+				Columns: []*schema.Column{CommissionSplitLogsColumns[14], CommissionSplitLogsColumns[16], CommissionSplitLogsColumns[4]},
+			},
+		},
+	}
 	// ErrorPassthroughRulesColumns holds the columns for the "error_passthrough_rules" table.
 	ErrorPassthroughRulesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt64, Increment: true},
@@ -850,6 +1021,95 @@ var (
 			},
 		},
 	}
+	// PromotionRelationsColumns holds the columns for the "promotion_relations" table.
+	PromotionRelationsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt64, Increment: true},
+		{Name: "created_at", Type: field.TypeTime, SchemaType: map[string]string{"postgres": "timestamptz"}},
+		{Name: "updated_at", Type: field.TypeTime, SchemaType: map[string]string{"postgres": "timestamptz"}},
+		{Name: "direct_parent_role", Type: field.TypeString, Size: 20, Default: ""},
+		{Name: "binding_source", Type: field.TypeString, Size: 30, Default: "manual"},
+		{Name: "is_locked", Type: field.TypeBool, Default: true},
+		{Name: "bound_at", Type: field.TypeTime, SchemaType: map[string]string{"postgres": "timestamptz"}},
+		{Name: "notes", Type: field.TypeString, Nullable: true, SchemaType: map[string]string{"postgres": "text"}},
+		{Name: "user_id", Type: field.TypeInt64},
+		{Name: "agent_user_id", Type: field.TypeInt64, Nullable: true},
+		{Name: "distributor_user_id", Type: field.TypeInt64, Nullable: true},
+		{Name: "direct_parent_user_id", Type: field.TypeInt64, Nullable: true},
+	}
+	// PromotionRelationsTable holds the schema information for the "promotion_relations" table.
+	PromotionRelationsTable = &schema.Table{
+		Name:       "promotion_relations",
+		Columns:    PromotionRelationsColumns,
+		PrimaryKey: []*schema.Column{PromotionRelationsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "promotion_relations_users_user",
+				Columns:    []*schema.Column{PromotionRelationsColumns[8]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "promotion_relations_users_agent_user",
+				Columns:    []*schema.Column{PromotionRelationsColumns[9]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "promotion_relations_users_distributor_user",
+				Columns:    []*schema.Column{PromotionRelationsColumns[10]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "promotion_relations_users_direct_parent_user",
+				Columns:    []*schema.Column{PromotionRelationsColumns[11]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "promotionrelation_user_id",
+				Unique:  true,
+				Columns: []*schema.Column{PromotionRelationsColumns[8]},
+			},
+			{
+				Name:    "promotionrelation_agent_user_id",
+				Unique:  false,
+				Columns: []*schema.Column{PromotionRelationsColumns[9]},
+			},
+			{
+				Name:    "promotionrelation_distributor_user_id",
+				Unique:  false,
+				Columns: []*schema.Column{PromotionRelationsColumns[10]},
+			},
+			{
+				Name:    "promotionrelation_direct_parent_user_id",
+				Unique:  false,
+				Columns: []*schema.Column{PromotionRelationsColumns[11]},
+			},
+			{
+				Name:    "promotionrelation_direct_parent_role",
+				Unique:  false,
+				Columns: []*schema.Column{PromotionRelationsColumns[3]},
+			},
+			{
+				Name:    "promotionrelation_binding_source",
+				Unique:  false,
+				Columns: []*schema.Column{PromotionRelationsColumns[4]},
+			},
+			{
+				Name:    "promotionrelation_is_locked",
+				Unique:  false,
+				Columns: []*schema.Column{PromotionRelationsColumns[5]},
+			},
+			{
+				Name:    "promotionrelation_bound_at",
+				Unique:  false,
+				Columns: []*schema.Column{PromotionRelationsColumns[6]},
+			},
+		},
+	}
 	// ProxiesColumns holds the columns for the "proxies" table.
 	ProxiesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt64, Increment: true},
@@ -1224,6 +1484,11 @@ var (
 		{Name: "commission_rate", Type: field.TypeFloat64, Default: 0.1, SchemaType: map[string]string{"postgres": "decimal(5,4)"}},
 		{Name: "commission_balance", Type: field.TypeFloat64, Default: 0, SchemaType: map[string]string{"postgres": "decimal(20,8)"}},
 		{Name: "total_commission_earned", Type: field.TypeFloat64, Default: 0, SchemaType: map[string]string{"postgres": "decimal(20,8)"}},
+		{Name: "is_key_account", Type: field.TypeBool, Default: false},
+		{Name: "key_account_level", Type: field.TypeString, Size: 20, Default: "standard"},
+		{Name: "key_account_discount_rate", Type: field.TypeFloat64, Default: 1, SchemaType: map[string]string{"postgres": "decimal(5,4)"}},
+		{Name: "key_account_rebate_rate", Type: field.TypeFloat64, Default: 0, SchemaType: map[string]string{"postgres": "decimal(5,4)"}},
+		{Name: "key_account_manager_notes", Type: field.TypeString, Default: "", SchemaType: map[string]string{"postgres": "text"}},
 		{Name: "inviter_id", Type: field.TypeInt64, Nullable: true},
 	}
 	// UsersTable holds the schema information for the "users" table.
@@ -1234,7 +1499,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "users_users_invitees",
-				Columns:    []*schema.Column{UsersColumns[24]},
+				Columns:    []*schema.Column{UsersColumns[29]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -1249,6 +1514,16 @@ var (
 				Name:    "user_deleted_at",
 				Unique:  false,
 				Columns: []*schema.Column{UsersColumns[3]},
+			},
+			{
+				Name:    "user_is_key_account",
+				Unique:  false,
+				Columns: []*schema.Column{UsersColumns[24]},
+			},
+			{
+				Name:    "user_key_account_level",
+				Unique:  false,
+				Columns: []*schema.Column{UsersColumns[25]},
 			},
 		},
 	}
@@ -1468,6 +1743,8 @@ var (
 		AnnouncementsTable,
 		AnnouncementReadsTable,
 		CommissionLogsTable,
+		CommissionRulesTable,
+		CommissionSplitLogsTable,
 		ErrorPassthroughRulesTable,
 		GroupsTable,
 		IdempotencyRecordsTable,
@@ -1478,6 +1755,7 @@ var (
 		PaymentProviderInstancesTable,
 		PromoCodesTable,
 		PromoCodeUsagesTable,
+		PromotionRelationsTable,
 		ProxiesTable,
 		RedeemCodesTable,
 		SecuritySecretsTable,
@@ -1523,6 +1801,18 @@ func init() {
 	CommissionLogsTable.Annotation = &entsql.Annotation{
 		Table: "commission_logs",
 	}
+	CommissionRulesTable.Annotation = &entsql.Annotation{
+		Table: "commission_rules",
+	}
+	CommissionSplitLogsTable.ForeignKeys[0].RefTable = PaymentOrdersTable
+	CommissionSplitLogsTable.ForeignKeys[1].RefTable = UsersTable
+	CommissionSplitLogsTable.ForeignKeys[2].RefTable = UsersTable
+	CommissionSplitLogsTable.ForeignKeys[3].RefTable = UsersTable
+	CommissionSplitLogsTable.ForeignKeys[4].RefTable = UsersTable
+	CommissionSplitLogsTable.ForeignKeys[5].RefTable = CommissionRulesTable
+	CommissionSplitLogsTable.Annotation = &entsql.Annotation{
+		Table: "commission_split_logs",
+	}
 	ErrorPassthroughRulesTable.Annotation = &entsql.Annotation{
 		Table: "error_passthrough_rules",
 	}
@@ -1556,6 +1846,13 @@ func init() {
 	PromoCodeUsagesTable.ForeignKeys[1].RefTable = UsersTable
 	PromoCodeUsagesTable.Annotation = &entsql.Annotation{
 		Table: "promo_code_usages",
+	}
+	PromotionRelationsTable.ForeignKeys[0].RefTable = UsersTable
+	PromotionRelationsTable.ForeignKeys[1].RefTable = UsersTable
+	PromotionRelationsTable.ForeignKeys[2].RefTable = UsersTable
+	PromotionRelationsTable.ForeignKeys[3].RefTable = UsersTable
+	PromotionRelationsTable.Annotation = &entsql.Annotation{
+		Table: "promotion_relations",
 	}
 	ProxiesTable.Annotation = &entsql.Annotation{
 		Table: "proxies",

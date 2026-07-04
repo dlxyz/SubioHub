@@ -14,6 +14,8 @@ import (
 	"github.com/dlxyz/SubioHub/ent/announcementread"
 	"github.com/dlxyz/SubioHub/ent/apikey"
 	"github.com/dlxyz/SubioHub/ent/commissionlog"
+	"github.com/dlxyz/SubioHub/ent/commissionrule"
+	"github.com/dlxyz/SubioHub/ent/commissionsplitlog"
 	"github.com/dlxyz/SubioHub/ent/errorpassthroughrule"
 	"github.com/dlxyz/SubioHub/ent/group"
 	"github.com/dlxyz/SubioHub/ent/idempotencyrecord"
@@ -25,6 +27,7 @@ import (
 	"github.com/dlxyz/SubioHub/ent/predicate"
 	"github.com/dlxyz/SubioHub/ent/promocode"
 	"github.com/dlxyz/SubioHub/ent/promocodeusage"
+	"github.com/dlxyz/SubioHub/ent/promotionrelation"
 	"github.com/dlxyz/SubioHub/ent/proxy"
 	"github.com/dlxyz/SubioHub/ent/redeemcode"
 	"github.com/dlxyz/SubioHub/ent/securitysecret"
@@ -256,6 +259,60 @@ func (f TraverseCommissionLog) Traverse(ctx context.Context, q ent.Query) error 
 		return f(ctx, q)
 	}
 	return fmt.Errorf("unexpected query type %T. expect *ent.CommissionLogQuery", q)
+}
+
+// The CommissionRuleFunc type is an adapter to allow the use of ordinary function as a Querier.
+type CommissionRuleFunc func(context.Context, *ent.CommissionRuleQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f CommissionRuleFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.CommissionRuleQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.CommissionRuleQuery", q)
+}
+
+// The TraverseCommissionRule type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseCommissionRule func(context.Context, *ent.CommissionRuleQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseCommissionRule) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseCommissionRule) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.CommissionRuleQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.CommissionRuleQuery", q)
+}
+
+// The CommissionSplitLogFunc type is an adapter to allow the use of ordinary function as a Querier.
+type CommissionSplitLogFunc func(context.Context, *ent.CommissionSplitLogQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f CommissionSplitLogFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.CommissionSplitLogQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.CommissionSplitLogQuery", q)
+}
+
+// The TraverseCommissionSplitLog type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseCommissionSplitLog func(context.Context, *ent.CommissionSplitLogQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseCommissionSplitLog) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseCommissionSplitLog) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.CommissionSplitLogQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.CommissionSplitLogQuery", q)
 }
 
 // The ErrorPassthroughRuleFunc type is an adapter to allow the use of ordinary function as a Querier.
@@ -526,6 +583,33 @@ func (f TraversePromoCodeUsage) Traverse(ctx context.Context, q ent.Query) error
 		return f(ctx, q)
 	}
 	return fmt.Errorf("unexpected query type %T. expect *ent.PromoCodeUsageQuery", q)
+}
+
+// The PromotionRelationFunc type is an adapter to allow the use of ordinary function as a Querier.
+type PromotionRelationFunc func(context.Context, *ent.PromotionRelationQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f PromotionRelationFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.PromotionRelationQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.PromotionRelationQuery", q)
+}
+
+// The TraversePromotionRelation type is an adapter to allow the use of ordinary function as Traverser.
+type TraversePromotionRelation func(context.Context, *ent.PromotionRelationQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraversePromotionRelation) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraversePromotionRelation) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.PromotionRelationQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.PromotionRelationQuery", q)
 }
 
 // The ProxyFunc type is an adapter to allow the use of ordinary function as a Querier.
@@ -894,6 +978,10 @@ func NewQuery(q ent.Query) (Query, error) {
 		return &query[*ent.AnnouncementReadQuery, predicate.AnnouncementRead, announcementread.OrderOption]{typ: ent.TypeAnnouncementRead, tq: q}, nil
 	case *ent.CommissionLogQuery:
 		return &query[*ent.CommissionLogQuery, predicate.CommissionLog, commissionlog.OrderOption]{typ: ent.TypeCommissionLog, tq: q}, nil
+	case *ent.CommissionRuleQuery:
+		return &query[*ent.CommissionRuleQuery, predicate.CommissionRule, commissionrule.OrderOption]{typ: ent.TypeCommissionRule, tq: q}, nil
+	case *ent.CommissionSplitLogQuery:
+		return &query[*ent.CommissionSplitLogQuery, predicate.CommissionSplitLog, commissionsplitlog.OrderOption]{typ: ent.TypeCommissionSplitLog, tq: q}, nil
 	case *ent.ErrorPassthroughRuleQuery:
 		return &query[*ent.ErrorPassthroughRuleQuery, predicate.ErrorPassthroughRule, errorpassthroughrule.OrderOption]{typ: ent.TypeErrorPassthroughRule, tq: q}, nil
 	case *ent.GroupQuery:
@@ -914,6 +1002,8 @@ func NewQuery(q ent.Query) (Query, error) {
 		return &query[*ent.PromoCodeQuery, predicate.PromoCode, promocode.OrderOption]{typ: ent.TypePromoCode, tq: q}, nil
 	case *ent.PromoCodeUsageQuery:
 		return &query[*ent.PromoCodeUsageQuery, predicate.PromoCodeUsage, promocodeusage.OrderOption]{typ: ent.TypePromoCodeUsage, tq: q}, nil
+	case *ent.PromotionRelationQuery:
+		return &query[*ent.PromotionRelationQuery, predicate.PromotionRelation, promotionrelation.OrderOption]{typ: ent.TypePromotionRelation, tq: q}, nil
 	case *ent.ProxyQuery:
 		return &query[*ent.ProxyQuery, predicate.Proxy, proxy.OrderOption]{typ: ent.TypeProxy, tq: q}, nil
 	case *ent.RedeemCodeQuery:

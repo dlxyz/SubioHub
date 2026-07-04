@@ -210,6 +210,9 @@ func (s *AuthService) RegisterWithVerification(ctx context.Context, email, passw
 		logger.LegacyPrintf("service.auth", "[Auth] Database error creating user: %v", err)
 		return "", nil, ErrServiceUnavailable
 	}
+	if syncErr := upsertPromotionRelationForInviter(ctx, s.entClient, user.ID, user.InviterID, "registration affiliate binding"); syncErr != nil {
+		logger.LegacyPrintf("service.auth", "[Auth] Failed to sync promotion relation for user %d: %v", user.ID, syncErr)
+	}
 	s.assignDefaultSubscriptions(ctx, user.ID)
 
 	// 标记邀请码为已使用（如果使用了邀请码）

@@ -58,6 +58,12 @@ const ja = mergeMessages(en, {
       goRegister: '新規作成',
       errorFallback: 'ログインに失敗しました。メールアドレスとパスワードを確認してください。',
     },
+    distributionLogin: {
+      title: '代理/販売代理ログイン',
+      subtitle: 'ログイン後に代理と販売代理の共通コンソールへ入ります。',
+      mainLogin: '通常ログインへ戻る',
+      roleDenied: 'このアカウントには代理コンソールの権限がありません。代理、販売代理、または管理者アカウントでログインしてください。',
+    },
     register: {
       title: 'アカウント作成',
       subtitle: '登録してサービスの利用を開始',
@@ -210,6 +216,24 @@ const ja = mergeMessages(en, {
 });
 
 export default mergeMessages(ja, {
+  admin: {
+    nav: {
+      sectionSwitch: '顧客管理',
+      sectionCustomers: '顧客管理',
+      sectionOperations: '運用メニュー',
+      sectionCashflow: '資金メニュー',
+      sectionSubInterfaces: 'subインターフェースメニュー',
+      ipProxies: 'IP代理管理',
+      proxies: '代理人管理',
+      businessChannels: 'チャネル販売代理管理',
+      withdrawals: '出金管理',
+      commissionSplits: 'プロモーション分配明細',
+      affiliate: '販売代理管理',
+      keyAccounts: '大口顧客管理',
+      personalConsole: '個人コンソール',
+      distributionConsole: '代理コンソール',
+    },
+  },
   dashboard: {
     nav: {
       sectionWorkspace: 'ワークスペース',
@@ -223,7 +247,7 @@ export default mergeMessages(ja, {
       orders: '注文',
       finance: 'ウォレット',
       redeem: '交換',
-      affiliate: 'アフィリエイト',
+      affiliate: '紹介報酬',
       settings: '設定',
       aboutPlatform: 'プラットフォームについて',
       admin: '管理画面',
@@ -243,7 +267,7 @@ export default mergeMessages(ja, {
       orders: '支払いと注文履歴を追跡',
       finance: '残高、交換コード、チャージを管理',
       redeem: 'プロモコードやチャージコードを交換',
-      affiliate: '紹介と報酬を管理',
+      affiliate: '紹介報酬とプロモーション収益を確認',
       settings: 'プロフィールと設定を管理',
       aboutPlatform: 'プラットフォーム紹介と更新情報を見る',
     },

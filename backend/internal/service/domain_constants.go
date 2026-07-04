@@ -14,8 +14,10 @@ const (
 
 // Role constants
 const (
-	RoleAdmin = domain.RoleAdmin
-	RoleUser  = domain.RoleUser
+	RoleAdmin       = domain.RoleAdmin
+	RoleAgent       = domain.RoleAgent
+	RoleDistributor = domain.RoleDistributor
+	RoleUser        = domain.RoleUser
 )
 
 // Platform constants
@@ -276,6 +278,18 @@ const (
 	// Affiliate settlement
 	SettingKeyAffiliateAutoSettlementEnabled         = "affiliate_auto_settlement_enabled"          // 是否启用返佣自动结算
 	SettingKeyAffiliateManualPayoutSettlementEnabled = "affiliate_manual_payout_settlement_enabled" // 是否允许管理员在手动打款后执行结算
+
+	// Key account definition settings
+	SettingKeyKeyAccountVIPRechargeThreshold           = "key_account_vip_recharge_threshold"
+	SettingKeyKeyAccountEnterpriseRechargeThreshold    = "key_account_enterprise_recharge_threshold"
+	SettingKeyKeyAccountVIPMonthlyCostThreshold        = "key_account_vip_monthly_cost_threshold"
+	SettingKeyKeyAccountEnterpriseMonthlyCostThreshold = "key_account_enterprise_monthly_cost_threshold"
+	SettingKeyKeyAccountVIPDefaultDiscountRate         = "key_account_vip_default_discount_rate"
+	SettingKeyKeyAccountEnterpriseDefaultDiscountRate  = "key_account_enterprise_default_discount_rate"
+	SettingKeyKeyAccountVIPDefaultRebateRate           = "key_account_vip_default_rebate_rate"
+	SettingKeyKeyAccountEnterpriseDefaultRebateRate    = "key_account_enterprise_default_rebate_rate"
+	SettingKeyKeyAccountAutoUpgradeEnabled             = "key_account_auto_upgrade_enabled"
+	SettingKeyKeyAccountAutoDowngradeEnabled           = "key_account_auto_downgrade_enabled"
 
 	// Web Search Emulation
 	SettingKeyWebSearchEmulationConfig = "web_search_emulation_config" // JSON 配置

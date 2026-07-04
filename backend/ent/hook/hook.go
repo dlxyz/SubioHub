@@ -81,6 +81,30 @@ func (f CommissionLogFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Valu
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.CommissionLogMutation", m)
 }
 
+// The CommissionRuleFunc type is an adapter to allow the use of ordinary
+// function as CommissionRule mutator.
+type CommissionRuleFunc func(context.Context, *ent.CommissionRuleMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f CommissionRuleFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.CommissionRuleMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.CommissionRuleMutation", m)
+}
+
+// The CommissionSplitLogFunc type is an adapter to allow the use of ordinary
+// function as CommissionSplitLog mutator.
+type CommissionSplitLogFunc func(context.Context, *ent.CommissionSplitLogMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f CommissionSplitLogFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.CommissionSplitLogMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.CommissionSplitLogMutation", m)
+}
+
 // The ErrorPassthroughRuleFunc type is an adapter to allow the use of ordinary
 // function as ErrorPassthroughRule mutator.
 type ErrorPassthroughRuleFunc func(context.Context, *ent.ErrorPassthroughRuleMutation) (ent.Value, error)
@@ -199,6 +223,18 @@ func (f PromoCodeUsageFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Val
 		return f(ctx, mv)
 	}
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.PromoCodeUsageMutation", m)
+}
+
+// The PromotionRelationFunc type is an adapter to allow the use of ordinary
+// function as PromotionRelation mutator.
+type PromotionRelationFunc func(context.Context, *ent.PromotionRelationMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f PromotionRelationFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.PromotionRelationMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.PromotionRelationMutation", m)
 }
 
 // The ProxyFunc type is an adapter to allow the use of ordinary

@@ -216,6 +216,7 @@ func registerDashboardRoutes(admin *gin.RouterGroup, h *handler.Handlers) {
 func registerUserManagementRoutes(admin *gin.RouterGroup, h *handler.Handlers) {
 	users := admin.Group("/users")
 	{
+		users.POST("/key-accounts/auto-sync", h.Admin.User.SyncKeyAccounts)
 		users.GET("", h.Admin.User.List)
 		users.GET("/:id", h.Admin.User.GetByID)
 		users.POST("", h.Admin.User.Create)
@@ -592,7 +593,9 @@ func registerAffiliateRoutes(admin *gin.RouterGroup, h *handler.Handlers) {
 	affiliate := admin.Group("/affiliate")
 	{
 		affiliate.GET("/commissions", h.Admin.Affiliate.ListCommissions)
+		affiliate.GET("/commission-splits", h.Admin.Affiliate.ListCommissionSplits)
 		affiliate.POST("/commissions/:id/settle", h.Admin.Affiliate.SettleCommission)
+		affiliate.POST("/commission-splits/:id/settle", h.Admin.Affiliate.SettleCommissionSplit)
 		affiliate.POST("/users/:id/rate", h.Admin.Affiliate.SetUserCommissionRate)
 	}
 }

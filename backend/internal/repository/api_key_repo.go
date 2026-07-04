@@ -668,6 +668,11 @@ func userEntityToService(u *dbent.User) *service.User {
 		CommissionRate:             u.CommissionRate,
 		CommissionBalance:          u.CommissionBalance,
 		TotalCommissionEarned:      u.TotalCommissionEarned,
+		IsKeyAccount:               u.IsKeyAccount,
+		KeyAccountLevel:            u.KeyAccountLevel,
+		KeyAccountDiscountRate:     u.KeyAccountDiscountRate,
+		KeyAccountRebateRate:       u.KeyAccountRebateRate,
+		KeyAccountManagerNotes:     u.KeyAccountManagerNotes,
 		CreatedAt:                  u.CreatedAt,
 		UpdatedAt:                  u.UpdatedAt,
 	}

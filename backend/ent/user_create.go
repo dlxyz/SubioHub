@@ -352,6 +352,76 @@ func (_c *UserCreate) SetNillableTotalCommissionEarned(v *float64) *UserCreate {
 	return _c
 }
 
+// SetIsKeyAccount sets the "is_key_account" field.
+func (_c *UserCreate) SetIsKeyAccount(v bool) *UserCreate {
+	_c.mutation.SetIsKeyAccount(v)
+	return _c
+}
+
+// SetNillableIsKeyAccount sets the "is_key_account" field if the given value is not nil.
+func (_c *UserCreate) SetNillableIsKeyAccount(v *bool) *UserCreate {
+	if v != nil {
+		_c.SetIsKeyAccount(*v)
+	}
+	return _c
+}
+
+// SetKeyAccountLevel sets the "key_account_level" field.
+func (_c *UserCreate) SetKeyAccountLevel(v string) *UserCreate {
+	_c.mutation.SetKeyAccountLevel(v)
+	return _c
+}
+
+// SetNillableKeyAccountLevel sets the "key_account_level" field if the given value is not nil.
+func (_c *UserCreate) SetNillableKeyAccountLevel(v *string) *UserCreate {
+	if v != nil {
+		_c.SetKeyAccountLevel(*v)
+	}
+	return _c
+}
+
+// SetKeyAccountDiscountRate sets the "key_account_discount_rate" field.
+func (_c *UserCreate) SetKeyAccountDiscountRate(v float64) *UserCreate {
+	_c.mutation.SetKeyAccountDiscountRate(v)
+	return _c
+}
+
+// SetNillableKeyAccountDiscountRate sets the "key_account_discount_rate" field if the given value is not nil.
+func (_c *UserCreate) SetNillableKeyAccountDiscountRate(v *float64) *UserCreate {
+	if v != nil {
+		_c.SetKeyAccountDiscountRate(*v)
+	}
+	return _c
+}
+
+// SetKeyAccountRebateRate sets the "key_account_rebate_rate" field.
+func (_c *UserCreate) SetKeyAccountRebateRate(v float64) *UserCreate {
+	_c.mutation.SetKeyAccountRebateRate(v)
+	return _c
+}
+
+// SetNillableKeyAccountRebateRate sets the "key_account_rebate_rate" field if the given value is not nil.
+func (_c *UserCreate) SetNillableKeyAccountRebateRate(v *float64) *UserCreate {
+	if v != nil {
+		_c.SetKeyAccountRebateRate(*v)
+	}
+	return _c
+}
+
+// SetKeyAccountManagerNotes sets the "key_account_manager_notes" field.
+func (_c *UserCreate) SetKeyAccountManagerNotes(v string) *UserCreate {
+	_c.mutation.SetKeyAccountManagerNotes(v)
+	return _c
+}
+
+// SetNillableKeyAccountManagerNotes sets the "key_account_manager_notes" field if the given value is not nil.
+func (_c *UserCreate) SetNillableKeyAccountManagerNotes(v *string) *UserCreate {
+	if v != nil {
+		_c.SetKeyAccountManagerNotes(*v)
+	}
+	return _c
+}
+
 // SetInviter sets the "inviter" edge to the User entity.
 func (_c *UserCreate) SetInviter(v *User) *UserCreate {
 	return _c.SetInviterID(v.ID)
@@ -644,6 +714,26 @@ func (_c *UserCreate) defaults() error {
 		v := user.DefaultTotalCommissionEarned
 		_c.mutation.SetTotalCommissionEarned(v)
 	}
+	if _, ok := _c.mutation.IsKeyAccount(); !ok {
+		v := user.DefaultIsKeyAccount
+		_c.mutation.SetIsKeyAccount(v)
+	}
+	if _, ok := _c.mutation.KeyAccountLevel(); !ok {
+		v := user.DefaultKeyAccountLevel
+		_c.mutation.SetKeyAccountLevel(v)
+	}
+	if _, ok := _c.mutation.KeyAccountDiscountRate(); !ok {
+		v := user.DefaultKeyAccountDiscountRate
+		_c.mutation.SetKeyAccountDiscountRate(v)
+	}
+	if _, ok := _c.mutation.KeyAccountRebateRate(); !ok {
+		v := user.DefaultKeyAccountRebateRate
+		_c.mutation.SetKeyAccountRebateRate(v)
+	}
+	if _, ok := _c.mutation.KeyAccountManagerNotes(); !ok {
+		v := user.DefaultKeyAccountManagerNotes
+		_c.mutation.SetKeyAccountManagerNotes(v)
+	}
 	return nil
 }
 
@@ -732,6 +822,26 @@ func (_c *UserCreate) check() error {
 	}
 	if _, ok := _c.mutation.TotalCommissionEarned(); !ok {
 		return &ValidationError{Name: "total_commission_earned", err: errors.New(`ent: missing required field "User.total_commission_earned"`)}
+	}
+	if _, ok := _c.mutation.IsKeyAccount(); !ok {
+		return &ValidationError{Name: "is_key_account", err: errors.New(`ent: missing required field "User.is_key_account"`)}
+	}
+	if _, ok := _c.mutation.KeyAccountLevel(); !ok {
+		return &ValidationError{Name: "key_account_level", err: errors.New(`ent: missing required field "User.key_account_level"`)}
+	}
+	if v, ok := _c.mutation.KeyAccountLevel(); ok {
+		if err := user.KeyAccountLevelValidator(v); err != nil {
+			return &ValidationError{Name: "key_account_level", err: fmt.Errorf(`ent: validator failed for field "User.key_account_level": %w`, err)}
+		}
+	}
+	if _, ok := _c.mutation.KeyAccountDiscountRate(); !ok {
+		return &ValidationError{Name: "key_account_discount_rate", err: errors.New(`ent: missing required field "User.key_account_discount_rate"`)}
+	}
+	if _, ok := _c.mutation.KeyAccountRebateRate(); !ok {
+		return &ValidationError{Name: "key_account_rebate_rate", err: errors.New(`ent: missing required field "User.key_account_rebate_rate"`)}
+	}
+	if _, ok := _c.mutation.KeyAccountManagerNotes(); !ok {
+		return &ValidationError{Name: "key_account_manager_notes", err: errors.New(`ent: missing required field "User.key_account_manager_notes"`)}
 	}
 	return nil
 }
@@ -851,6 +961,26 @@ func (_c *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.TotalCommissionEarned(); ok {
 		_spec.SetField(user.FieldTotalCommissionEarned, field.TypeFloat64, value)
 		_node.TotalCommissionEarned = value
+	}
+	if value, ok := _c.mutation.IsKeyAccount(); ok {
+		_spec.SetField(user.FieldIsKeyAccount, field.TypeBool, value)
+		_node.IsKeyAccount = value
+	}
+	if value, ok := _c.mutation.KeyAccountLevel(); ok {
+		_spec.SetField(user.FieldKeyAccountLevel, field.TypeString, value)
+		_node.KeyAccountLevel = value
+	}
+	if value, ok := _c.mutation.KeyAccountDiscountRate(); ok {
+		_spec.SetField(user.FieldKeyAccountDiscountRate, field.TypeFloat64, value)
+		_node.KeyAccountDiscountRate = value
+	}
+	if value, ok := _c.mutation.KeyAccountRebateRate(); ok {
+		_spec.SetField(user.FieldKeyAccountRebateRate, field.TypeFloat64, value)
+		_node.KeyAccountRebateRate = value
+	}
+	if value, ok := _c.mutation.KeyAccountManagerNotes(); ok {
+		_spec.SetField(user.FieldKeyAccountManagerNotes, field.TypeString, value)
+		_node.KeyAccountManagerNotes = value
 	}
 	if nodes := _c.mutation.InviterIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -1471,6 +1601,78 @@ func (u *UserUpsert) AddTotalCommissionEarned(v float64) *UserUpsert {
 	return u
 }
 
+// SetIsKeyAccount sets the "is_key_account" field.
+func (u *UserUpsert) SetIsKeyAccount(v bool) *UserUpsert {
+	u.Set(user.FieldIsKeyAccount, v)
+	return u
+}
+
+// UpdateIsKeyAccount sets the "is_key_account" field to the value that was provided on create.
+func (u *UserUpsert) UpdateIsKeyAccount() *UserUpsert {
+	u.SetExcluded(user.FieldIsKeyAccount)
+	return u
+}
+
+// SetKeyAccountLevel sets the "key_account_level" field.
+func (u *UserUpsert) SetKeyAccountLevel(v string) *UserUpsert {
+	u.Set(user.FieldKeyAccountLevel, v)
+	return u
+}
+
+// UpdateKeyAccountLevel sets the "key_account_level" field to the value that was provided on create.
+func (u *UserUpsert) UpdateKeyAccountLevel() *UserUpsert {
+	u.SetExcluded(user.FieldKeyAccountLevel)
+	return u
+}
+
+// SetKeyAccountDiscountRate sets the "key_account_discount_rate" field.
+func (u *UserUpsert) SetKeyAccountDiscountRate(v float64) *UserUpsert {
+	u.Set(user.FieldKeyAccountDiscountRate, v)
+	return u
+}
+
+// UpdateKeyAccountDiscountRate sets the "key_account_discount_rate" field to the value that was provided on create.
+func (u *UserUpsert) UpdateKeyAccountDiscountRate() *UserUpsert {
+	u.SetExcluded(user.FieldKeyAccountDiscountRate)
+	return u
+}
+
+// AddKeyAccountDiscountRate adds v to the "key_account_discount_rate" field.
+func (u *UserUpsert) AddKeyAccountDiscountRate(v float64) *UserUpsert {
+	u.Add(user.FieldKeyAccountDiscountRate, v)
+	return u
+}
+
+// SetKeyAccountRebateRate sets the "key_account_rebate_rate" field.
+func (u *UserUpsert) SetKeyAccountRebateRate(v float64) *UserUpsert {
+	u.Set(user.FieldKeyAccountRebateRate, v)
+	return u
+}
+
+// UpdateKeyAccountRebateRate sets the "key_account_rebate_rate" field to the value that was provided on create.
+func (u *UserUpsert) UpdateKeyAccountRebateRate() *UserUpsert {
+	u.SetExcluded(user.FieldKeyAccountRebateRate)
+	return u
+}
+
+// AddKeyAccountRebateRate adds v to the "key_account_rebate_rate" field.
+func (u *UserUpsert) AddKeyAccountRebateRate(v float64) *UserUpsert {
+	u.Add(user.FieldKeyAccountRebateRate, v)
+	return u
+}
+
+// SetKeyAccountManagerNotes sets the "key_account_manager_notes" field.
+func (u *UserUpsert) SetKeyAccountManagerNotes(v string) *UserUpsert {
+	u.Set(user.FieldKeyAccountManagerNotes, v)
+	return u
+}
+
+// UpdateKeyAccountManagerNotes sets the "key_account_manager_notes" field to the value that was provided on create.
+func (u *UserUpsert) UpdateKeyAccountManagerNotes() *UserUpsert {
+	u.SetExcluded(user.FieldKeyAccountManagerNotes)
+	return u
+}
+
 // UpdateNewValues updates the mutable fields using the new values that were set on create.
 // Using this option is equivalent to using:
 //
@@ -1926,6 +2128,90 @@ func (u *UserUpsertOne) AddTotalCommissionEarned(v float64) *UserUpsertOne {
 func (u *UserUpsertOne) UpdateTotalCommissionEarned() *UserUpsertOne {
 	return u.Update(func(s *UserUpsert) {
 		s.UpdateTotalCommissionEarned()
+	})
+}
+
+// SetIsKeyAccount sets the "is_key_account" field.
+func (u *UserUpsertOne) SetIsKeyAccount(v bool) *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.SetIsKeyAccount(v)
+	})
+}
+
+// UpdateIsKeyAccount sets the "is_key_account" field to the value that was provided on create.
+func (u *UserUpsertOne) UpdateIsKeyAccount() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateIsKeyAccount()
+	})
+}
+
+// SetKeyAccountLevel sets the "key_account_level" field.
+func (u *UserUpsertOne) SetKeyAccountLevel(v string) *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.SetKeyAccountLevel(v)
+	})
+}
+
+// UpdateKeyAccountLevel sets the "key_account_level" field to the value that was provided on create.
+func (u *UserUpsertOne) UpdateKeyAccountLevel() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateKeyAccountLevel()
+	})
+}
+
+// SetKeyAccountDiscountRate sets the "key_account_discount_rate" field.
+func (u *UserUpsertOne) SetKeyAccountDiscountRate(v float64) *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.SetKeyAccountDiscountRate(v)
+	})
+}
+
+// AddKeyAccountDiscountRate adds v to the "key_account_discount_rate" field.
+func (u *UserUpsertOne) AddKeyAccountDiscountRate(v float64) *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.AddKeyAccountDiscountRate(v)
+	})
+}
+
+// UpdateKeyAccountDiscountRate sets the "key_account_discount_rate" field to the value that was provided on create.
+func (u *UserUpsertOne) UpdateKeyAccountDiscountRate() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateKeyAccountDiscountRate()
+	})
+}
+
+// SetKeyAccountRebateRate sets the "key_account_rebate_rate" field.
+func (u *UserUpsertOne) SetKeyAccountRebateRate(v float64) *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.SetKeyAccountRebateRate(v)
+	})
+}
+
+// AddKeyAccountRebateRate adds v to the "key_account_rebate_rate" field.
+func (u *UserUpsertOne) AddKeyAccountRebateRate(v float64) *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.AddKeyAccountRebateRate(v)
+	})
+}
+
+// UpdateKeyAccountRebateRate sets the "key_account_rebate_rate" field to the value that was provided on create.
+func (u *UserUpsertOne) UpdateKeyAccountRebateRate() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateKeyAccountRebateRate()
+	})
+}
+
+// SetKeyAccountManagerNotes sets the "key_account_manager_notes" field.
+func (u *UserUpsertOne) SetKeyAccountManagerNotes(v string) *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.SetKeyAccountManagerNotes(v)
+	})
+}
+
+// UpdateKeyAccountManagerNotes sets the "key_account_manager_notes" field to the value that was provided on create.
+func (u *UserUpsertOne) UpdateKeyAccountManagerNotes() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateKeyAccountManagerNotes()
 	})
 }
 
@@ -2550,6 +2836,90 @@ func (u *UserUpsertBulk) AddTotalCommissionEarned(v float64) *UserUpsertBulk {
 func (u *UserUpsertBulk) UpdateTotalCommissionEarned() *UserUpsertBulk {
 	return u.Update(func(s *UserUpsert) {
 		s.UpdateTotalCommissionEarned()
+	})
+}
+
+// SetIsKeyAccount sets the "is_key_account" field.
+func (u *UserUpsertBulk) SetIsKeyAccount(v bool) *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.SetIsKeyAccount(v)
+	})
+}
+
+// UpdateIsKeyAccount sets the "is_key_account" field to the value that was provided on create.
+func (u *UserUpsertBulk) UpdateIsKeyAccount() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateIsKeyAccount()
+	})
+}
+
+// SetKeyAccountLevel sets the "key_account_level" field.
+func (u *UserUpsertBulk) SetKeyAccountLevel(v string) *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.SetKeyAccountLevel(v)
+	})
+}
+
+// UpdateKeyAccountLevel sets the "key_account_level" field to the value that was provided on create.
+func (u *UserUpsertBulk) UpdateKeyAccountLevel() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateKeyAccountLevel()
+	})
+}
+
+// SetKeyAccountDiscountRate sets the "key_account_discount_rate" field.
+func (u *UserUpsertBulk) SetKeyAccountDiscountRate(v float64) *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.SetKeyAccountDiscountRate(v)
+	})
+}
+
+// AddKeyAccountDiscountRate adds v to the "key_account_discount_rate" field.
+func (u *UserUpsertBulk) AddKeyAccountDiscountRate(v float64) *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.AddKeyAccountDiscountRate(v)
+	})
+}
+
+// UpdateKeyAccountDiscountRate sets the "key_account_discount_rate" field to the value that was provided on create.
+func (u *UserUpsertBulk) UpdateKeyAccountDiscountRate() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateKeyAccountDiscountRate()
+	})
+}
+
+// SetKeyAccountRebateRate sets the "key_account_rebate_rate" field.
+func (u *UserUpsertBulk) SetKeyAccountRebateRate(v float64) *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.SetKeyAccountRebateRate(v)
+	})
+}
+
+// AddKeyAccountRebateRate adds v to the "key_account_rebate_rate" field.
+func (u *UserUpsertBulk) AddKeyAccountRebateRate(v float64) *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.AddKeyAccountRebateRate(v)
+	})
+}
+
+// UpdateKeyAccountRebateRate sets the "key_account_rebate_rate" field to the value that was provided on create.
+func (u *UserUpsertBulk) UpdateKeyAccountRebateRate() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateKeyAccountRebateRate()
+	})
+}
+
+// SetKeyAccountManagerNotes sets the "key_account_manager_notes" field.
+func (u *UserUpsertBulk) SetKeyAccountManagerNotes(v string) *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.SetKeyAccountManagerNotes(v)
+	})
+}
+
+// UpdateKeyAccountManagerNotes sets the "key_account_manager_notes" field to the value that was provided on create.
+func (u *UserUpsertBulk) UpdateKeyAccountManagerNotes() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateKeyAccountManagerNotes()
 	})
 }
 

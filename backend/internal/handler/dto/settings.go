@@ -166,6 +166,17 @@ type SystemSettings struct {
 
 	AffiliateAutoSettlementEnabled         bool `json:"affiliate_auto_settlement_enabled"`
 	AffiliateManualPayoutSettlementEnabled bool `json:"affiliate_manual_payout_settlement_enabled"`
+
+	KeyAccountVIPRechargeThreshold           float64 `json:"key_account_vip_recharge_threshold"`
+	KeyAccountEnterpriseRechargeThreshold    float64 `json:"key_account_enterprise_recharge_threshold"`
+	KeyAccountVIPMonthlyCostThreshold        float64 `json:"key_account_vip_monthly_cost_threshold"`
+	KeyAccountEnterpriseMonthlyCostThreshold float64 `json:"key_account_enterprise_monthly_cost_threshold"`
+	KeyAccountVIPDefaultDiscountRate         float64 `json:"key_account_vip_default_discount_rate"`
+	KeyAccountEnterpriseDefaultDiscountRate  float64 `json:"key_account_enterprise_default_discount_rate"`
+	KeyAccountVIPDefaultRebateRate           float64 `json:"key_account_vip_default_rebate_rate"`
+	KeyAccountEnterpriseDefaultRebateRate    float64 `json:"key_account_enterprise_default_rebate_rate"`
+	KeyAccountAutoUpgradeEnabled             bool    `json:"key_account_auto_upgrade_enabled"`
+	KeyAccountAutoDowngradeEnabled           bool    `json:"key_account_auto_downgrade_enabled"`
 }
 
 type DefaultSubscriptionSetting struct {

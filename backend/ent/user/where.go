@@ -175,6 +175,31 @@ func TotalCommissionEarned(v float64) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldTotalCommissionEarned, v))
 }
 
+// IsKeyAccount applies equality check predicate on the "is_key_account" field. It's identical to IsKeyAccountEQ.
+func IsKeyAccount(v bool) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldIsKeyAccount, v))
+}
+
+// KeyAccountLevel applies equality check predicate on the "key_account_level" field. It's identical to KeyAccountLevelEQ.
+func KeyAccountLevel(v string) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldKeyAccountLevel, v))
+}
+
+// KeyAccountDiscountRate applies equality check predicate on the "key_account_discount_rate" field. It's identical to KeyAccountDiscountRateEQ.
+func KeyAccountDiscountRate(v float64) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldKeyAccountDiscountRate, v))
+}
+
+// KeyAccountRebateRate applies equality check predicate on the "key_account_rebate_rate" field. It's identical to KeyAccountRebateRateEQ.
+func KeyAccountRebateRate(v float64) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldKeyAccountRebateRate, v))
+}
+
+// KeyAccountManagerNotes applies equality check predicate on the "key_account_manager_notes" field. It's identical to KeyAccountManagerNotesEQ.
+func KeyAccountManagerNotes(v string) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldKeyAccountManagerNotes, v))
+}
+
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.
 func CreatedAtEQ(v time.Time) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldCreatedAt, v))
@@ -1363,6 +1388,226 @@ func TotalCommissionEarnedLT(v float64) predicate.User {
 // TotalCommissionEarnedLTE applies the LTE predicate on the "total_commission_earned" field.
 func TotalCommissionEarnedLTE(v float64) predicate.User {
 	return predicate.User(sql.FieldLTE(FieldTotalCommissionEarned, v))
+}
+
+// IsKeyAccountEQ applies the EQ predicate on the "is_key_account" field.
+func IsKeyAccountEQ(v bool) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldIsKeyAccount, v))
+}
+
+// IsKeyAccountNEQ applies the NEQ predicate on the "is_key_account" field.
+func IsKeyAccountNEQ(v bool) predicate.User {
+	return predicate.User(sql.FieldNEQ(FieldIsKeyAccount, v))
+}
+
+// KeyAccountLevelEQ applies the EQ predicate on the "key_account_level" field.
+func KeyAccountLevelEQ(v string) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldKeyAccountLevel, v))
+}
+
+// KeyAccountLevelNEQ applies the NEQ predicate on the "key_account_level" field.
+func KeyAccountLevelNEQ(v string) predicate.User {
+	return predicate.User(sql.FieldNEQ(FieldKeyAccountLevel, v))
+}
+
+// KeyAccountLevelIn applies the In predicate on the "key_account_level" field.
+func KeyAccountLevelIn(vs ...string) predicate.User {
+	return predicate.User(sql.FieldIn(FieldKeyAccountLevel, vs...))
+}
+
+// KeyAccountLevelNotIn applies the NotIn predicate on the "key_account_level" field.
+func KeyAccountLevelNotIn(vs ...string) predicate.User {
+	return predicate.User(sql.FieldNotIn(FieldKeyAccountLevel, vs...))
+}
+
+// KeyAccountLevelGT applies the GT predicate on the "key_account_level" field.
+func KeyAccountLevelGT(v string) predicate.User {
+	return predicate.User(sql.FieldGT(FieldKeyAccountLevel, v))
+}
+
+// KeyAccountLevelGTE applies the GTE predicate on the "key_account_level" field.
+func KeyAccountLevelGTE(v string) predicate.User {
+	return predicate.User(sql.FieldGTE(FieldKeyAccountLevel, v))
+}
+
+// KeyAccountLevelLT applies the LT predicate on the "key_account_level" field.
+func KeyAccountLevelLT(v string) predicate.User {
+	return predicate.User(sql.FieldLT(FieldKeyAccountLevel, v))
+}
+
+// KeyAccountLevelLTE applies the LTE predicate on the "key_account_level" field.
+func KeyAccountLevelLTE(v string) predicate.User {
+	return predicate.User(sql.FieldLTE(FieldKeyAccountLevel, v))
+}
+
+// KeyAccountLevelContains applies the Contains predicate on the "key_account_level" field.
+func KeyAccountLevelContains(v string) predicate.User {
+	return predicate.User(sql.FieldContains(FieldKeyAccountLevel, v))
+}
+
+// KeyAccountLevelHasPrefix applies the HasPrefix predicate on the "key_account_level" field.
+func KeyAccountLevelHasPrefix(v string) predicate.User {
+	return predicate.User(sql.FieldHasPrefix(FieldKeyAccountLevel, v))
+}
+
+// KeyAccountLevelHasSuffix applies the HasSuffix predicate on the "key_account_level" field.
+func KeyAccountLevelHasSuffix(v string) predicate.User {
+	return predicate.User(sql.FieldHasSuffix(FieldKeyAccountLevel, v))
+}
+
+// KeyAccountLevelEqualFold applies the EqualFold predicate on the "key_account_level" field.
+func KeyAccountLevelEqualFold(v string) predicate.User {
+	return predicate.User(sql.FieldEqualFold(FieldKeyAccountLevel, v))
+}
+
+// KeyAccountLevelContainsFold applies the ContainsFold predicate on the "key_account_level" field.
+func KeyAccountLevelContainsFold(v string) predicate.User {
+	return predicate.User(sql.FieldContainsFold(FieldKeyAccountLevel, v))
+}
+
+// KeyAccountDiscountRateEQ applies the EQ predicate on the "key_account_discount_rate" field.
+func KeyAccountDiscountRateEQ(v float64) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldKeyAccountDiscountRate, v))
+}
+
+// KeyAccountDiscountRateNEQ applies the NEQ predicate on the "key_account_discount_rate" field.
+func KeyAccountDiscountRateNEQ(v float64) predicate.User {
+	return predicate.User(sql.FieldNEQ(FieldKeyAccountDiscountRate, v))
+}
+
+// KeyAccountDiscountRateIn applies the In predicate on the "key_account_discount_rate" field.
+func KeyAccountDiscountRateIn(vs ...float64) predicate.User {
+	return predicate.User(sql.FieldIn(FieldKeyAccountDiscountRate, vs...))
+}
+
+// KeyAccountDiscountRateNotIn applies the NotIn predicate on the "key_account_discount_rate" field.
+func KeyAccountDiscountRateNotIn(vs ...float64) predicate.User {
+	return predicate.User(sql.FieldNotIn(FieldKeyAccountDiscountRate, vs...))
+}
+
+// KeyAccountDiscountRateGT applies the GT predicate on the "key_account_discount_rate" field.
+func KeyAccountDiscountRateGT(v float64) predicate.User {
+	return predicate.User(sql.FieldGT(FieldKeyAccountDiscountRate, v))
+}
+
+// KeyAccountDiscountRateGTE applies the GTE predicate on the "key_account_discount_rate" field.
+func KeyAccountDiscountRateGTE(v float64) predicate.User {
+	return predicate.User(sql.FieldGTE(FieldKeyAccountDiscountRate, v))
+}
+
+// KeyAccountDiscountRateLT applies the LT predicate on the "key_account_discount_rate" field.
+func KeyAccountDiscountRateLT(v float64) predicate.User {
+	return predicate.User(sql.FieldLT(FieldKeyAccountDiscountRate, v))
+}
+
+// KeyAccountDiscountRateLTE applies the LTE predicate on the "key_account_discount_rate" field.
+func KeyAccountDiscountRateLTE(v float64) predicate.User {
+	return predicate.User(sql.FieldLTE(FieldKeyAccountDiscountRate, v))
+}
+
+// KeyAccountRebateRateEQ applies the EQ predicate on the "key_account_rebate_rate" field.
+func KeyAccountRebateRateEQ(v float64) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldKeyAccountRebateRate, v))
+}
+
+// KeyAccountRebateRateNEQ applies the NEQ predicate on the "key_account_rebate_rate" field.
+func KeyAccountRebateRateNEQ(v float64) predicate.User {
+	return predicate.User(sql.FieldNEQ(FieldKeyAccountRebateRate, v))
+}
+
+// KeyAccountRebateRateIn applies the In predicate on the "key_account_rebate_rate" field.
+func KeyAccountRebateRateIn(vs ...float64) predicate.User {
+	return predicate.User(sql.FieldIn(FieldKeyAccountRebateRate, vs...))
+}
+
+// KeyAccountRebateRateNotIn applies the NotIn predicate on the "key_account_rebate_rate" field.
+func KeyAccountRebateRateNotIn(vs ...float64) predicate.User {
+	return predicate.User(sql.FieldNotIn(FieldKeyAccountRebateRate, vs...))
+}
+
+// KeyAccountRebateRateGT applies the GT predicate on the "key_account_rebate_rate" field.
+func KeyAccountRebateRateGT(v float64) predicate.User {
+	return predicate.User(sql.FieldGT(FieldKeyAccountRebateRate, v))
+}
+
+// KeyAccountRebateRateGTE applies the GTE predicate on the "key_account_rebate_rate" field.
+func KeyAccountRebateRateGTE(v float64) predicate.User {
+	return predicate.User(sql.FieldGTE(FieldKeyAccountRebateRate, v))
+}
+
+// KeyAccountRebateRateLT applies the LT predicate on the "key_account_rebate_rate" field.
+func KeyAccountRebateRateLT(v float64) predicate.User {
+	return predicate.User(sql.FieldLT(FieldKeyAccountRebateRate, v))
+}
+
+// KeyAccountRebateRateLTE applies the LTE predicate on the "key_account_rebate_rate" field.
+func KeyAccountRebateRateLTE(v float64) predicate.User {
+	return predicate.User(sql.FieldLTE(FieldKeyAccountRebateRate, v))
+}
+
+// KeyAccountManagerNotesEQ applies the EQ predicate on the "key_account_manager_notes" field.
+func KeyAccountManagerNotesEQ(v string) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldKeyAccountManagerNotes, v))
+}
+
+// KeyAccountManagerNotesNEQ applies the NEQ predicate on the "key_account_manager_notes" field.
+func KeyAccountManagerNotesNEQ(v string) predicate.User {
+	return predicate.User(sql.FieldNEQ(FieldKeyAccountManagerNotes, v))
+}
+
+// KeyAccountManagerNotesIn applies the In predicate on the "key_account_manager_notes" field.
+func KeyAccountManagerNotesIn(vs ...string) predicate.User {
+	return predicate.User(sql.FieldIn(FieldKeyAccountManagerNotes, vs...))
+}
+
+// KeyAccountManagerNotesNotIn applies the NotIn predicate on the "key_account_manager_notes" field.
+func KeyAccountManagerNotesNotIn(vs ...string) predicate.User {
+	return predicate.User(sql.FieldNotIn(FieldKeyAccountManagerNotes, vs...))
+}
+
+// KeyAccountManagerNotesGT applies the GT predicate on the "key_account_manager_notes" field.
+func KeyAccountManagerNotesGT(v string) predicate.User {
+	return predicate.User(sql.FieldGT(FieldKeyAccountManagerNotes, v))
+}
+
+// KeyAccountManagerNotesGTE applies the GTE predicate on the "key_account_manager_notes" field.
+func KeyAccountManagerNotesGTE(v string) predicate.User {
+	return predicate.User(sql.FieldGTE(FieldKeyAccountManagerNotes, v))
+}
+
+// KeyAccountManagerNotesLT applies the LT predicate on the "key_account_manager_notes" field.
+func KeyAccountManagerNotesLT(v string) predicate.User {
+	return predicate.User(sql.FieldLT(FieldKeyAccountManagerNotes, v))
+}
+
+// KeyAccountManagerNotesLTE applies the LTE predicate on the "key_account_manager_notes" field.
+func KeyAccountManagerNotesLTE(v string) predicate.User {
+	return predicate.User(sql.FieldLTE(FieldKeyAccountManagerNotes, v))
+}
+
+// KeyAccountManagerNotesContains applies the Contains predicate on the "key_account_manager_notes" field.
+func KeyAccountManagerNotesContains(v string) predicate.User {
+	return predicate.User(sql.FieldContains(FieldKeyAccountManagerNotes, v))
+}
+
+// KeyAccountManagerNotesHasPrefix applies the HasPrefix predicate on the "key_account_manager_notes" field.
+func KeyAccountManagerNotesHasPrefix(v string) predicate.User {
+	return predicate.User(sql.FieldHasPrefix(FieldKeyAccountManagerNotes, v))
+}
+
+// KeyAccountManagerNotesHasSuffix applies the HasSuffix predicate on the "key_account_manager_notes" field.
+func KeyAccountManagerNotesHasSuffix(v string) predicate.User {
+	return predicate.User(sql.FieldHasSuffix(FieldKeyAccountManagerNotes, v))
+}
+
+// KeyAccountManagerNotesEqualFold applies the EqualFold predicate on the "key_account_manager_notes" field.
+func KeyAccountManagerNotesEqualFold(v string) predicate.User {
+	return predicate.User(sql.FieldEqualFold(FieldKeyAccountManagerNotes, v))
+}
+
+// KeyAccountManagerNotesContainsFold applies the ContainsFold predicate on the "key_account_manager_notes" field.
+func KeyAccountManagerNotesContainsFold(v string) predicate.User {
+	return predicate.User(sql.FieldContainsFold(FieldKeyAccountManagerNotes, v))
 }
 
 // HasInviter applies the HasEdge predicate on the "inviter" edge.

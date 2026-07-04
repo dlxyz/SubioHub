@@ -462,6 +462,13 @@ func (s *stubAdminService) GetUserBalanceHistory(ctx context.Context, userID int
 	return s.redeems, int64(len(s.redeems)), 100.0, nil
 }
 
+func (s *stubAdminService) SyncKeyAccounts(ctx context.Context, options service.KeyAccountSyncOptions) (*service.KeyAccountSyncResult, error) {
+	return &service.KeyAccountSyncResult{
+		DryRun: options.DryRun,
+		Items:  []service.KeyAccountSyncItem{},
+	}, nil
+}
+
 func (s *stubAdminService) UpdateGroupSortOrders(ctx context.Context, updates []service.GroupSortOrderUpdate) error {
 	return nil
 }

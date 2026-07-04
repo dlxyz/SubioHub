@@ -646,6 +646,16 @@ func (s *SettingService) UpdateSettings(ctx context.Context, settings *SystemSet
 	// Affiliate settlement
 	updates[SettingKeyAffiliateAutoSettlementEnabled] = strconv.FormatBool(settings.AffiliateAutoSettlementEnabled)
 	updates[SettingKeyAffiliateManualPayoutSettlementEnabled] = strconv.FormatBool(settings.AffiliateManualPayoutSettlementEnabled)
+	updates[SettingKeyKeyAccountVIPRechargeThreshold] = strconv.FormatFloat(settings.KeyAccountVIPRechargeThreshold, 'f', 8, 64)
+	updates[SettingKeyKeyAccountEnterpriseRechargeThreshold] = strconv.FormatFloat(settings.KeyAccountEnterpriseRechargeThreshold, 'f', 8, 64)
+	updates[SettingKeyKeyAccountVIPMonthlyCostThreshold] = strconv.FormatFloat(settings.KeyAccountVIPMonthlyCostThreshold, 'f', 8, 64)
+	updates[SettingKeyKeyAccountEnterpriseMonthlyCostThreshold] = strconv.FormatFloat(settings.KeyAccountEnterpriseMonthlyCostThreshold, 'f', 8, 64)
+	updates[SettingKeyKeyAccountVIPDefaultDiscountRate] = strconv.FormatFloat(settings.KeyAccountVIPDefaultDiscountRate, 'f', 8, 64)
+	updates[SettingKeyKeyAccountEnterpriseDefaultDiscountRate] = strconv.FormatFloat(settings.KeyAccountEnterpriseDefaultDiscountRate, 'f', 8, 64)
+	updates[SettingKeyKeyAccountVIPDefaultRebateRate] = strconv.FormatFloat(settings.KeyAccountVIPDefaultRebateRate, 'f', 8, 64)
+	updates[SettingKeyKeyAccountEnterpriseDefaultRebateRate] = strconv.FormatFloat(settings.KeyAccountEnterpriseDefaultRebateRate, 'f', 8, 64)
+	updates[SettingKeyKeyAccountAutoUpgradeEnabled] = strconv.FormatBool(settings.KeyAccountAutoUpgradeEnabled)
+	updates[SettingKeyKeyAccountAutoDowngradeEnabled] = strconv.FormatBool(settings.KeyAccountAutoDowngradeEnabled)
 
 	err = s.settingRepo.SetMultiple(ctx, updates)
 	if err == nil {
@@ -1063,6 +1073,16 @@ func (s *SettingService) parseSettings(settings map[string]string) *SystemSettin
 	result.DefaultSubscriptions = parseDefaultSubscriptions(settings[SettingKeyDefaultSubscriptions])
 	result.AffiliateAutoSettlementEnabled = s.parseAffiliateAutoSettlementEnabled(settings)
 	result.AffiliateManualPayoutSettlementEnabled = s.parseAffiliateManualPayoutSettlementEnabled(settings)
+	result.KeyAccountVIPRechargeThreshold = s.parseFloatOrDefault(settings, SettingKeyKeyAccountVIPRechargeThreshold, 5000)
+	result.KeyAccountEnterpriseRechargeThreshold = s.parseFloatOrDefault(settings, SettingKeyKeyAccountEnterpriseRechargeThreshold, 20000)
+	result.KeyAccountVIPMonthlyCostThreshold = s.parseFloatOrDefault(settings, SettingKeyKeyAccountVIPMonthlyCostThreshold, 3000)
+	result.KeyAccountEnterpriseMonthlyCostThreshold = s.parseFloatOrDefault(settings, SettingKeyKeyAccountEnterpriseMonthlyCostThreshold, 10000)
+	result.KeyAccountVIPDefaultDiscountRate = s.parseFloatOrDefault(settings, SettingKeyKeyAccountVIPDefaultDiscountRate, 0.95)
+	result.KeyAccountEnterpriseDefaultDiscountRate = s.parseFloatOrDefault(settings, SettingKeyKeyAccountEnterpriseDefaultDiscountRate, 0.90)
+	result.KeyAccountVIPDefaultRebateRate = s.parseFloatOrDefault(settings, SettingKeyKeyAccountVIPDefaultRebateRate, 0.05)
+	result.KeyAccountEnterpriseDefaultRebateRate = s.parseFloatOrDefault(settings, SettingKeyKeyAccountEnterpriseDefaultRebateRate, 0.08)
+	result.KeyAccountAutoUpgradeEnabled = settings[SettingKeyKeyAccountAutoUpgradeEnabled] == "true"
+	result.KeyAccountAutoDowngradeEnabled = settings[SettingKeyKeyAccountAutoDowngradeEnabled] == "true"
 
 	// 敏感信息直接返回，方便测试连接时使用
 	result.SMTPPassword = settings[SettingKeySMTPPassword]
@@ -1447,6 +1467,15 @@ func normalizeTablePreferences(defaultPageSize int, options []int) (int, []int) 
 func (s *SettingService) getStringOrDefault(settings map[string]string, key, defaultValue string) string {
 	if value, ok := settings[key]; ok && value != "" {
 		return value
+	}
+	return defaultValue
+}
+
+func (s *SettingService) parseFloatOrDefault(settings map[string]string, key string, defaultValue float64) float64 {
+	if value, ok := settings[key]; ok && strings.TrimSpace(value) != "" {
+		if parsed, err := strconv.ParseFloat(strings.TrimSpace(value), 64); err == nil {
+			return parsed
+		}
 	}
 	return defaultValue
 }

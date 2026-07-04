@@ -14,7 +14,6 @@ import {
   Gift,
   Globe,
   HandCoins,
-  KeyRound,
   LayoutGrid,
   LayoutDashboard,
   Menu,
@@ -27,7 +26,6 @@ import {
   User,
   UserCog,
   Users,
-  Wallet,
   WalletCards,
   X,
 } from 'lucide-react';
@@ -49,46 +47,53 @@ type NavSection = {
 
 const adminSections: NavSection[] = [
   {
-    titleKey: 'admin.nav.sectionManage',
+    titleKey: 'admin.nav.sectionOperations',
     items: [
       { labelKey: 'admin.nav.dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
       { labelKey: 'admin.nav.ops', href: '/admin/ops', icon: Gauge },
-      { labelKey: 'admin.nav.users', href: '/admin/users', icon: Users },
-      { labelKey: 'admin.nav.groups', href: '/admin/groups', icon: UserCog },
-      { labelKey: 'admin.nav.domesticChannels', href: '/admin/domestic-channels', icon: Box },
-      { labelKey: 'admin.nav.overseasChannels', href: '/admin/channels', icon: Globe },
-      { labelKey: 'admin.nav.modelMarketplace', href: '/admin/model-marketplace', icon: LayoutGrid },
-      { labelKey: 'admin.nav.plans', href: '/admin/orders/plans', icon: CreditCard },
-      { labelKey: 'admin.nav.subscriptions', href: '/admin/subscriptions', icon: CreditCard },
-      { labelKey: 'admin.nav.accounts', href: '/admin/accounts', icon: Globe },
       { labelKey: 'admin.nav.announcements', href: '/admin/announcements', icon: Bell },
       { labelKey: 'admin.nav.news', href: '/admin/news', icon: Newspaper },
-      { labelKey: 'admin.nav.proxies', href: '/admin/proxies', icon: Shield },
-      { labelKey: 'admin.nav.redeem', href: '/admin/redeem', icon: Ticket },
-      { labelKey: 'admin.nav.promoCodes', href: '/admin/promo-codes', icon: Gift },
-      {
-        labelKey: 'admin.nav.orders',
-        href: '/admin/orders',
-        icon: WalletCards,
-        children: [
-          { labelKey: 'admin.nav.paymentDashboard', href: '/admin/orders/dashboard', icon: CreditCard },
-          { labelKey: 'admin.nav.ordersManagement', href: '/admin/orders', icon: WalletCards },
-        ],
-      },
-      { labelKey: 'admin.nav.usage', href: '/admin/usage', icon: ChartColumn },
-      { labelKey: 'admin.nav.affiliate', href: '/admin/affiliate', icon: HandCoins },
       { labelKey: 'admin.nav.settings', href: '/admin/settings', icon: Settings },
     ],
   },
   {
-    titleKey: 'admin.nav.sectionAccount',
+    titleKey: 'admin.nav.sectionSubInterfaces',
     items: [
-      { labelKey: 'admin.nav.userOverview', href: '/dashboard', icon: LayoutDashboard },
-      { labelKey: 'admin.nav.apiKeys', href: '/dashboard/keys', icon: KeyRound },
-      { labelKey: 'admin.nav.userUsage', href: '/dashboard/usage', icon: ChartColumn },
-      { labelKey: 'admin.nav.wallet', href: '/dashboard/finance', icon: Wallet },
-      { labelKey: 'admin.nav.invite', href: '/dashboard/affiliate', icon: HandCoins },
-      { labelKey: 'admin.nav.profile', href: '/dashboard/settings', icon: User },
+      { labelKey: 'admin.nav.groups', href: '/admin/groups', icon: UserCog },
+      { labelKey: 'admin.nav.domesticChannels', href: '/admin/domestic-channels', icon: Box },
+      { labelKey: 'admin.nav.overseasChannels', href: '/admin/channels', icon: Globe },
+      { labelKey: 'admin.nav.modelMarketplace', href: '/admin/model-marketplace', icon: LayoutGrid },
+      { labelKey: 'admin.nav.accounts', href: '/admin/accounts', icon: Globe },
+      { labelKey: 'admin.nav.ipProxies', href: '/admin/proxies', icon: Shield },
+      { labelKey: 'admin.nav.usage', href: '/admin/usage', icon: ChartColumn },
+    ],
+  },
+  {
+    titleKey: 'admin.nav.sectionCustomers',
+    items: [
+      { labelKey: 'admin.nav.users', href: '/admin/users', icon: Users },
+      { labelKey: 'admin.nav.keyAccounts', href: '/admin/key-accounts', icon: UserCog },
+      { labelKey: 'admin.nav.proxies', href: '/admin/agent-management', icon: Shield },
+      { labelKey: 'admin.nav.businessChannels', href: '/admin/channel-distributors', icon: HandCoins },
+      { labelKey: 'admin.nav.commissionSplits', href: '/admin/affiliate', icon: HandCoins },
+    ],
+  },
+  {
+    titleKey: 'admin.nav.sectionCashflow',
+    items: [
+      { labelKey: 'admin.nav.plans', href: '/admin/orders/plans', icon: CreditCard },
+      { labelKey: 'admin.nav.subscriptions', href: '/admin/subscriptions', icon: CreditCard },
+      { labelKey: 'admin.nav.paymentDashboard', href: '/admin/orders/dashboard', icon: CreditCard },
+      { labelKey: 'admin.nav.ordersManagement', href: '/admin/orders', icon: WalletCards },
+      { labelKey: 'admin.nav.withdrawals', href: '/admin/withdrawals', icon: WalletCards },
+      { labelKey: 'admin.nav.redeem', href: '/admin/redeem', icon: Ticket },
+      { labelKey: 'admin.nav.promoCodes', href: '/admin/promo-codes', icon: Gift },
+    ],
+  },
+  {
+    items: [
+      { labelKey: 'admin.nav.personalConsole', href: '/dashboard', icon: User },
+      { labelKey: 'admin.nav.distributionConsole', href: '/agent', icon: HandCoins },
     ],
   },
 ];
@@ -235,6 +240,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
                 {section.items.map((item) => {
                   const isActive = isItemActive(item);
+                  const isSwitchItem = item.href === '/dashboard' || item.href === '/agent';
 
                   if (item.children?.length) {
                     const isExpanded = expandedMenus[item.href] ?? isActive;
@@ -297,6 +303,41 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                           </div>
                         ) : null}
                       </div>
+                    );
+                  }
+
+                  if (isSwitchItem) {
+                    const switchHint =
+                      item.href === '/agent' ? '切换到代理系统管理' : '切换到个人系统管理';
+                    const switchTone =
+                      item.href === '/agent'
+                        ? {
+                            card: 'border-amber-200/70 text-amber-700 hover:bg-amber-50 dark:border-amber-500/20 dark:text-amber-300 dark:hover:bg-amber-500/10',
+                            icon: 'text-amber-500',
+                            hint: 'text-amber-500/80 dark:text-amber-300/70',
+                          }
+                        : {
+                            card: 'border-purple-200/70 text-purple-700 hover:bg-purple-50 dark:border-purple-500/20 dark:text-purple-300 dark:hover:bg-purple-500/10',
+                            icon: 'text-purple-500',
+                            hint: 'text-purple-500/80 dark:text-purple-300/70',
+                          };
+
+                    return (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        onClick={() => setSidebarOpen(false)}
+                        className={cn(
+                          'flex items-center rounded-2xl border px-3 py-3 text-sm font-medium transition',
+                          switchTone.card
+                        )}
+                      >
+                        <item.icon className={cn('mr-3 h-5 w-5 flex-shrink-0', switchTone.icon)} />
+                        <div className="min-w-0">
+                          <div>{t(item.labelKey)}</div>
+                          <div className={cn('mt-0.5 truncate text-xs', switchTone.hint)}>{switchHint}</div>
+                        </div>
+                      </Link>
                     );
                   }
 

@@ -181,6 +181,19 @@ function renderGroupNames(user: AdminUser, groups: AdminGroup[]) {
   return names.length > 0 ? names.join('、') : ids.join(', ');
 }
 
+function getRoleLabel(role?: string) {
+  switch (role) {
+    case 'admin':
+      return 'admin';
+    case 'agent':
+      return 'agent';
+    case 'distributor':
+      return 'distributor';
+    default:
+      return 'user';
+  }
+}
+
 function ModalShell({
   open,
   title,
@@ -392,6 +405,23 @@ export default function AdminUsersPage() {
       await loadUsers(pagination.page);
     } catch (updateError: unknown) {
       setError(getErrorMessage(updateError, '更新用户状态失败'));
+    }
+  };
+
+  const handleSwitchRole = async (user: AdminUser, role: 'user' | 'agent' | 'distributor') => {
+    try {
+      const updated = await updateAdminUser(user.id, { role });
+      const nextRole = getRoleLabel(updated.role);
+      if (nextRole !== role) {
+        throw new Error('角色更新请求已返回，但当前后端服务还没有应用新的角色更新逻辑，请重启后端服务后再试。');
+      }
+      setUsers((prev) => prev.map((item) => (item.id === user.id ? { ...item, role } : item)));
+      setSuccess(
+        role === 'agent' ? '用户已切换为代理角色' : role === 'distributor' ? '用户已切换为分销角色' : '用户已切换为普通角色'
+      );
+      await loadUsers(pagination.page);
+    } catch (updateError: unknown) {
+      setError(getErrorMessage(updateError, '更新用户角色失败'));
     }
   };
 
@@ -667,6 +697,7 @@ export default function AdminUsersPage() {
               >
                 <option value="">全部角色</option>
                 <option value="admin">admin</option>
+                <option value="agent">agent</option>
                 <option value="user">user</option>
               </select>
             )}
@@ -825,7 +856,7 @@ export default function AdminUsersPage() {
                       </div>
                     </td>
                     {isColumnVisible('role') && (
-                      <td className="px-4 py-4 text-gray-500 dark:text-gray-400">{user.role || 'user'}</td>
+                      <td className="px-4 py-4 text-gray-500 dark:text-gray-400">{getRoleLabel(user.role)}</td>
                     )}
                     {isColumnVisible('status') && (
                       <td className="px-4 py-4">
@@ -895,6 +926,37 @@ export default function AdminUsersPage() {
                         >
                           分组
                         </button>
+                        {user.role !== 'admin' ? (
+                          <>
+                            {user.role !== 'user' && (
+                              <button
+                                type="button"
+                                onClick={() => void handleSwitchRole(user, 'user')}
+                                className="rounded-xl border border-violet-200 px-3 py-2 text-xs font-medium text-violet-600 transition hover:bg-violet-50 dark:border-violet-900/40 dark:text-violet-300 dark:hover:bg-violet-950/30"
+                              >
+                                设为普通用户
+                              </button>
+                            )}
+                            {user.role !== 'agent' && (
+                              <button
+                                type="button"
+                                onClick={() => void handleSwitchRole(user, 'agent')}
+                                className="rounded-xl border border-indigo-200 px-3 py-2 text-xs font-medium text-indigo-600 transition hover:bg-indigo-50 dark:border-indigo-900/40 dark:text-indigo-300 dark:hover:bg-indigo-950/30"
+                              >
+                                设为代理
+                              </button>
+                            )}
+                            {user.role !== 'distributor' && (
+                              <button
+                                type="button"
+                                onClick={() => void handleSwitchRole(user, 'distributor')}
+                                className="rounded-xl border border-sky-200 px-3 py-2 text-xs font-medium text-sky-600 transition hover:bg-sky-50 dark:border-sky-900/40 dark:text-sky-300 dark:hover:bg-sky-950/30"
+                              >
+                                设为分销
+                              </button>
+                            )}
+                          </>
+                        ) : null}
                         <button
                           type="button"
                           onClick={() => openBalanceModal(user, 'add')}

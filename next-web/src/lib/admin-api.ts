@@ -86,8 +86,15 @@ export interface AdminUser {
   current_concurrency?: number;
   group_name?: string;
   allowed_groups?: Array<{ id: number; name: string }> | number[];
+  total_recharged?: number;
   commission_rate?: number;
   commission_balance?: number;
+  total_commission_earned?: number;
+  is_key_account?: boolean;
+  key_account_level?: string;
+  key_account_discount_rate?: number;
+  key_account_rebate_rate?: number;
+  key_account_manager_notes?: string;
   created_at?: string;
 }
 
@@ -127,6 +134,37 @@ export interface AdminUserUsageStats {
   total_requests?: number;
   total_cost?: number;
   total_tokens?: number;
+}
+
+export interface AdminKeyAccountSyncItem {
+  user_id: number;
+  email?: string;
+  before_is_key_account?: boolean;
+  after_is_key_account?: boolean;
+  before_level?: string;
+  after_level?: string;
+  total_recharged?: number;
+  monthly_actual_cost?: number;
+  action?: string;
+  reason?: string;
+  applied_default_strategy?: boolean;
+  error?: string;
+}
+
+export interface AdminKeyAccountSyncResult {
+  dry_run?: boolean;
+  auto_upgrade_enabled?: boolean;
+  auto_downgrade_enabled?: boolean;
+  scanned?: number;
+  eligible?: number;
+  changed?: number;
+  upgraded?: number;
+  downgraded?: number;
+  promoted_to_key_account?: number;
+  removed_from_key_account?: number;
+  applied_default_strategy?: number;
+  failed?: number;
+  items?: AdminKeyAccountSyncItem[];
 }
 
 export interface AdminGroup {
@@ -610,6 +648,16 @@ export interface SystemSettings {
   account_quota_notify_emails?: NotifyEmailEntry[];
   affiliate_auto_settlement_enabled?: boolean;
   affiliate_manual_payout_settlement_enabled?: boolean;
+  key_account_vip_recharge_threshold?: number;
+  key_account_enterprise_recharge_threshold?: number;
+  key_account_vip_monthly_cost_threshold?: number;
+  key_account_enterprise_monthly_cost_threshold?: number;
+  key_account_vip_default_discount_rate?: number;
+  key_account_enterprise_default_discount_rate?: number;
+  key_account_vip_default_rebate_rate?: number;
+  key_account_enterprise_default_rebate_rate?: number;
+  key_account_auto_upgrade_enabled?: boolean;
+  key_account_auto_downgrade_enabled?: boolean;
   [key: string]: unknown;
 }
 
@@ -674,6 +722,32 @@ export interface AdminCommissionLog {
   amount: number;
   status: string;
   reason: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface AdminCommissionSplitLog {
+  id: number;
+  order_id?: number | null;
+  consumer_user_id: number;
+  consumer_user_email?: string;
+  beneficiary_user_id: number;
+  beneficiary_email?: string;
+  beneficiary_role: string;
+  agent_user_id?: number | null;
+  distributor_user_id?: number | null;
+  level: number;
+  calc_mode: string;
+  base_amount: number;
+  target_rate: number;
+  parent_rate: number;
+  commission_amount: number;
+  status: string;
+  rule_id?: number | null;
+  remark?: string | null;
+  order_type?: string;
+  order_status?: string;
+  settled_at?: string | null;
   created_at?: string;
   updated_at?: string;
 }
@@ -945,6 +1019,35 @@ function normalizeCommissionLog(payload: unknown): AdminCommissionLog {
     amount: Number(getValue(record, 'amount', 'Amount') ?? 0),
     status: String(getValue(record, 'status', 'Status') ?? ''),
     reason: String(getValue(record, 'reason', 'Reason') ?? ''),
+    created_at: getValue(record, 'created_at', 'CreatedAt') as string | undefined,
+    updated_at: getValue(record, 'updated_at', 'UpdatedAt') as string | undefined,
+  };
+}
+
+function normalizeCommissionSplitLog(payload: unknown): AdminCommissionSplitLog {
+  const record = asRecord(payload);
+  return {
+    id: Number(getValue(record, 'id', 'ID') ?? 0),
+    order_id: (getValue(record, 'order_id', 'OrderID') as number | null | undefined) ?? null,
+    consumer_user_id: Number(getValue(record, 'consumer_user_id', 'ConsumerUserID') ?? 0),
+    consumer_user_email: (getValue(record, 'consumer_user_email', 'ConsumerUserEmail') as string | undefined) ?? undefined,
+    beneficiary_user_id: Number(getValue(record, 'beneficiary_user_id', 'BeneficiaryUserID') ?? 0),
+    beneficiary_email: (getValue(record, 'beneficiary_email', 'BeneficiaryEmail') as string | undefined) ?? undefined,
+    beneficiary_role: String(getValue(record, 'beneficiary_role', 'BeneficiaryRole') ?? ''),
+    agent_user_id: (getValue(record, 'agent_user_id', 'AgentUserID') as number | null | undefined) ?? null,
+    distributor_user_id: (getValue(record, 'distributor_user_id', 'DistributorUserID') as number | null | undefined) ?? null,
+    level: Number(getValue(record, 'level', 'Level') ?? 0),
+    calc_mode: String(getValue(record, 'calc_mode', 'CalcMode') ?? ''),
+    base_amount: Number(getValue(record, 'base_amount', 'BaseAmount') ?? 0),
+    target_rate: Number(getValue(record, 'target_rate', 'TargetRate') ?? 0),
+    parent_rate: Number(getValue(record, 'parent_rate', 'ParentRate') ?? 0),
+    commission_amount: Number(getValue(record, 'commission_amount', 'CommissionAmount') ?? 0),
+    status: String(getValue(record, 'status', 'Status') ?? ''),
+    rule_id: (getValue(record, 'rule_id', 'RuleID') as number | null | undefined) ?? null,
+    remark: (getValue(record, 'remark', 'Remark') as string | null | undefined) ?? null,
+    order_type: (getValue(record, 'order_type', 'OrderType') as string | undefined) ?? undefined,
+    order_status: (getValue(record, 'order_status', 'OrderStatus') as string | undefined) ?? undefined,
+    settled_at: (getValue(record, 'settled_at', 'SettledAt') as string | null | undefined) ?? null,
     created_at: getValue(record, 'created_at', 'CreatedAt') as string | undefined,
     updated_at: getValue(record, 'updated_at', 'UpdatedAt') as string | undefined,
   };
@@ -1243,6 +1346,12 @@ export async function getAdminUserUsageStats(
   params?: Record<string, unknown>
 ): Promise<AdminUserUsageStats> {
   return unwrapData<AdminUserUsageStats>((await api.get(`/admin/users/${id}/usage`, { params })) as unknown);
+}
+
+export async function syncAdminKeyAccounts(payload?: {
+  dry_run?: boolean;
+}): Promise<AdminKeyAccountSyncResult> {
+  return unwrapData<AdminKeyAccountSyncResult>((await api.post('/admin/users/key-accounts/auto-sync', payload || {})) as unknown);
 }
 
 export async function listAdminGroups(params?: Record<string, unknown>): Promise<PaginatedResult<AdminGroup>> {
@@ -1749,8 +1858,33 @@ export async function listAdminAffiliateCommissions(
   };
 }
 
+export async function listAdminAffiliateCommissionSplits(
+  params?: Record<string, unknown>
+): Promise<PaginatedResult<AdminCommissionSplitLog>> {
+  const payload = unwrapData<unknown>((await api.get('/admin/affiliate/commission-splits', { params })) as unknown);
+  const record = asRecord(payload);
+  const pagination = asRecord(record?.pagination);
+  const items = normalizeArray<ApiRecord>(payload).map(normalizeCommissionSplitLog);
+  return {
+    items,
+    total: Number(getValue(pagination, 'total', 'Total') ?? getValue(record, 'total') ?? items.length ?? 0),
+    page: Number(getValue(pagination, 'page', 'Page') ?? getValue(record, 'page') ?? params?.page ?? 1),
+    pageSize: Number(
+      getValue(pagination, 'page_size', 'pageSize', 'PageSize') ??
+        getValue(record, 'page_size') ??
+        params?.page_size ??
+        items.length ??
+        0
+    ),
+  };
+}
+
 export async function settleAdminAffiliateCommission(id: number): Promise<{ message: string }> {
   return (await api.post(`/admin/affiliate/commissions/${id}/settle`)) as { message: string };
+}
+
+export async function settleAdminAffiliateCommissionSplit(id: number): Promise<{ message: string }> {
+  return (await api.post(`/admin/affiliate/commission-splits/${id}/settle`)) as { message: string };
 }
 
 export async function updateAdminAffiliateUserRate(

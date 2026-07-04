@@ -18,6 +18,8 @@ import (
 	"github.com/dlxyz/SubioHub/ent/announcementread"
 	"github.com/dlxyz/SubioHub/ent/apikey"
 	"github.com/dlxyz/SubioHub/ent/commissionlog"
+	"github.com/dlxyz/SubioHub/ent/commissionrule"
+	"github.com/dlxyz/SubioHub/ent/commissionsplitlog"
 	"github.com/dlxyz/SubioHub/ent/errorpassthroughrule"
 	"github.com/dlxyz/SubioHub/ent/group"
 	"github.com/dlxyz/SubioHub/ent/idempotencyrecord"
@@ -29,6 +31,7 @@ import (
 	"github.com/dlxyz/SubioHub/ent/predicate"
 	"github.com/dlxyz/SubioHub/ent/promocode"
 	"github.com/dlxyz/SubioHub/ent/promocodeusage"
+	"github.com/dlxyz/SubioHub/ent/promotionrelation"
 	"github.com/dlxyz/SubioHub/ent/proxy"
 	"github.com/dlxyz/SubioHub/ent/redeemcode"
 	"github.com/dlxyz/SubioHub/ent/securitysecret"
@@ -60,6 +63,8 @@ const (
 	TypeAnnouncement            = "Announcement"
 	TypeAnnouncementRead        = "AnnouncementRead"
 	TypeCommissionLog           = "CommissionLog"
+	TypeCommissionRule          = "CommissionRule"
+	TypeCommissionSplitLog      = "CommissionSplitLog"
 	TypeErrorPassthroughRule    = "ErrorPassthroughRule"
 	TypeGroup                   = "Group"
 	TypeIdempotencyRecord       = "IdempotencyRecord"
@@ -70,6 +75,7 @@ const (
 	TypePaymentProviderInstance = "PaymentProviderInstance"
 	TypePromoCode               = "PromoCode"
 	TypePromoCodeUsage          = "PromoCodeUsage"
+	TypePromotionRelation       = "PromotionRelation"
 	TypeProxy                   = "Proxy"
 	TypeRedeemCode              = "RedeemCode"
 	TypeSecuritySecret          = "SecuritySecret"
@@ -7831,6 +7837,3248 @@ func (m *CommissionLogMutation) ResetEdge(name string) error {
 		return nil
 	}
 	return fmt.Errorf("unknown CommissionLog edge %s", name)
+}
+
+// CommissionRuleMutation represents an operation that mutates the CommissionRule nodes in the graph.
+type CommissionRuleMutation struct {
+	config
+	op                         Op
+	typ                        string
+	id                         *int64
+	created_at                 *time.Time
+	updated_at                 *time.Time
+	name                       *string
+	status                     *string
+	calc_mode                  *string
+	agent_target_rate          *float64
+	addagent_target_rate       *float64
+	distributor_target_rate    *float64
+	adddistributor_target_rate *float64
+	freeze_hours               *int
+	addfreeze_hours            *int
+	settlement_mode            *string
+	scope_type                 *string
+	scope_id                   *int64
+	addscope_id                *int64
+	priority                   *int
+	addpriority                *int
+	effective_at               *time.Time
+	expired_at                 *time.Time
+	config_json                *map[string]interface{}
+	clearedFields              map[string]struct{}
+	done                       bool
+	oldValue                   func(context.Context) (*CommissionRule, error)
+	predicates                 []predicate.CommissionRule
+}
+
+var _ ent.Mutation = (*CommissionRuleMutation)(nil)
+
+// commissionruleOption allows management of the mutation configuration using functional options.
+type commissionruleOption func(*CommissionRuleMutation)
+
+// newCommissionRuleMutation creates new mutation for the CommissionRule entity.
+func newCommissionRuleMutation(c config, op Op, opts ...commissionruleOption) *CommissionRuleMutation {
+	m := &CommissionRuleMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeCommissionRule,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withCommissionRuleID sets the ID field of the mutation.
+func withCommissionRuleID(id int64) commissionruleOption {
+	return func(m *CommissionRuleMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *CommissionRule
+		)
+		m.oldValue = func(ctx context.Context) (*CommissionRule, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().CommissionRule.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withCommissionRule sets the old CommissionRule of the mutation.
+func withCommissionRule(node *CommissionRule) commissionruleOption {
+	return func(m *CommissionRuleMutation) {
+		m.oldValue = func(context.Context) (*CommissionRule, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m CommissionRuleMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m CommissionRuleMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *CommissionRuleMutation) ID() (id int64, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *CommissionRuleMutation) IDs(ctx context.Context) ([]int64, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int64{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().CommissionRule.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *CommissionRuleMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *CommissionRuleMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the CommissionRule entity.
+// If the CommissionRule object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CommissionRuleMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *CommissionRuleMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *CommissionRuleMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *CommissionRuleMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the CommissionRule entity.
+// If the CommissionRule object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CommissionRuleMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *CommissionRuleMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+}
+
+// SetName sets the "name" field.
+func (m *CommissionRuleMutation) SetName(s string) {
+	m.name = &s
+}
+
+// Name returns the value of the "name" field in the mutation.
+func (m *CommissionRuleMutation) Name() (r string, exists bool) {
+	v := m.name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldName returns the old "name" field's value of the CommissionRule entity.
+// If the CommissionRule object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CommissionRuleMutation) OldName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldName: %w", err)
+	}
+	return oldValue.Name, nil
+}
+
+// ResetName resets all changes to the "name" field.
+func (m *CommissionRuleMutation) ResetName() {
+	m.name = nil
+}
+
+// SetStatus sets the "status" field.
+func (m *CommissionRuleMutation) SetStatus(s string) {
+	m.status = &s
+}
+
+// Status returns the value of the "status" field in the mutation.
+func (m *CommissionRuleMutation) Status() (r string, exists bool) {
+	v := m.status
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldStatus returns the old "status" field's value of the CommissionRule entity.
+// If the CommissionRule object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CommissionRuleMutation) OldStatus(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldStatus is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldStatus requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldStatus: %w", err)
+	}
+	return oldValue.Status, nil
+}
+
+// ResetStatus resets all changes to the "status" field.
+func (m *CommissionRuleMutation) ResetStatus() {
+	m.status = nil
+}
+
+// SetCalcMode sets the "calc_mode" field.
+func (m *CommissionRuleMutation) SetCalcMode(s string) {
+	m.calc_mode = &s
+}
+
+// CalcMode returns the value of the "calc_mode" field in the mutation.
+func (m *CommissionRuleMutation) CalcMode() (r string, exists bool) {
+	v := m.calc_mode
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCalcMode returns the old "calc_mode" field's value of the CommissionRule entity.
+// If the CommissionRule object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CommissionRuleMutation) OldCalcMode(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCalcMode is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCalcMode requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCalcMode: %w", err)
+	}
+	return oldValue.CalcMode, nil
+}
+
+// ResetCalcMode resets all changes to the "calc_mode" field.
+func (m *CommissionRuleMutation) ResetCalcMode() {
+	m.calc_mode = nil
+}
+
+// SetAgentTargetRate sets the "agent_target_rate" field.
+func (m *CommissionRuleMutation) SetAgentTargetRate(f float64) {
+	m.agent_target_rate = &f
+	m.addagent_target_rate = nil
+}
+
+// AgentTargetRate returns the value of the "agent_target_rate" field in the mutation.
+func (m *CommissionRuleMutation) AgentTargetRate() (r float64, exists bool) {
+	v := m.agent_target_rate
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAgentTargetRate returns the old "agent_target_rate" field's value of the CommissionRule entity.
+// If the CommissionRule object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CommissionRuleMutation) OldAgentTargetRate(ctx context.Context) (v float64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAgentTargetRate is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAgentTargetRate requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAgentTargetRate: %w", err)
+	}
+	return oldValue.AgentTargetRate, nil
+}
+
+// AddAgentTargetRate adds f to the "agent_target_rate" field.
+func (m *CommissionRuleMutation) AddAgentTargetRate(f float64) {
+	if m.addagent_target_rate != nil {
+		*m.addagent_target_rate += f
+	} else {
+		m.addagent_target_rate = &f
+	}
+}
+
+// AddedAgentTargetRate returns the value that was added to the "agent_target_rate" field in this mutation.
+func (m *CommissionRuleMutation) AddedAgentTargetRate() (r float64, exists bool) {
+	v := m.addagent_target_rate
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetAgentTargetRate resets all changes to the "agent_target_rate" field.
+func (m *CommissionRuleMutation) ResetAgentTargetRate() {
+	m.agent_target_rate = nil
+	m.addagent_target_rate = nil
+}
+
+// SetDistributorTargetRate sets the "distributor_target_rate" field.
+func (m *CommissionRuleMutation) SetDistributorTargetRate(f float64) {
+	m.distributor_target_rate = &f
+	m.adddistributor_target_rate = nil
+}
+
+// DistributorTargetRate returns the value of the "distributor_target_rate" field in the mutation.
+func (m *CommissionRuleMutation) DistributorTargetRate() (r float64, exists bool) {
+	v := m.distributor_target_rate
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDistributorTargetRate returns the old "distributor_target_rate" field's value of the CommissionRule entity.
+// If the CommissionRule object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CommissionRuleMutation) OldDistributorTargetRate(ctx context.Context) (v float64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDistributorTargetRate is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDistributorTargetRate requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDistributorTargetRate: %w", err)
+	}
+	return oldValue.DistributorTargetRate, nil
+}
+
+// AddDistributorTargetRate adds f to the "distributor_target_rate" field.
+func (m *CommissionRuleMutation) AddDistributorTargetRate(f float64) {
+	if m.adddistributor_target_rate != nil {
+		*m.adddistributor_target_rate += f
+	} else {
+		m.adddistributor_target_rate = &f
+	}
+}
+
+// AddedDistributorTargetRate returns the value that was added to the "distributor_target_rate" field in this mutation.
+func (m *CommissionRuleMutation) AddedDistributorTargetRate() (r float64, exists bool) {
+	v := m.adddistributor_target_rate
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetDistributorTargetRate resets all changes to the "distributor_target_rate" field.
+func (m *CommissionRuleMutation) ResetDistributorTargetRate() {
+	m.distributor_target_rate = nil
+	m.adddistributor_target_rate = nil
+}
+
+// SetFreezeHours sets the "freeze_hours" field.
+func (m *CommissionRuleMutation) SetFreezeHours(i int) {
+	m.freeze_hours = &i
+	m.addfreeze_hours = nil
+}
+
+// FreezeHours returns the value of the "freeze_hours" field in the mutation.
+func (m *CommissionRuleMutation) FreezeHours() (r int, exists bool) {
+	v := m.freeze_hours
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldFreezeHours returns the old "freeze_hours" field's value of the CommissionRule entity.
+// If the CommissionRule object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CommissionRuleMutation) OldFreezeHours(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldFreezeHours is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldFreezeHours requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldFreezeHours: %w", err)
+	}
+	return oldValue.FreezeHours, nil
+}
+
+// AddFreezeHours adds i to the "freeze_hours" field.
+func (m *CommissionRuleMutation) AddFreezeHours(i int) {
+	if m.addfreeze_hours != nil {
+		*m.addfreeze_hours += i
+	} else {
+		m.addfreeze_hours = &i
+	}
+}
+
+// AddedFreezeHours returns the value that was added to the "freeze_hours" field in this mutation.
+func (m *CommissionRuleMutation) AddedFreezeHours() (r int, exists bool) {
+	v := m.addfreeze_hours
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetFreezeHours resets all changes to the "freeze_hours" field.
+func (m *CommissionRuleMutation) ResetFreezeHours() {
+	m.freeze_hours = nil
+	m.addfreeze_hours = nil
+}
+
+// SetSettlementMode sets the "settlement_mode" field.
+func (m *CommissionRuleMutation) SetSettlementMode(s string) {
+	m.settlement_mode = &s
+}
+
+// SettlementMode returns the value of the "settlement_mode" field in the mutation.
+func (m *CommissionRuleMutation) SettlementMode() (r string, exists bool) {
+	v := m.settlement_mode
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSettlementMode returns the old "settlement_mode" field's value of the CommissionRule entity.
+// If the CommissionRule object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CommissionRuleMutation) OldSettlementMode(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSettlementMode is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSettlementMode requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSettlementMode: %w", err)
+	}
+	return oldValue.SettlementMode, nil
+}
+
+// ResetSettlementMode resets all changes to the "settlement_mode" field.
+func (m *CommissionRuleMutation) ResetSettlementMode() {
+	m.settlement_mode = nil
+}
+
+// SetScopeType sets the "scope_type" field.
+func (m *CommissionRuleMutation) SetScopeType(s string) {
+	m.scope_type = &s
+}
+
+// ScopeType returns the value of the "scope_type" field in the mutation.
+func (m *CommissionRuleMutation) ScopeType() (r string, exists bool) {
+	v := m.scope_type
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldScopeType returns the old "scope_type" field's value of the CommissionRule entity.
+// If the CommissionRule object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CommissionRuleMutation) OldScopeType(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldScopeType is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldScopeType requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldScopeType: %w", err)
+	}
+	return oldValue.ScopeType, nil
+}
+
+// ResetScopeType resets all changes to the "scope_type" field.
+func (m *CommissionRuleMutation) ResetScopeType() {
+	m.scope_type = nil
+}
+
+// SetScopeID sets the "scope_id" field.
+func (m *CommissionRuleMutation) SetScopeID(i int64) {
+	m.scope_id = &i
+	m.addscope_id = nil
+}
+
+// ScopeID returns the value of the "scope_id" field in the mutation.
+func (m *CommissionRuleMutation) ScopeID() (r int64, exists bool) {
+	v := m.scope_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldScopeID returns the old "scope_id" field's value of the CommissionRule entity.
+// If the CommissionRule object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CommissionRuleMutation) OldScopeID(ctx context.Context) (v *int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldScopeID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldScopeID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldScopeID: %w", err)
+	}
+	return oldValue.ScopeID, nil
+}
+
+// AddScopeID adds i to the "scope_id" field.
+func (m *CommissionRuleMutation) AddScopeID(i int64) {
+	if m.addscope_id != nil {
+		*m.addscope_id += i
+	} else {
+		m.addscope_id = &i
+	}
+}
+
+// AddedScopeID returns the value that was added to the "scope_id" field in this mutation.
+func (m *CommissionRuleMutation) AddedScopeID() (r int64, exists bool) {
+	v := m.addscope_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearScopeID clears the value of the "scope_id" field.
+func (m *CommissionRuleMutation) ClearScopeID() {
+	m.scope_id = nil
+	m.addscope_id = nil
+	m.clearedFields[commissionrule.FieldScopeID] = struct{}{}
+}
+
+// ScopeIDCleared returns if the "scope_id" field was cleared in this mutation.
+func (m *CommissionRuleMutation) ScopeIDCleared() bool {
+	_, ok := m.clearedFields[commissionrule.FieldScopeID]
+	return ok
+}
+
+// ResetScopeID resets all changes to the "scope_id" field.
+func (m *CommissionRuleMutation) ResetScopeID() {
+	m.scope_id = nil
+	m.addscope_id = nil
+	delete(m.clearedFields, commissionrule.FieldScopeID)
+}
+
+// SetPriority sets the "priority" field.
+func (m *CommissionRuleMutation) SetPriority(i int) {
+	m.priority = &i
+	m.addpriority = nil
+}
+
+// Priority returns the value of the "priority" field in the mutation.
+func (m *CommissionRuleMutation) Priority() (r int, exists bool) {
+	v := m.priority
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPriority returns the old "priority" field's value of the CommissionRule entity.
+// If the CommissionRule object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CommissionRuleMutation) OldPriority(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPriority is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPriority requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPriority: %w", err)
+	}
+	return oldValue.Priority, nil
+}
+
+// AddPriority adds i to the "priority" field.
+func (m *CommissionRuleMutation) AddPriority(i int) {
+	if m.addpriority != nil {
+		*m.addpriority += i
+	} else {
+		m.addpriority = &i
+	}
+}
+
+// AddedPriority returns the value that was added to the "priority" field in this mutation.
+func (m *CommissionRuleMutation) AddedPriority() (r int, exists bool) {
+	v := m.addpriority
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetPriority resets all changes to the "priority" field.
+func (m *CommissionRuleMutation) ResetPriority() {
+	m.priority = nil
+	m.addpriority = nil
+}
+
+// SetEffectiveAt sets the "effective_at" field.
+func (m *CommissionRuleMutation) SetEffectiveAt(t time.Time) {
+	m.effective_at = &t
+}
+
+// EffectiveAt returns the value of the "effective_at" field in the mutation.
+func (m *CommissionRuleMutation) EffectiveAt() (r time.Time, exists bool) {
+	v := m.effective_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldEffectiveAt returns the old "effective_at" field's value of the CommissionRule entity.
+// If the CommissionRule object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CommissionRuleMutation) OldEffectiveAt(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldEffectiveAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldEffectiveAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldEffectiveAt: %w", err)
+	}
+	return oldValue.EffectiveAt, nil
+}
+
+// ClearEffectiveAt clears the value of the "effective_at" field.
+func (m *CommissionRuleMutation) ClearEffectiveAt() {
+	m.effective_at = nil
+	m.clearedFields[commissionrule.FieldEffectiveAt] = struct{}{}
+}
+
+// EffectiveAtCleared returns if the "effective_at" field was cleared in this mutation.
+func (m *CommissionRuleMutation) EffectiveAtCleared() bool {
+	_, ok := m.clearedFields[commissionrule.FieldEffectiveAt]
+	return ok
+}
+
+// ResetEffectiveAt resets all changes to the "effective_at" field.
+func (m *CommissionRuleMutation) ResetEffectiveAt() {
+	m.effective_at = nil
+	delete(m.clearedFields, commissionrule.FieldEffectiveAt)
+}
+
+// SetExpiredAt sets the "expired_at" field.
+func (m *CommissionRuleMutation) SetExpiredAt(t time.Time) {
+	m.expired_at = &t
+}
+
+// ExpiredAt returns the value of the "expired_at" field in the mutation.
+func (m *CommissionRuleMutation) ExpiredAt() (r time.Time, exists bool) {
+	v := m.expired_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldExpiredAt returns the old "expired_at" field's value of the CommissionRule entity.
+// If the CommissionRule object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CommissionRuleMutation) OldExpiredAt(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldExpiredAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldExpiredAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldExpiredAt: %w", err)
+	}
+	return oldValue.ExpiredAt, nil
+}
+
+// ClearExpiredAt clears the value of the "expired_at" field.
+func (m *CommissionRuleMutation) ClearExpiredAt() {
+	m.expired_at = nil
+	m.clearedFields[commissionrule.FieldExpiredAt] = struct{}{}
+}
+
+// ExpiredAtCleared returns if the "expired_at" field was cleared in this mutation.
+func (m *CommissionRuleMutation) ExpiredAtCleared() bool {
+	_, ok := m.clearedFields[commissionrule.FieldExpiredAt]
+	return ok
+}
+
+// ResetExpiredAt resets all changes to the "expired_at" field.
+func (m *CommissionRuleMutation) ResetExpiredAt() {
+	m.expired_at = nil
+	delete(m.clearedFields, commissionrule.FieldExpiredAt)
+}
+
+// SetConfigJSON sets the "config_json" field.
+func (m *CommissionRuleMutation) SetConfigJSON(value map[string]interface{}) {
+	m.config_json = &value
+}
+
+// ConfigJSON returns the value of the "config_json" field in the mutation.
+func (m *CommissionRuleMutation) ConfigJSON() (r map[string]interface{}, exists bool) {
+	v := m.config_json
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldConfigJSON returns the old "config_json" field's value of the CommissionRule entity.
+// If the CommissionRule object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CommissionRuleMutation) OldConfigJSON(ctx context.Context) (v map[string]interface{}, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldConfigJSON is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldConfigJSON requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldConfigJSON: %w", err)
+	}
+	return oldValue.ConfigJSON, nil
+}
+
+// ClearConfigJSON clears the value of the "config_json" field.
+func (m *CommissionRuleMutation) ClearConfigJSON() {
+	m.config_json = nil
+	m.clearedFields[commissionrule.FieldConfigJSON] = struct{}{}
+}
+
+// ConfigJSONCleared returns if the "config_json" field was cleared in this mutation.
+func (m *CommissionRuleMutation) ConfigJSONCleared() bool {
+	_, ok := m.clearedFields[commissionrule.FieldConfigJSON]
+	return ok
+}
+
+// ResetConfigJSON resets all changes to the "config_json" field.
+func (m *CommissionRuleMutation) ResetConfigJSON() {
+	m.config_json = nil
+	delete(m.clearedFields, commissionrule.FieldConfigJSON)
+}
+
+// Where appends a list predicates to the CommissionRuleMutation builder.
+func (m *CommissionRuleMutation) Where(ps ...predicate.CommissionRule) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the CommissionRuleMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *CommissionRuleMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.CommissionRule, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *CommissionRuleMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *CommissionRuleMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (CommissionRule).
+func (m *CommissionRuleMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *CommissionRuleMutation) Fields() []string {
+	fields := make([]string, 0, 15)
+	if m.created_at != nil {
+		fields = append(fields, commissionrule.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, commissionrule.FieldUpdatedAt)
+	}
+	if m.name != nil {
+		fields = append(fields, commissionrule.FieldName)
+	}
+	if m.status != nil {
+		fields = append(fields, commissionrule.FieldStatus)
+	}
+	if m.calc_mode != nil {
+		fields = append(fields, commissionrule.FieldCalcMode)
+	}
+	if m.agent_target_rate != nil {
+		fields = append(fields, commissionrule.FieldAgentTargetRate)
+	}
+	if m.distributor_target_rate != nil {
+		fields = append(fields, commissionrule.FieldDistributorTargetRate)
+	}
+	if m.freeze_hours != nil {
+		fields = append(fields, commissionrule.FieldFreezeHours)
+	}
+	if m.settlement_mode != nil {
+		fields = append(fields, commissionrule.FieldSettlementMode)
+	}
+	if m.scope_type != nil {
+		fields = append(fields, commissionrule.FieldScopeType)
+	}
+	if m.scope_id != nil {
+		fields = append(fields, commissionrule.FieldScopeID)
+	}
+	if m.priority != nil {
+		fields = append(fields, commissionrule.FieldPriority)
+	}
+	if m.effective_at != nil {
+		fields = append(fields, commissionrule.FieldEffectiveAt)
+	}
+	if m.expired_at != nil {
+		fields = append(fields, commissionrule.FieldExpiredAt)
+	}
+	if m.config_json != nil {
+		fields = append(fields, commissionrule.FieldConfigJSON)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *CommissionRuleMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case commissionrule.FieldCreatedAt:
+		return m.CreatedAt()
+	case commissionrule.FieldUpdatedAt:
+		return m.UpdatedAt()
+	case commissionrule.FieldName:
+		return m.Name()
+	case commissionrule.FieldStatus:
+		return m.Status()
+	case commissionrule.FieldCalcMode:
+		return m.CalcMode()
+	case commissionrule.FieldAgentTargetRate:
+		return m.AgentTargetRate()
+	case commissionrule.FieldDistributorTargetRate:
+		return m.DistributorTargetRate()
+	case commissionrule.FieldFreezeHours:
+		return m.FreezeHours()
+	case commissionrule.FieldSettlementMode:
+		return m.SettlementMode()
+	case commissionrule.FieldScopeType:
+		return m.ScopeType()
+	case commissionrule.FieldScopeID:
+		return m.ScopeID()
+	case commissionrule.FieldPriority:
+		return m.Priority()
+	case commissionrule.FieldEffectiveAt:
+		return m.EffectiveAt()
+	case commissionrule.FieldExpiredAt:
+		return m.ExpiredAt()
+	case commissionrule.FieldConfigJSON:
+		return m.ConfigJSON()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *CommissionRuleMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case commissionrule.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case commissionrule.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
+	case commissionrule.FieldName:
+		return m.OldName(ctx)
+	case commissionrule.FieldStatus:
+		return m.OldStatus(ctx)
+	case commissionrule.FieldCalcMode:
+		return m.OldCalcMode(ctx)
+	case commissionrule.FieldAgentTargetRate:
+		return m.OldAgentTargetRate(ctx)
+	case commissionrule.FieldDistributorTargetRate:
+		return m.OldDistributorTargetRate(ctx)
+	case commissionrule.FieldFreezeHours:
+		return m.OldFreezeHours(ctx)
+	case commissionrule.FieldSettlementMode:
+		return m.OldSettlementMode(ctx)
+	case commissionrule.FieldScopeType:
+		return m.OldScopeType(ctx)
+	case commissionrule.FieldScopeID:
+		return m.OldScopeID(ctx)
+	case commissionrule.FieldPriority:
+		return m.OldPriority(ctx)
+	case commissionrule.FieldEffectiveAt:
+		return m.OldEffectiveAt(ctx)
+	case commissionrule.FieldExpiredAt:
+		return m.OldExpiredAt(ctx)
+	case commissionrule.FieldConfigJSON:
+		return m.OldConfigJSON(ctx)
+	}
+	return nil, fmt.Errorf("unknown CommissionRule field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *CommissionRuleMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case commissionrule.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case commissionrule.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
+	case commissionrule.FieldName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetName(v)
+		return nil
+	case commissionrule.FieldStatus:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetStatus(v)
+		return nil
+	case commissionrule.FieldCalcMode:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCalcMode(v)
+		return nil
+	case commissionrule.FieldAgentTargetRate:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAgentTargetRate(v)
+		return nil
+	case commissionrule.FieldDistributorTargetRate:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDistributorTargetRate(v)
+		return nil
+	case commissionrule.FieldFreezeHours:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetFreezeHours(v)
+		return nil
+	case commissionrule.FieldSettlementMode:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSettlementMode(v)
+		return nil
+	case commissionrule.FieldScopeType:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetScopeType(v)
+		return nil
+	case commissionrule.FieldScopeID:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetScopeID(v)
+		return nil
+	case commissionrule.FieldPriority:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPriority(v)
+		return nil
+	case commissionrule.FieldEffectiveAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetEffectiveAt(v)
+		return nil
+	case commissionrule.FieldExpiredAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetExpiredAt(v)
+		return nil
+	case commissionrule.FieldConfigJSON:
+		v, ok := value.(map[string]interface{})
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetConfigJSON(v)
+		return nil
+	}
+	return fmt.Errorf("unknown CommissionRule field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *CommissionRuleMutation) AddedFields() []string {
+	var fields []string
+	if m.addagent_target_rate != nil {
+		fields = append(fields, commissionrule.FieldAgentTargetRate)
+	}
+	if m.adddistributor_target_rate != nil {
+		fields = append(fields, commissionrule.FieldDistributorTargetRate)
+	}
+	if m.addfreeze_hours != nil {
+		fields = append(fields, commissionrule.FieldFreezeHours)
+	}
+	if m.addscope_id != nil {
+		fields = append(fields, commissionrule.FieldScopeID)
+	}
+	if m.addpriority != nil {
+		fields = append(fields, commissionrule.FieldPriority)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *CommissionRuleMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case commissionrule.FieldAgentTargetRate:
+		return m.AddedAgentTargetRate()
+	case commissionrule.FieldDistributorTargetRate:
+		return m.AddedDistributorTargetRate()
+	case commissionrule.FieldFreezeHours:
+		return m.AddedFreezeHours()
+	case commissionrule.FieldScopeID:
+		return m.AddedScopeID()
+	case commissionrule.FieldPriority:
+		return m.AddedPriority()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *CommissionRuleMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case commissionrule.FieldAgentTargetRate:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddAgentTargetRate(v)
+		return nil
+	case commissionrule.FieldDistributorTargetRate:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddDistributorTargetRate(v)
+		return nil
+	case commissionrule.FieldFreezeHours:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddFreezeHours(v)
+		return nil
+	case commissionrule.FieldScopeID:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddScopeID(v)
+		return nil
+	case commissionrule.FieldPriority:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddPriority(v)
+		return nil
+	}
+	return fmt.Errorf("unknown CommissionRule numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *CommissionRuleMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(commissionrule.FieldScopeID) {
+		fields = append(fields, commissionrule.FieldScopeID)
+	}
+	if m.FieldCleared(commissionrule.FieldEffectiveAt) {
+		fields = append(fields, commissionrule.FieldEffectiveAt)
+	}
+	if m.FieldCleared(commissionrule.FieldExpiredAt) {
+		fields = append(fields, commissionrule.FieldExpiredAt)
+	}
+	if m.FieldCleared(commissionrule.FieldConfigJSON) {
+		fields = append(fields, commissionrule.FieldConfigJSON)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *CommissionRuleMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *CommissionRuleMutation) ClearField(name string) error {
+	switch name {
+	case commissionrule.FieldScopeID:
+		m.ClearScopeID()
+		return nil
+	case commissionrule.FieldEffectiveAt:
+		m.ClearEffectiveAt()
+		return nil
+	case commissionrule.FieldExpiredAt:
+		m.ClearExpiredAt()
+		return nil
+	case commissionrule.FieldConfigJSON:
+		m.ClearConfigJSON()
+		return nil
+	}
+	return fmt.Errorf("unknown CommissionRule nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *CommissionRuleMutation) ResetField(name string) error {
+	switch name {
+	case commissionrule.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case commissionrule.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
+	case commissionrule.FieldName:
+		m.ResetName()
+		return nil
+	case commissionrule.FieldStatus:
+		m.ResetStatus()
+		return nil
+	case commissionrule.FieldCalcMode:
+		m.ResetCalcMode()
+		return nil
+	case commissionrule.FieldAgentTargetRate:
+		m.ResetAgentTargetRate()
+		return nil
+	case commissionrule.FieldDistributorTargetRate:
+		m.ResetDistributorTargetRate()
+		return nil
+	case commissionrule.FieldFreezeHours:
+		m.ResetFreezeHours()
+		return nil
+	case commissionrule.FieldSettlementMode:
+		m.ResetSettlementMode()
+		return nil
+	case commissionrule.FieldScopeType:
+		m.ResetScopeType()
+		return nil
+	case commissionrule.FieldScopeID:
+		m.ResetScopeID()
+		return nil
+	case commissionrule.FieldPriority:
+		m.ResetPriority()
+		return nil
+	case commissionrule.FieldEffectiveAt:
+		m.ResetEffectiveAt()
+		return nil
+	case commissionrule.FieldExpiredAt:
+		m.ResetExpiredAt()
+		return nil
+	case commissionrule.FieldConfigJSON:
+		m.ResetConfigJSON()
+		return nil
+	}
+	return fmt.Errorf("unknown CommissionRule field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *CommissionRuleMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *CommissionRuleMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *CommissionRuleMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *CommissionRuleMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *CommissionRuleMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *CommissionRuleMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *CommissionRuleMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown CommissionRule unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *CommissionRuleMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown CommissionRule edge %s", name)
+}
+
+// CommissionSplitLogMutation represents an operation that mutates the CommissionSplitLog nodes in the graph.
+type CommissionSplitLogMutation struct {
+	config
+	op                      Op
+	typ                     string
+	id                      *int64
+	created_at              *time.Time
+	updated_at              *time.Time
+	beneficiary_role        *string
+	level                   *int
+	addlevel                *int
+	calc_mode               *string
+	base_amount             *float64
+	addbase_amount          *float64
+	target_rate             *float64
+	addtarget_rate          *float64
+	parent_rate             *float64
+	addparent_rate          *float64
+	commission_amount       *float64
+	addcommission_amount    *float64
+	status                  *string
+	settled_at              *time.Time
+	relation_snapshot       *map[string]interface{}
+	remark                  *string
+	clearedFields           map[string]struct{}
+	payment_order           *int64
+	clearedpayment_order    bool
+	consumer_user           *int64
+	clearedconsumer_user    bool
+	beneficiary_user        *int64
+	clearedbeneficiary_user bool
+	agent_user              *int64
+	clearedagent_user       bool
+	distributor_user        *int64
+	cleareddistributor_user bool
+	commission_rule         *int64
+	clearedcommission_rule  bool
+	done                    bool
+	oldValue                func(context.Context) (*CommissionSplitLog, error)
+	predicates              []predicate.CommissionSplitLog
+}
+
+var _ ent.Mutation = (*CommissionSplitLogMutation)(nil)
+
+// commissionsplitlogOption allows management of the mutation configuration using functional options.
+type commissionsplitlogOption func(*CommissionSplitLogMutation)
+
+// newCommissionSplitLogMutation creates new mutation for the CommissionSplitLog entity.
+func newCommissionSplitLogMutation(c config, op Op, opts ...commissionsplitlogOption) *CommissionSplitLogMutation {
+	m := &CommissionSplitLogMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeCommissionSplitLog,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withCommissionSplitLogID sets the ID field of the mutation.
+func withCommissionSplitLogID(id int64) commissionsplitlogOption {
+	return func(m *CommissionSplitLogMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *CommissionSplitLog
+		)
+		m.oldValue = func(ctx context.Context) (*CommissionSplitLog, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().CommissionSplitLog.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withCommissionSplitLog sets the old CommissionSplitLog of the mutation.
+func withCommissionSplitLog(node *CommissionSplitLog) commissionsplitlogOption {
+	return func(m *CommissionSplitLogMutation) {
+		m.oldValue = func(context.Context) (*CommissionSplitLog, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m CommissionSplitLogMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m CommissionSplitLogMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *CommissionSplitLogMutation) ID() (id int64, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *CommissionSplitLogMutation) IDs(ctx context.Context) ([]int64, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int64{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().CommissionSplitLog.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *CommissionSplitLogMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *CommissionSplitLogMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the CommissionSplitLog entity.
+// If the CommissionSplitLog object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CommissionSplitLogMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *CommissionSplitLogMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *CommissionSplitLogMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *CommissionSplitLogMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the CommissionSplitLog entity.
+// If the CommissionSplitLog object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CommissionSplitLogMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *CommissionSplitLogMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+}
+
+// SetOrderID sets the "order_id" field.
+func (m *CommissionSplitLogMutation) SetOrderID(i int64) {
+	m.payment_order = &i
+}
+
+// OrderID returns the value of the "order_id" field in the mutation.
+func (m *CommissionSplitLogMutation) OrderID() (r int64, exists bool) {
+	v := m.payment_order
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldOrderID returns the old "order_id" field's value of the CommissionSplitLog entity.
+// If the CommissionSplitLog object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CommissionSplitLogMutation) OldOrderID(ctx context.Context) (v *int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldOrderID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldOrderID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldOrderID: %w", err)
+	}
+	return oldValue.OrderID, nil
+}
+
+// ClearOrderID clears the value of the "order_id" field.
+func (m *CommissionSplitLogMutation) ClearOrderID() {
+	m.payment_order = nil
+	m.clearedFields[commissionsplitlog.FieldOrderID] = struct{}{}
+}
+
+// OrderIDCleared returns if the "order_id" field was cleared in this mutation.
+func (m *CommissionSplitLogMutation) OrderIDCleared() bool {
+	_, ok := m.clearedFields[commissionsplitlog.FieldOrderID]
+	return ok
+}
+
+// ResetOrderID resets all changes to the "order_id" field.
+func (m *CommissionSplitLogMutation) ResetOrderID() {
+	m.payment_order = nil
+	delete(m.clearedFields, commissionsplitlog.FieldOrderID)
+}
+
+// SetConsumerUserID sets the "consumer_user_id" field.
+func (m *CommissionSplitLogMutation) SetConsumerUserID(i int64) {
+	m.consumer_user = &i
+}
+
+// ConsumerUserID returns the value of the "consumer_user_id" field in the mutation.
+func (m *CommissionSplitLogMutation) ConsumerUserID() (r int64, exists bool) {
+	v := m.consumer_user
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldConsumerUserID returns the old "consumer_user_id" field's value of the CommissionSplitLog entity.
+// If the CommissionSplitLog object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CommissionSplitLogMutation) OldConsumerUserID(ctx context.Context) (v int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldConsumerUserID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldConsumerUserID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldConsumerUserID: %w", err)
+	}
+	return oldValue.ConsumerUserID, nil
+}
+
+// ResetConsumerUserID resets all changes to the "consumer_user_id" field.
+func (m *CommissionSplitLogMutation) ResetConsumerUserID() {
+	m.consumer_user = nil
+}
+
+// SetBeneficiaryUserID sets the "beneficiary_user_id" field.
+func (m *CommissionSplitLogMutation) SetBeneficiaryUserID(i int64) {
+	m.beneficiary_user = &i
+}
+
+// BeneficiaryUserID returns the value of the "beneficiary_user_id" field in the mutation.
+func (m *CommissionSplitLogMutation) BeneficiaryUserID() (r int64, exists bool) {
+	v := m.beneficiary_user
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldBeneficiaryUserID returns the old "beneficiary_user_id" field's value of the CommissionSplitLog entity.
+// If the CommissionSplitLog object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CommissionSplitLogMutation) OldBeneficiaryUserID(ctx context.Context) (v int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldBeneficiaryUserID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldBeneficiaryUserID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldBeneficiaryUserID: %w", err)
+	}
+	return oldValue.BeneficiaryUserID, nil
+}
+
+// ResetBeneficiaryUserID resets all changes to the "beneficiary_user_id" field.
+func (m *CommissionSplitLogMutation) ResetBeneficiaryUserID() {
+	m.beneficiary_user = nil
+}
+
+// SetBeneficiaryRole sets the "beneficiary_role" field.
+func (m *CommissionSplitLogMutation) SetBeneficiaryRole(s string) {
+	m.beneficiary_role = &s
+}
+
+// BeneficiaryRole returns the value of the "beneficiary_role" field in the mutation.
+func (m *CommissionSplitLogMutation) BeneficiaryRole() (r string, exists bool) {
+	v := m.beneficiary_role
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldBeneficiaryRole returns the old "beneficiary_role" field's value of the CommissionSplitLog entity.
+// If the CommissionSplitLog object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CommissionSplitLogMutation) OldBeneficiaryRole(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldBeneficiaryRole is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldBeneficiaryRole requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldBeneficiaryRole: %w", err)
+	}
+	return oldValue.BeneficiaryRole, nil
+}
+
+// ResetBeneficiaryRole resets all changes to the "beneficiary_role" field.
+func (m *CommissionSplitLogMutation) ResetBeneficiaryRole() {
+	m.beneficiary_role = nil
+}
+
+// SetAgentUserID sets the "agent_user_id" field.
+func (m *CommissionSplitLogMutation) SetAgentUserID(i int64) {
+	m.agent_user = &i
+}
+
+// AgentUserID returns the value of the "agent_user_id" field in the mutation.
+func (m *CommissionSplitLogMutation) AgentUserID() (r int64, exists bool) {
+	v := m.agent_user
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAgentUserID returns the old "agent_user_id" field's value of the CommissionSplitLog entity.
+// If the CommissionSplitLog object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CommissionSplitLogMutation) OldAgentUserID(ctx context.Context) (v *int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAgentUserID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAgentUserID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAgentUserID: %w", err)
+	}
+	return oldValue.AgentUserID, nil
+}
+
+// ClearAgentUserID clears the value of the "agent_user_id" field.
+func (m *CommissionSplitLogMutation) ClearAgentUserID() {
+	m.agent_user = nil
+	m.clearedFields[commissionsplitlog.FieldAgentUserID] = struct{}{}
+}
+
+// AgentUserIDCleared returns if the "agent_user_id" field was cleared in this mutation.
+func (m *CommissionSplitLogMutation) AgentUserIDCleared() bool {
+	_, ok := m.clearedFields[commissionsplitlog.FieldAgentUserID]
+	return ok
+}
+
+// ResetAgentUserID resets all changes to the "agent_user_id" field.
+func (m *CommissionSplitLogMutation) ResetAgentUserID() {
+	m.agent_user = nil
+	delete(m.clearedFields, commissionsplitlog.FieldAgentUserID)
+}
+
+// SetDistributorUserID sets the "distributor_user_id" field.
+func (m *CommissionSplitLogMutation) SetDistributorUserID(i int64) {
+	m.distributor_user = &i
+}
+
+// DistributorUserID returns the value of the "distributor_user_id" field in the mutation.
+func (m *CommissionSplitLogMutation) DistributorUserID() (r int64, exists bool) {
+	v := m.distributor_user
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDistributorUserID returns the old "distributor_user_id" field's value of the CommissionSplitLog entity.
+// If the CommissionSplitLog object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CommissionSplitLogMutation) OldDistributorUserID(ctx context.Context) (v *int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDistributorUserID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDistributorUserID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDistributorUserID: %w", err)
+	}
+	return oldValue.DistributorUserID, nil
+}
+
+// ClearDistributorUserID clears the value of the "distributor_user_id" field.
+func (m *CommissionSplitLogMutation) ClearDistributorUserID() {
+	m.distributor_user = nil
+	m.clearedFields[commissionsplitlog.FieldDistributorUserID] = struct{}{}
+}
+
+// DistributorUserIDCleared returns if the "distributor_user_id" field was cleared in this mutation.
+func (m *CommissionSplitLogMutation) DistributorUserIDCleared() bool {
+	_, ok := m.clearedFields[commissionsplitlog.FieldDistributorUserID]
+	return ok
+}
+
+// ResetDistributorUserID resets all changes to the "distributor_user_id" field.
+func (m *CommissionSplitLogMutation) ResetDistributorUserID() {
+	m.distributor_user = nil
+	delete(m.clearedFields, commissionsplitlog.FieldDistributorUserID)
+}
+
+// SetLevel sets the "level" field.
+func (m *CommissionSplitLogMutation) SetLevel(i int) {
+	m.level = &i
+	m.addlevel = nil
+}
+
+// Level returns the value of the "level" field in the mutation.
+func (m *CommissionSplitLogMutation) Level() (r int, exists bool) {
+	v := m.level
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLevel returns the old "level" field's value of the CommissionSplitLog entity.
+// If the CommissionSplitLog object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CommissionSplitLogMutation) OldLevel(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLevel is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLevel requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLevel: %w", err)
+	}
+	return oldValue.Level, nil
+}
+
+// AddLevel adds i to the "level" field.
+func (m *CommissionSplitLogMutation) AddLevel(i int) {
+	if m.addlevel != nil {
+		*m.addlevel += i
+	} else {
+		m.addlevel = &i
+	}
+}
+
+// AddedLevel returns the value that was added to the "level" field in this mutation.
+func (m *CommissionSplitLogMutation) AddedLevel() (r int, exists bool) {
+	v := m.addlevel
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetLevel resets all changes to the "level" field.
+func (m *CommissionSplitLogMutation) ResetLevel() {
+	m.level = nil
+	m.addlevel = nil
+}
+
+// SetCalcMode sets the "calc_mode" field.
+func (m *CommissionSplitLogMutation) SetCalcMode(s string) {
+	m.calc_mode = &s
+}
+
+// CalcMode returns the value of the "calc_mode" field in the mutation.
+func (m *CommissionSplitLogMutation) CalcMode() (r string, exists bool) {
+	v := m.calc_mode
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCalcMode returns the old "calc_mode" field's value of the CommissionSplitLog entity.
+// If the CommissionSplitLog object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CommissionSplitLogMutation) OldCalcMode(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCalcMode is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCalcMode requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCalcMode: %w", err)
+	}
+	return oldValue.CalcMode, nil
+}
+
+// ResetCalcMode resets all changes to the "calc_mode" field.
+func (m *CommissionSplitLogMutation) ResetCalcMode() {
+	m.calc_mode = nil
+}
+
+// SetBaseAmount sets the "base_amount" field.
+func (m *CommissionSplitLogMutation) SetBaseAmount(f float64) {
+	m.base_amount = &f
+	m.addbase_amount = nil
+}
+
+// BaseAmount returns the value of the "base_amount" field in the mutation.
+func (m *CommissionSplitLogMutation) BaseAmount() (r float64, exists bool) {
+	v := m.base_amount
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldBaseAmount returns the old "base_amount" field's value of the CommissionSplitLog entity.
+// If the CommissionSplitLog object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CommissionSplitLogMutation) OldBaseAmount(ctx context.Context) (v float64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldBaseAmount is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldBaseAmount requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldBaseAmount: %w", err)
+	}
+	return oldValue.BaseAmount, nil
+}
+
+// AddBaseAmount adds f to the "base_amount" field.
+func (m *CommissionSplitLogMutation) AddBaseAmount(f float64) {
+	if m.addbase_amount != nil {
+		*m.addbase_amount += f
+	} else {
+		m.addbase_amount = &f
+	}
+}
+
+// AddedBaseAmount returns the value that was added to the "base_amount" field in this mutation.
+func (m *CommissionSplitLogMutation) AddedBaseAmount() (r float64, exists bool) {
+	v := m.addbase_amount
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetBaseAmount resets all changes to the "base_amount" field.
+func (m *CommissionSplitLogMutation) ResetBaseAmount() {
+	m.base_amount = nil
+	m.addbase_amount = nil
+}
+
+// SetTargetRate sets the "target_rate" field.
+func (m *CommissionSplitLogMutation) SetTargetRate(f float64) {
+	m.target_rate = &f
+	m.addtarget_rate = nil
+}
+
+// TargetRate returns the value of the "target_rate" field in the mutation.
+func (m *CommissionSplitLogMutation) TargetRate() (r float64, exists bool) {
+	v := m.target_rate
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTargetRate returns the old "target_rate" field's value of the CommissionSplitLog entity.
+// If the CommissionSplitLog object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CommissionSplitLogMutation) OldTargetRate(ctx context.Context) (v float64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTargetRate is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTargetRate requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTargetRate: %w", err)
+	}
+	return oldValue.TargetRate, nil
+}
+
+// AddTargetRate adds f to the "target_rate" field.
+func (m *CommissionSplitLogMutation) AddTargetRate(f float64) {
+	if m.addtarget_rate != nil {
+		*m.addtarget_rate += f
+	} else {
+		m.addtarget_rate = &f
+	}
+}
+
+// AddedTargetRate returns the value that was added to the "target_rate" field in this mutation.
+func (m *CommissionSplitLogMutation) AddedTargetRate() (r float64, exists bool) {
+	v := m.addtarget_rate
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetTargetRate resets all changes to the "target_rate" field.
+func (m *CommissionSplitLogMutation) ResetTargetRate() {
+	m.target_rate = nil
+	m.addtarget_rate = nil
+}
+
+// SetParentRate sets the "parent_rate" field.
+func (m *CommissionSplitLogMutation) SetParentRate(f float64) {
+	m.parent_rate = &f
+	m.addparent_rate = nil
+}
+
+// ParentRate returns the value of the "parent_rate" field in the mutation.
+func (m *CommissionSplitLogMutation) ParentRate() (r float64, exists bool) {
+	v := m.parent_rate
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldParentRate returns the old "parent_rate" field's value of the CommissionSplitLog entity.
+// If the CommissionSplitLog object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CommissionSplitLogMutation) OldParentRate(ctx context.Context) (v float64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldParentRate is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldParentRate requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldParentRate: %w", err)
+	}
+	return oldValue.ParentRate, nil
+}
+
+// AddParentRate adds f to the "parent_rate" field.
+func (m *CommissionSplitLogMutation) AddParentRate(f float64) {
+	if m.addparent_rate != nil {
+		*m.addparent_rate += f
+	} else {
+		m.addparent_rate = &f
+	}
+}
+
+// AddedParentRate returns the value that was added to the "parent_rate" field in this mutation.
+func (m *CommissionSplitLogMutation) AddedParentRate() (r float64, exists bool) {
+	v := m.addparent_rate
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetParentRate resets all changes to the "parent_rate" field.
+func (m *CommissionSplitLogMutation) ResetParentRate() {
+	m.parent_rate = nil
+	m.addparent_rate = nil
+}
+
+// SetCommissionAmount sets the "commission_amount" field.
+func (m *CommissionSplitLogMutation) SetCommissionAmount(f float64) {
+	m.commission_amount = &f
+	m.addcommission_amount = nil
+}
+
+// CommissionAmount returns the value of the "commission_amount" field in the mutation.
+func (m *CommissionSplitLogMutation) CommissionAmount() (r float64, exists bool) {
+	v := m.commission_amount
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCommissionAmount returns the old "commission_amount" field's value of the CommissionSplitLog entity.
+// If the CommissionSplitLog object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CommissionSplitLogMutation) OldCommissionAmount(ctx context.Context) (v float64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCommissionAmount is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCommissionAmount requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCommissionAmount: %w", err)
+	}
+	return oldValue.CommissionAmount, nil
+}
+
+// AddCommissionAmount adds f to the "commission_amount" field.
+func (m *CommissionSplitLogMutation) AddCommissionAmount(f float64) {
+	if m.addcommission_amount != nil {
+		*m.addcommission_amount += f
+	} else {
+		m.addcommission_amount = &f
+	}
+}
+
+// AddedCommissionAmount returns the value that was added to the "commission_amount" field in this mutation.
+func (m *CommissionSplitLogMutation) AddedCommissionAmount() (r float64, exists bool) {
+	v := m.addcommission_amount
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetCommissionAmount resets all changes to the "commission_amount" field.
+func (m *CommissionSplitLogMutation) ResetCommissionAmount() {
+	m.commission_amount = nil
+	m.addcommission_amount = nil
+}
+
+// SetStatus sets the "status" field.
+func (m *CommissionSplitLogMutation) SetStatus(s string) {
+	m.status = &s
+}
+
+// Status returns the value of the "status" field in the mutation.
+func (m *CommissionSplitLogMutation) Status() (r string, exists bool) {
+	v := m.status
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldStatus returns the old "status" field's value of the CommissionSplitLog entity.
+// If the CommissionSplitLog object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CommissionSplitLogMutation) OldStatus(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldStatus is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldStatus requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldStatus: %w", err)
+	}
+	return oldValue.Status, nil
+}
+
+// ResetStatus resets all changes to the "status" field.
+func (m *CommissionSplitLogMutation) ResetStatus() {
+	m.status = nil
+}
+
+// SetRuleID sets the "rule_id" field.
+func (m *CommissionSplitLogMutation) SetRuleID(i int64) {
+	m.commission_rule = &i
+}
+
+// RuleID returns the value of the "rule_id" field in the mutation.
+func (m *CommissionSplitLogMutation) RuleID() (r int64, exists bool) {
+	v := m.commission_rule
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldRuleID returns the old "rule_id" field's value of the CommissionSplitLog entity.
+// If the CommissionSplitLog object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CommissionSplitLogMutation) OldRuleID(ctx context.Context) (v *int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldRuleID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldRuleID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldRuleID: %w", err)
+	}
+	return oldValue.RuleID, nil
+}
+
+// ClearRuleID clears the value of the "rule_id" field.
+func (m *CommissionSplitLogMutation) ClearRuleID() {
+	m.commission_rule = nil
+	m.clearedFields[commissionsplitlog.FieldRuleID] = struct{}{}
+}
+
+// RuleIDCleared returns if the "rule_id" field was cleared in this mutation.
+func (m *CommissionSplitLogMutation) RuleIDCleared() bool {
+	_, ok := m.clearedFields[commissionsplitlog.FieldRuleID]
+	return ok
+}
+
+// ResetRuleID resets all changes to the "rule_id" field.
+func (m *CommissionSplitLogMutation) ResetRuleID() {
+	m.commission_rule = nil
+	delete(m.clearedFields, commissionsplitlog.FieldRuleID)
+}
+
+// SetSettledAt sets the "settled_at" field.
+func (m *CommissionSplitLogMutation) SetSettledAt(t time.Time) {
+	m.settled_at = &t
+}
+
+// SettledAt returns the value of the "settled_at" field in the mutation.
+func (m *CommissionSplitLogMutation) SettledAt() (r time.Time, exists bool) {
+	v := m.settled_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSettledAt returns the old "settled_at" field's value of the CommissionSplitLog entity.
+// If the CommissionSplitLog object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CommissionSplitLogMutation) OldSettledAt(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSettledAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSettledAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSettledAt: %w", err)
+	}
+	return oldValue.SettledAt, nil
+}
+
+// ClearSettledAt clears the value of the "settled_at" field.
+func (m *CommissionSplitLogMutation) ClearSettledAt() {
+	m.settled_at = nil
+	m.clearedFields[commissionsplitlog.FieldSettledAt] = struct{}{}
+}
+
+// SettledAtCleared returns if the "settled_at" field was cleared in this mutation.
+func (m *CommissionSplitLogMutation) SettledAtCleared() bool {
+	_, ok := m.clearedFields[commissionsplitlog.FieldSettledAt]
+	return ok
+}
+
+// ResetSettledAt resets all changes to the "settled_at" field.
+func (m *CommissionSplitLogMutation) ResetSettledAt() {
+	m.settled_at = nil
+	delete(m.clearedFields, commissionsplitlog.FieldSettledAt)
+}
+
+// SetRelationSnapshot sets the "relation_snapshot" field.
+func (m *CommissionSplitLogMutation) SetRelationSnapshot(value map[string]interface{}) {
+	m.relation_snapshot = &value
+}
+
+// RelationSnapshot returns the value of the "relation_snapshot" field in the mutation.
+func (m *CommissionSplitLogMutation) RelationSnapshot() (r map[string]interface{}, exists bool) {
+	v := m.relation_snapshot
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldRelationSnapshot returns the old "relation_snapshot" field's value of the CommissionSplitLog entity.
+// If the CommissionSplitLog object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CommissionSplitLogMutation) OldRelationSnapshot(ctx context.Context) (v map[string]interface{}, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldRelationSnapshot is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldRelationSnapshot requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldRelationSnapshot: %w", err)
+	}
+	return oldValue.RelationSnapshot, nil
+}
+
+// ClearRelationSnapshot clears the value of the "relation_snapshot" field.
+func (m *CommissionSplitLogMutation) ClearRelationSnapshot() {
+	m.relation_snapshot = nil
+	m.clearedFields[commissionsplitlog.FieldRelationSnapshot] = struct{}{}
+}
+
+// RelationSnapshotCleared returns if the "relation_snapshot" field was cleared in this mutation.
+func (m *CommissionSplitLogMutation) RelationSnapshotCleared() bool {
+	_, ok := m.clearedFields[commissionsplitlog.FieldRelationSnapshot]
+	return ok
+}
+
+// ResetRelationSnapshot resets all changes to the "relation_snapshot" field.
+func (m *CommissionSplitLogMutation) ResetRelationSnapshot() {
+	m.relation_snapshot = nil
+	delete(m.clearedFields, commissionsplitlog.FieldRelationSnapshot)
+}
+
+// SetRemark sets the "remark" field.
+func (m *CommissionSplitLogMutation) SetRemark(s string) {
+	m.remark = &s
+}
+
+// Remark returns the value of the "remark" field in the mutation.
+func (m *CommissionSplitLogMutation) Remark() (r string, exists bool) {
+	v := m.remark
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldRemark returns the old "remark" field's value of the CommissionSplitLog entity.
+// If the CommissionSplitLog object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CommissionSplitLogMutation) OldRemark(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldRemark is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldRemark requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldRemark: %w", err)
+	}
+	return oldValue.Remark, nil
+}
+
+// ClearRemark clears the value of the "remark" field.
+func (m *CommissionSplitLogMutation) ClearRemark() {
+	m.remark = nil
+	m.clearedFields[commissionsplitlog.FieldRemark] = struct{}{}
+}
+
+// RemarkCleared returns if the "remark" field was cleared in this mutation.
+func (m *CommissionSplitLogMutation) RemarkCleared() bool {
+	_, ok := m.clearedFields[commissionsplitlog.FieldRemark]
+	return ok
+}
+
+// ResetRemark resets all changes to the "remark" field.
+func (m *CommissionSplitLogMutation) ResetRemark() {
+	m.remark = nil
+	delete(m.clearedFields, commissionsplitlog.FieldRemark)
+}
+
+// SetPaymentOrderID sets the "payment_order" edge to the PaymentOrder entity by id.
+func (m *CommissionSplitLogMutation) SetPaymentOrderID(id int64) {
+	m.payment_order = &id
+}
+
+// ClearPaymentOrder clears the "payment_order" edge to the PaymentOrder entity.
+func (m *CommissionSplitLogMutation) ClearPaymentOrder() {
+	m.clearedpayment_order = true
+	m.clearedFields[commissionsplitlog.FieldOrderID] = struct{}{}
+}
+
+// PaymentOrderCleared reports if the "payment_order" edge to the PaymentOrder entity was cleared.
+func (m *CommissionSplitLogMutation) PaymentOrderCleared() bool {
+	return m.OrderIDCleared() || m.clearedpayment_order
+}
+
+// PaymentOrderID returns the "payment_order" edge ID in the mutation.
+func (m *CommissionSplitLogMutation) PaymentOrderID() (id int64, exists bool) {
+	if m.payment_order != nil {
+		return *m.payment_order, true
+	}
+	return
+}
+
+// PaymentOrderIDs returns the "payment_order" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// PaymentOrderID instead. It exists only for internal usage by the builders.
+func (m *CommissionSplitLogMutation) PaymentOrderIDs() (ids []int64) {
+	if id := m.payment_order; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetPaymentOrder resets all changes to the "payment_order" edge.
+func (m *CommissionSplitLogMutation) ResetPaymentOrder() {
+	m.payment_order = nil
+	m.clearedpayment_order = false
+}
+
+// ClearConsumerUser clears the "consumer_user" edge to the User entity.
+func (m *CommissionSplitLogMutation) ClearConsumerUser() {
+	m.clearedconsumer_user = true
+	m.clearedFields[commissionsplitlog.FieldConsumerUserID] = struct{}{}
+}
+
+// ConsumerUserCleared reports if the "consumer_user" edge to the User entity was cleared.
+func (m *CommissionSplitLogMutation) ConsumerUserCleared() bool {
+	return m.clearedconsumer_user
+}
+
+// ConsumerUserIDs returns the "consumer_user" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ConsumerUserID instead. It exists only for internal usage by the builders.
+func (m *CommissionSplitLogMutation) ConsumerUserIDs() (ids []int64) {
+	if id := m.consumer_user; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetConsumerUser resets all changes to the "consumer_user" edge.
+func (m *CommissionSplitLogMutation) ResetConsumerUser() {
+	m.consumer_user = nil
+	m.clearedconsumer_user = false
+}
+
+// ClearBeneficiaryUser clears the "beneficiary_user" edge to the User entity.
+func (m *CommissionSplitLogMutation) ClearBeneficiaryUser() {
+	m.clearedbeneficiary_user = true
+	m.clearedFields[commissionsplitlog.FieldBeneficiaryUserID] = struct{}{}
+}
+
+// BeneficiaryUserCleared reports if the "beneficiary_user" edge to the User entity was cleared.
+func (m *CommissionSplitLogMutation) BeneficiaryUserCleared() bool {
+	return m.clearedbeneficiary_user
+}
+
+// BeneficiaryUserIDs returns the "beneficiary_user" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// BeneficiaryUserID instead. It exists only for internal usage by the builders.
+func (m *CommissionSplitLogMutation) BeneficiaryUserIDs() (ids []int64) {
+	if id := m.beneficiary_user; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetBeneficiaryUser resets all changes to the "beneficiary_user" edge.
+func (m *CommissionSplitLogMutation) ResetBeneficiaryUser() {
+	m.beneficiary_user = nil
+	m.clearedbeneficiary_user = false
+}
+
+// ClearAgentUser clears the "agent_user" edge to the User entity.
+func (m *CommissionSplitLogMutation) ClearAgentUser() {
+	m.clearedagent_user = true
+	m.clearedFields[commissionsplitlog.FieldAgentUserID] = struct{}{}
+}
+
+// AgentUserCleared reports if the "agent_user" edge to the User entity was cleared.
+func (m *CommissionSplitLogMutation) AgentUserCleared() bool {
+	return m.AgentUserIDCleared() || m.clearedagent_user
+}
+
+// AgentUserIDs returns the "agent_user" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// AgentUserID instead. It exists only for internal usage by the builders.
+func (m *CommissionSplitLogMutation) AgentUserIDs() (ids []int64) {
+	if id := m.agent_user; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetAgentUser resets all changes to the "agent_user" edge.
+func (m *CommissionSplitLogMutation) ResetAgentUser() {
+	m.agent_user = nil
+	m.clearedagent_user = false
+}
+
+// ClearDistributorUser clears the "distributor_user" edge to the User entity.
+func (m *CommissionSplitLogMutation) ClearDistributorUser() {
+	m.cleareddistributor_user = true
+	m.clearedFields[commissionsplitlog.FieldDistributorUserID] = struct{}{}
+}
+
+// DistributorUserCleared reports if the "distributor_user" edge to the User entity was cleared.
+func (m *CommissionSplitLogMutation) DistributorUserCleared() bool {
+	return m.DistributorUserIDCleared() || m.cleareddistributor_user
+}
+
+// DistributorUserIDs returns the "distributor_user" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// DistributorUserID instead. It exists only for internal usage by the builders.
+func (m *CommissionSplitLogMutation) DistributorUserIDs() (ids []int64) {
+	if id := m.distributor_user; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetDistributorUser resets all changes to the "distributor_user" edge.
+func (m *CommissionSplitLogMutation) ResetDistributorUser() {
+	m.distributor_user = nil
+	m.cleareddistributor_user = false
+}
+
+// SetCommissionRuleID sets the "commission_rule" edge to the CommissionRule entity by id.
+func (m *CommissionSplitLogMutation) SetCommissionRuleID(id int64) {
+	m.commission_rule = &id
+}
+
+// ClearCommissionRule clears the "commission_rule" edge to the CommissionRule entity.
+func (m *CommissionSplitLogMutation) ClearCommissionRule() {
+	m.clearedcommission_rule = true
+	m.clearedFields[commissionsplitlog.FieldRuleID] = struct{}{}
+}
+
+// CommissionRuleCleared reports if the "commission_rule" edge to the CommissionRule entity was cleared.
+func (m *CommissionSplitLogMutation) CommissionRuleCleared() bool {
+	return m.RuleIDCleared() || m.clearedcommission_rule
+}
+
+// CommissionRuleID returns the "commission_rule" edge ID in the mutation.
+func (m *CommissionSplitLogMutation) CommissionRuleID() (id int64, exists bool) {
+	if m.commission_rule != nil {
+		return *m.commission_rule, true
+	}
+	return
+}
+
+// CommissionRuleIDs returns the "commission_rule" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// CommissionRuleID instead. It exists only for internal usage by the builders.
+func (m *CommissionSplitLogMutation) CommissionRuleIDs() (ids []int64) {
+	if id := m.commission_rule; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetCommissionRule resets all changes to the "commission_rule" edge.
+func (m *CommissionSplitLogMutation) ResetCommissionRule() {
+	m.commission_rule = nil
+	m.clearedcommission_rule = false
+}
+
+// Where appends a list predicates to the CommissionSplitLogMutation builder.
+func (m *CommissionSplitLogMutation) Where(ps ...predicate.CommissionSplitLog) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the CommissionSplitLogMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *CommissionSplitLogMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.CommissionSplitLog, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *CommissionSplitLogMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *CommissionSplitLogMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (CommissionSplitLog).
+func (m *CommissionSplitLogMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *CommissionSplitLogMutation) Fields() []string {
+	fields := make([]string, 0, 19)
+	if m.created_at != nil {
+		fields = append(fields, commissionsplitlog.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, commissionsplitlog.FieldUpdatedAt)
+	}
+	if m.payment_order != nil {
+		fields = append(fields, commissionsplitlog.FieldOrderID)
+	}
+	if m.consumer_user != nil {
+		fields = append(fields, commissionsplitlog.FieldConsumerUserID)
+	}
+	if m.beneficiary_user != nil {
+		fields = append(fields, commissionsplitlog.FieldBeneficiaryUserID)
+	}
+	if m.beneficiary_role != nil {
+		fields = append(fields, commissionsplitlog.FieldBeneficiaryRole)
+	}
+	if m.agent_user != nil {
+		fields = append(fields, commissionsplitlog.FieldAgentUserID)
+	}
+	if m.distributor_user != nil {
+		fields = append(fields, commissionsplitlog.FieldDistributorUserID)
+	}
+	if m.level != nil {
+		fields = append(fields, commissionsplitlog.FieldLevel)
+	}
+	if m.calc_mode != nil {
+		fields = append(fields, commissionsplitlog.FieldCalcMode)
+	}
+	if m.base_amount != nil {
+		fields = append(fields, commissionsplitlog.FieldBaseAmount)
+	}
+	if m.target_rate != nil {
+		fields = append(fields, commissionsplitlog.FieldTargetRate)
+	}
+	if m.parent_rate != nil {
+		fields = append(fields, commissionsplitlog.FieldParentRate)
+	}
+	if m.commission_amount != nil {
+		fields = append(fields, commissionsplitlog.FieldCommissionAmount)
+	}
+	if m.status != nil {
+		fields = append(fields, commissionsplitlog.FieldStatus)
+	}
+	if m.commission_rule != nil {
+		fields = append(fields, commissionsplitlog.FieldRuleID)
+	}
+	if m.settled_at != nil {
+		fields = append(fields, commissionsplitlog.FieldSettledAt)
+	}
+	if m.relation_snapshot != nil {
+		fields = append(fields, commissionsplitlog.FieldRelationSnapshot)
+	}
+	if m.remark != nil {
+		fields = append(fields, commissionsplitlog.FieldRemark)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *CommissionSplitLogMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case commissionsplitlog.FieldCreatedAt:
+		return m.CreatedAt()
+	case commissionsplitlog.FieldUpdatedAt:
+		return m.UpdatedAt()
+	case commissionsplitlog.FieldOrderID:
+		return m.OrderID()
+	case commissionsplitlog.FieldConsumerUserID:
+		return m.ConsumerUserID()
+	case commissionsplitlog.FieldBeneficiaryUserID:
+		return m.BeneficiaryUserID()
+	case commissionsplitlog.FieldBeneficiaryRole:
+		return m.BeneficiaryRole()
+	case commissionsplitlog.FieldAgentUserID:
+		return m.AgentUserID()
+	case commissionsplitlog.FieldDistributorUserID:
+		return m.DistributorUserID()
+	case commissionsplitlog.FieldLevel:
+		return m.Level()
+	case commissionsplitlog.FieldCalcMode:
+		return m.CalcMode()
+	case commissionsplitlog.FieldBaseAmount:
+		return m.BaseAmount()
+	case commissionsplitlog.FieldTargetRate:
+		return m.TargetRate()
+	case commissionsplitlog.FieldParentRate:
+		return m.ParentRate()
+	case commissionsplitlog.FieldCommissionAmount:
+		return m.CommissionAmount()
+	case commissionsplitlog.FieldStatus:
+		return m.Status()
+	case commissionsplitlog.FieldRuleID:
+		return m.RuleID()
+	case commissionsplitlog.FieldSettledAt:
+		return m.SettledAt()
+	case commissionsplitlog.FieldRelationSnapshot:
+		return m.RelationSnapshot()
+	case commissionsplitlog.FieldRemark:
+		return m.Remark()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *CommissionSplitLogMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case commissionsplitlog.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case commissionsplitlog.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
+	case commissionsplitlog.FieldOrderID:
+		return m.OldOrderID(ctx)
+	case commissionsplitlog.FieldConsumerUserID:
+		return m.OldConsumerUserID(ctx)
+	case commissionsplitlog.FieldBeneficiaryUserID:
+		return m.OldBeneficiaryUserID(ctx)
+	case commissionsplitlog.FieldBeneficiaryRole:
+		return m.OldBeneficiaryRole(ctx)
+	case commissionsplitlog.FieldAgentUserID:
+		return m.OldAgentUserID(ctx)
+	case commissionsplitlog.FieldDistributorUserID:
+		return m.OldDistributorUserID(ctx)
+	case commissionsplitlog.FieldLevel:
+		return m.OldLevel(ctx)
+	case commissionsplitlog.FieldCalcMode:
+		return m.OldCalcMode(ctx)
+	case commissionsplitlog.FieldBaseAmount:
+		return m.OldBaseAmount(ctx)
+	case commissionsplitlog.FieldTargetRate:
+		return m.OldTargetRate(ctx)
+	case commissionsplitlog.FieldParentRate:
+		return m.OldParentRate(ctx)
+	case commissionsplitlog.FieldCommissionAmount:
+		return m.OldCommissionAmount(ctx)
+	case commissionsplitlog.FieldStatus:
+		return m.OldStatus(ctx)
+	case commissionsplitlog.FieldRuleID:
+		return m.OldRuleID(ctx)
+	case commissionsplitlog.FieldSettledAt:
+		return m.OldSettledAt(ctx)
+	case commissionsplitlog.FieldRelationSnapshot:
+		return m.OldRelationSnapshot(ctx)
+	case commissionsplitlog.FieldRemark:
+		return m.OldRemark(ctx)
+	}
+	return nil, fmt.Errorf("unknown CommissionSplitLog field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *CommissionSplitLogMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case commissionsplitlog.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case commissionsplitlog.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
+	case commissionsplitlog.FieldOrderID:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetOrderID(v)
+		return nil
+	case commissionsplitlog.FieldConsumerUserID:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetConsumerUserID(v)
+		return nil
+	case commissionsplitlog.FieldBeneficiaryUserID:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetBeneficiaryUserID(v)
+		return nil
+	case commissionsplitlog.FieldBeneficiaryRole:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetBeneficiaryRole(v)
+		return nil
+	case commissionsplitlog.FieldAgentUserID:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAgentUserID(v)
+		return nil
+	case commissionsplitlog.FieldDistributorUserID:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDistributorUserID(v)
+		return nil
+	case commissionsplitlog.FieldLevel:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLevel(v)
+		return nil
+	case commissionsplitlog.FieldCalcMode:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCalcMode(v)
+		return nil
+	case commissionsplitlog.FieldBaseAmount:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetBaseAmount(v)
+		return nil
+	case commissionsplitlog.FieldTargetRate:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTargetRate(v)
+		return nil
+	case commissionsplitlog.FieldParentRate:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetParentRate(v)
+		return nil
+	case commissionsplitlog.FieldCommissionAmount:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCommissionAmount(v)
+		return nil
+	case commissionsplitlog.FieldStatus:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetStatus(v)
+		return nil
+	case commissionsplitlog.FieldRuleID:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetRuleID(v)
+		return nil
+	case commissionsplitlog.FieldSettledAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSettledAt(v)
+		return nil
+	case commissionsplitlog.FieldRelationSnapshot:
+		v, ok := value.(map[string]interface{})
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetRelationSnapshot(v)
+		return nil
+	case commissionsplitlog.FieldRemark:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetRemark(v)
+		return nil
+	}
+	return fmt.Errorf("unknown CommissionSplitLog field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *CommissionSplitLogMutation) AddedFields() []string {
+	var fields []string
+	if m.addlevel != nil {
+		fields = append(fields, commissionsplitlog.FieldLevel)
+	}
+	if m.addbase_amount != nil {
+		fields = append(fields, commissionsplitlog.FieldBaseAmount)
+	}
+	if m.addtarget_rate != nil {
+		fields = append(fields, commissionsplitlog.FieldTargetRate)
+	}
+	if m.addparent_rate != nil {
+		fields = append(fields, commissionsplitlog.FieldParentRate)
+	}
+	if m.addcommission_amount != nil {
+		fields = append(fields, commissionsplitlog.FieldCommissionAmount)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *CommissionSplitLogMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case commissionsplitlog.FieldLevel:
+		return m.AddedLevel()
+	case commissionsplitlog.FieldBaseAmount:
+		return m.AddedBaseAmount()
+	case commissionsplitlog.FieldTargetRate:
+		return m.AddedTargetRate()
+	case commissionsplitlog.FieldParentRate:
+		return m.AddedParentRate()
+	case commissionsplitlog.FieldCommissionAmount:
+		return m.AddedCommissionAmount()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *CommissionSplitLogMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case commissionsplitlog.FieldLevel:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddLevel(v)
+		return nil
+	case commissionsplitlog.FieldBaseAmount:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddBaseAmount(v)
+		return nil
+	case commissionsplitlog.FieldTargetRate:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddTargetRate(v)
+		return nil
+	case commissionsplitlog.FieldParentRate:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddParentRate(v)
+		return nil
+	case commissionsplitlog.FieldCommissionAmount:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddCommissionAmount(v)
+		return nil
+	}
+	return fmt.Errorf("unknown CommissionSplitLog numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *CommissionSplitLogMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(commissionsplitlog.FieldOrderID) {
+		fields = append(fields, commissionsplitlog.FieldOrderID)
+	}
+	if m.FieldCleared(commissionsplitlog.FieldAgentUserID) {
+		fields = append(fields, commissionsplitlog.FieldAgentUserID)
+	}
+	if m.FieldCleared(commissionsplitlog.FieldDistributorUserID) {
+		fields = append(fields, commissionsplitlog.FieldDistributorUserID)
+	}
+	if m.FieldCleared(commissionsplitlog.FieldRuleID) {
+		fields = append(fields, commissionsplitlog.FieldRuleID)
+	}
+	if m.FieldCleared(commissionsplitlog.FieldSettledAt) {
+		fields = append(fields, commissionsplitlog.FieldSettledAt)
+	}
+	if m.FieldCleared(commissionsplitlog.FieldRelationSnapshot) {
+		fields = append(fields, commissionsplitlog.FieldRelationSnapshot)
+	}
+	if m.FieldCleared(commissionsplitlog.FieldRemark) {
+		fields = append(fields, commissionsplitlog.FieldRemark)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *CommissionSplitLogMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *CommissionSplitLogMutation) ClearField(name string) error {
+	switch name {
+	case commissionsplitlog.FieldOrderID:
+		m.ClearOrderID()
+		return nil
+	case commissionsplitlog.FieldAgentUserID:
+		m.ClearAgentUserID()
+		return nil
+	case commissionsplitlog.FieldDistributorUserID:
+		m.ClearDistributorUserID()
+		return nil
+	case commissionsplitlog.FieldRuleID:
+		m.ClearRuleID()
+		return nil
+	case commissionsplitlog.FieldSettledAt:
+		m.ClearSettledAt()
+		return nil
+	case commissionsplitlog.FieldRelationSnapshot:
+		m.ClearRelationSnapshot()
+		return nil
+	case commissionsplitlog.FieldRemark:
+		m.ClearRemark()
+		return nil
+	}
+	return fmt.Errorf("unknown CommissionSplitLog nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *CommissionSplitLogMutation) ResetField(name string) error {
+	switch name {
+	case commissionsplitlog.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case commissionsplitlog.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
+	case commissionsplitlog.FieldOrderID:
+		m.ResetOrderID()
+		return nil
+	case commissionsplitlog.FieldConsumerUserID:
+		m.ResetConsumerUserID()
+		return nil
+	case commissionsplitlog.FieldBeneficiaryUserID:
+		m.ResetBeneficiaryUserID()
+		return nil
+	case commissionsplitlog.FieldBeneficiaryRole:
+		m.ResetBeneficiaryRole()
+		return nil
+	case commissionsplitlog.FieldAgentUserID:
+		m.ResetAgentUserID()
+		return nil
+	case commissionsplitlog.FieldDistributorUserID:
+		m.ResetDistributorUserID()
+		return nil
+	case commissionsplitlog.FieldLevel:
+		m.ResetLevel()
+		return nil
+	case commissionsplitlog.FieldCalcMode:
+		m.ResetCalcMode()
+		return nil
+	case commissionsplitlog.FieldBaseAmount:
+		m.ResetBaseAmount()
+		return nil
+	case commissionsplitlog.FieldTargetRate:
+		m.ResetTargetRate()
+		return nil
+	case commissionsplitlog.FieldParentRate:
+		m.ResetParentRate()
+		return nil
+	case commissionsplitlog.FieldCommissionAmount:
+		m.ResetCommissionAmount()
+		return nil
+	case commissionsplitlog.FieldStatus:
+		m.ResetStatus()
+		return nil
+	case commissionsplitlog.FieldRuleID:
+		m.ResetRuleID()
+		return nil
+	case commissionsplitlog.FieldSettledAt:
+		m.ResetSettledAt()
+		return nil
+	case commissionsplitlog.FieldRelationSnapshot:
+		m.ResetRelationSnapshot()
+		return nil
+	case commissionsplitlog.FieldRemark:
+		m.ResetRemark()
+		return nil
+	}
+	return fmt.Errorf("unknown CommissionSplitLog field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *CommissionSplitLogMutation) AddedEdges() []string {
+	edges := make([]string, 0, 6)
+	if m.payment_order != nil {
+		edges = append(edges, commissionsplitlog.EdgePaymentOrder)
+	}
+	if m.consumer_user != nil {
+		edges = append(edges, commissionsplitlog.EdgeConsumerUser)
+	}
+	if m.beneficiary_user != nil {
+		edges = append(edges, commissionsplitlog.EdgeBeneficiaryUser)
+	}
+	if m.agent_user != nil {
+		edges = append(edges, commissionsplitlog.EdgeAgentUser)
+	}
+	if m.distributor_user != nil {
+		edges = append(edges, commissionsplitlog.EdgeDistributorUser)
+	}
+	if m.commission_rule != nil {
+		edges = append(edges, commissionsplitlog.EdgeCommissionRule)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *CommissionSplitLogMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case commissionsplitlog.EdgePaymentOrder:
+		if id := m.payment_order; id != nil {
+			return []ent.Value{*id}
+		}
+	case commissionsplitlog.EdgeConsumerUser:
+		if id := m.consumer_user; id != nil {
+			return []ent.Value{*id}
+		}
+	case commissionsplitlog.EdgeBeneficiaryUser:
+		if id := m.beneficiary_user; id != nil {
+			return []ent.Value{*id}
+		}
+	case commissionsplitlog.EdgeAgentUser:
+		if id := m.agent_user; id != nil {
+			return []ent.Value{*id}
+		}
+	case commissionsplitlog.EdgeDistributorUser:
+		if id := m.distributor_user; id != nil {
+			return []ent.Value{*id}
+		}
+	case commissionsplitlog.EdgeCommissionRule:
+		if id := m.commission_rule; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *CommissionSplitLogMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 6)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *CommissionSplitLogMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *CommissionSplitLogMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 6)
+	if m.clearedpayment_order {
+		edges = append(edges, commissionsplitlog.EdgePaymentOrder)
+	}
+	if m.clearedconsumer_user {
+		edges = append(edges, commissionsplitlog.EdgeConsumerUser)
+	}
+	if m.clearedbeneficiary_user {
+		edges = append(edges, commissionsplitlog.EdgeBeneficiaryUser)
+	}
+	if m.clearedagent_user {
+		edges = append(edges, commissionsplitlog.EdgeAgentUser)
+	}
+	if m.cleareddistributor_user {
+		edges = append(edges, commissionsplitlog.EdgeDistributorUser)
+	}
+	if m.clearedcommission_rule {
+		edges = append(edges, commissionsplitlog.EdgeCommissionRule)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *CommissionSplitLogMutation) EdgeCleared(name string) bool {
+	switch name {
+	case commissionsplitlog.EdgePaymentOrder:
+		return m.clearedpayment_order
+	case commissionsplitlog.EdgeConsumerUser:
+		return m.clearedconsumer_user
+	case commissionsplitlog.EdgeBeneficiaryUser:
+		return m.clearedbeneficiary_user
+	case commissionsplitlog.EdgeAgentUser:
+		return m.clearedagent_user
+	case commissionsplitlog.EdgeDistributorUser:
+		return m.cleareddistributor_user
+	case commissionsplitlog.EdgeCommissionRule:
+		return m.clearedcommission_rule
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *CommissionSplitLogMutation) ClearEdge(name string) error {
+	switch name {
+	case commissionsplitlog.EdgePaymentOrder:
+		m.ClearPaymentOrder()
+		return nil
+	case commissionsplitlog.EdgeConsumerUser:
+		m.ClearConsumerUser()
+		return nil
+	case commissionsplitlog.EdgeBeneficiaryUser:
+		m.ClearBeneficiaryUser()
+		return nil
+	case commissionsplitlog.EdgeAgentUser:
+		m.ClearAgentUser()
+		return nil
+	case commissionsplitlog.EdgeDistributorUser:
+		m.ClearDistributorUser()
+		return nil
+	case commissionsplitlog.EdgeCommissionRule:
+		m.ClearCommissionRule()
+		return nil
+	}
+	return fmt.Errorf("unknown CommissionSplitLog unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *CommissionSplitLogMutation) ResetEdge(name string) error {
+	switch name {
+	case commissionsplitlog.EdgePaymentOrder:
+		m.ResetPaymentOrder()
+		return nil
+	case commissionsplitlog.EdgeConsumerUser:
+		m.ResetConsumerUser()
+		return nil
+	case commissionsplitlog.EdgeBeneficiaryUser:
+		m.ResetBeneficiaryUser()
+		return nil
+	case commissionsplitlog.EdgeAgentUser:
+		m.ResetAgentUser()
+		return nil
+	case commissionsplitlog.EdgeDistributorUser:
+		m.ResetDistributorUser()
+		return nil
+	case commissionsplitlog.EdgeCommissionRule:
+		m.ResetCommissionRule()
+		return nil
+	}
+	return fmt.Errorf("unknown CommissionSplitLog edge %s", name)
 }
 
 // ErrorPassthroughRuleMutation represents an operation that mutates the ErrorPassthroughRule nodes in the graph.
@@ -21520,6 +24768,1146 @@ func (m *PromoCodeUsageMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown PromoCodeUsage edge %s", name)
 }
 
+// PromotionRelationMutation represents an operation that mutates the PromotionRelation nodes in the graph.
+type PromotionRelationMutation struct {
+	config
+	op                        Op
+	typ                       string
+	id                        *int64
+	created_at                *time.Time
+	updated_at                *time.Time
+	direct_parent_role        *string
+	binding_source            *string
+	is_locked                 *bool
+	bound_at                  *time.Time
+	notes                     *string
+	clearedFields             map[string]struct{}
+	user                      *int64
+	cleareduser               bool
+	agent_user                *int64
+	clearedagent_user         bool
+	distributor_user          *int64
+	cleareddistributor_user   bool
+	direct_parent_user        *int64
+	cleareddirect_parent_user bool
+	done                      bool
+	oldValue                  func(context.Context) (*PromotionRelation, error)
+	predicates                []predicate.PromotionRelation
+}
+
+var _ ent.Mutation = (*PromotionRelationMutation)(nil)
+
+// promotionrelationOption allows management of the mutation configuration using functional options.
+type promotionrelationOption func(*PromotionRelationMutation)
+
+// newPromotionRelationMutation creates new mutation for the PromotionRelation entity.
+func newPromotionRelationMutation(c config, op Op, opts ...promotionrelationOption) *PromotionRelationMutation {
+	m := &PromotionRelationMutation{
+		config:        c,
+		op:            op,
+		typ:           TypePromotionRelation,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withPromotionRelationID sets the ID field of the mutation.
+func withPromotionRelationID(id int64) promotionrelationOption {
+	return func(m *PromotionRelationMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *PromotionRelation
+		)
+		m.oldValue = func(ctx context.Context) (*PromotionRelation, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().PromotionRelation.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withPromotionRelation sets the old PromotionRelation of the mutation.
+func withPromotionRelation(node *PromotionRelation) promotionrelationOption {
+	return func(m *PromotionRelationMutation) {
+		m.oldValue = func(context.Context) (*PromotionRelation, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m PromotionRelationMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m PromotionRelationMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *PromotionRelationMutation) ID() (id int64, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *PromotionRelationMutation) IDs(ctx context.Context) ([]int64, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int64{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().PromotionRelation.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *PromotionRelationMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *PromotionRelationMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the PromotionRelation entity.
+// If the PromotionRelation object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PromotionRelationMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *PromotionRelationMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *PromotionRelationMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *PromotionRelationMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the PromotionRelation entity.
+// If the PromotionRelation object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PromotionRelationMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *PromotionRelationMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+}
+
+// SetUserID sets the "user_id" field.
+func (m *PromotionRelationMutation) SetUserID(i int64) {
+	m.user = &i
+}
+
+// UserID returns the value of the "user_id" field in the mutation.
+func (m *PromotionRelationMutation) UserID() (r int64, exists bool) {
+	v := m.user
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUserID returns the old "user_id" field's value of the PromotionRelation entity.
+// If the PromotionRelation object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PromotionRelationMutation) OldUserID(ctx context.Context) (v int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUserID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUserID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUserID: %w", err)
+	}
+	return oldValue.UserID, nil
+}
+
+// ResetUserID resets all changes to the "user_id" field.
+func (m *PromotionRelationMutation) ResetUserID() {
+	m.user = nil
+}
+
+// SetAgentUserID sets the "agent_user_id" field.
+func (m *PromotionRelationMutation) SetAgentUserID(i int64) {
+	m.agent_user = &i
+}
+
+// AgentUserID returns the value of the "agent_user_id" field in the mutation.
+func (m *PromotionRelationMutation) AgentUserID() (r int64, exists bool) {
+	v := m.agent_user
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAgentUserID returns the old "agent_user_id" field's value of the PromotionRelation entity.
+// If the PromotionRelation object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PromotionRelationMutation) OldAgentUserID(ctx context.Context) (v *int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAgentUserID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAgentUserID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAgentUserID: %w", err)
+	}
+	return oldValue.AgentUserID, nil
+}
+
+// ClearAgentUserID clears the value of the "agent_user_id" field.
+func (m *PromotionRelationMutation) ClearAgentUserID() {
+	m.agent_user = nil
+	m.clearedFields[promotionrelation.FieldAgentUserID] = struct{}{}
+}
+
+// AgentUserIDCleared returns if the "agent_user_id" field was cleared in this mutation.
+func (m *PromotionRelationMutation) AgentUserIDCleared() bool {
+	_, ok := m.clearedFields[promotionrelation.FieldAgentUserID]
+	return ok
+}
+
+// ResetAgentUserID resets all changes to the "agent_user_id" field.
+func (m *PromotionRelationMutation) ResetAgentUserID() {
+	m.agent_user = nil
+	delete(m.clearedFields, promotionrelation.FieldAgentUserID)
+}
+
+// SetDistributorUserID sets the "distributor_user_id" field.
+func (m *PromotionRelationMutation) SetDistributorUserID(i int64) {
+	m.distributor_user = &i
+}
+
+// DistributorUserID returns the value of the "distributor_user_id" field in the mutation.
+func (m *PromotionRelationMutation) DistributorUserID() (r int64, exists bool) {
+	v := m.distributor_user
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDistributorUserID returns the old "distributor_user_id" field's value of the PromotionRelation entity.
+// If the PromotionRelation object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PromotionRelationMutation) OldDistributorUserID(ctx context.Context) (v *int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDistributorUserID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDistributorUserID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDistributorUserID: %w", err)
+	}
+	return oldValue.DistributorUserID, nil
+}
+
+// ClearDistributorUserID clears the value of the "distributor_user_id" field.
+func (m *PromotionRelationMutation) ClearDistributorUserID() {
+	m.distributor_user = nil
+	m.clearedFields[promotionrelation.FieldDistributorUserID] = struct{}{}
+}
+
+// DistributorUserIDCleared returns if the "distributor_user_id" field was cleared in this mutation.
+func (m *PromotionRelationMutation) DistributorUserIDCleared() bool {
+	_, ok := m.clearedFields[promotionrelation.FieldDistributorUserID]
+	return ok
+}
+
+// ResetDistributorUserID resets all changes to the "distributor_user_id" field.
+func (m *PromotionRelationMutation) ResetDistributorUserID() {
+	m.distributor_user = nil
+	delete(m.clearedFields, promotionrelation.FieldDistributorUserID)
+}
+
+// SetDirectParentUserID sets the "direct_parent_user_id" field.
+func (m *PromotionRelationMutation) SetDirectParentUserID(i int64) {
+	m.direct_parent_user = &i
+}
+
+// DirectParentUserID returns the value of the "direct_parent_user_id" field in the mutation.
+func (m *PromotionRelationMutation) DirectParentUserID() (r int64, exists bool) {
+	v := m.direct_parent_user
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDirectParentUserID returns the old "direct_parent_user_id" field's value of the PromotionRelation entity.
+// If the PromotionRelation object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PromotionRelationMutation) OldDirectParentUserID(ctx context.Context) (v *int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDirectParentUserID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDirectParentUserID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDirectParentUserID: %w", err)
+	}
+	return oldValue.DirectParentUserID, nil
+}
+
+// ClearDirectParentUserID clears the value of the "direct_parent_user_id" field.
+func (m *PromotionRelationMutation) ClearDirectParentUserID() {
+	m.direct_parent_user = nil
+	m.clearedFields[promotionrelation.FieldDirectParentUserID] = struct{}{}
+}
+
+// DirectParentUserIDCleared returns if the "direct_parent_user_id" field was cleared in this mutation.
+func (m *PromotionRelationMutation) DirectParentUserIDCleared() bool {
+	_, ok := m.clearedFields[promotionrelation.FieldDirectParentUserID]
+	return ok
+}
+
+// ResetDirectParentUserID resets all changes to the "direct_parent_user_id" field.
+func (m *PromotionRelationMutation) ResetDirectParentUserID() {
+	m.direct_parent_user = nil
+	delete(m.clearedFields, promotionrelation.FieldDirectParentUserID)
+}
+
+// SetDirectParentRole sets the "direct_parent_role" field.
+func (m *PromotionRelationMutation) SetDirectParentRole(s string) {
+	m.direct_parent_role = &s
+}
+
+// DirectParentRole returns the value of the "direct_parent_role" field in the mutation.
+func (m *PromotionRelationMutation) DirectParentRole() (r string, exists bool) {
+	v := m.direct_parent_role
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDirectParentRole returns the old "direct_parent_role" field's value of the PromotionRelation entity.
+// If the PromotionRelation object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PromotionRelationMutation) OldDirectParentRole(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDirectParentRole is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDirectParentRole requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDirectParentRole: %w", err)
+	}
+	return oldValue.DirectParentRole, nil
+}
+
+// ResetDirectParentRole resets all changes to the "direct_parent_role" field.
+func (m *PromotionRelationMutation) ResetDirectParentRole() {
+	m.direct_parent_role = nil
+}
+
+// SetBindingSource sets the "binding_source" field.
+func (m *PromotionRelationMutation) SetBindingSource(s string) {
+	m.binding_source = &s
+}
+
+// BindingSource returns the value of the "binding_source" field in the mutation.
+func (m *PromotionRelationMutation) BindingSource() (r string, exists bool) {
+	v := m.binding_source
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldBindingSource returns the old "binding_source" field's value of the PromotionRelation entity.
+// If the PromotionRelation object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PromotionRelationMutation) OldBindingSource(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldBindingSource is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldBindingSource requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldBindingSource: %w", err)
+	}
+	return oldValue.BindingSource, nil
+}
+
+// ResetBindingSource resets all changes to the "binding_source" field.
+func (m *PromotionRelationMutation) ResetBindingSource() {
+	m.binding_source = nil
+}
+
+// SetIsLocked sets the "is_locked" field.
+func (m *PromotionRelationMutation) SetIsLocked(b bool) {
+	m.is_locked = &b
+}
+
+// IsLocked returns the value of the "is_locked" field in the mutation.
+func (m *PromotionRelationMutation) IsLocked() (r bool, exists bool) {
+	v := m.is_locked
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldIsLocked returns the old "is_locked" field's value of the PromotionRelation entity.
+// If the PromotionRelation object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PromotionRelationMutation) OldIsLocked(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldIsLocked is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldIsLocked requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldIsLocked: %w", err)
+	}
+	return oldValue.IsLocked, nil
+}
+
+// ResetIsLocked resets all changes to the "is_locked" field.
+func (m *PromotionRelationMutation) ResetIsLocked() {
+	m.is_locked = nil
+}
+
+// SetBoundAt sets the "bound_at" field.
+func (m *PromotionRelationMutation) SetBoundAt(t time.Time) {
+	m.bound_at = &t
+}
+
+// BoundAt returns the value of the "bound_at" field in the mutation.
+func (m *PromotionRelationMutation) BoundAt() (r time.Time, exists bool) {
+	v := m.bound_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldBoundAt returns the old "bound_at" field's value of the PromotionRelation entity.
+// If the PromotionRelation object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PromotionRelationMutation) OldBoundAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldBoundAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldBoundAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldBoundAt: %w", err)
+	}
+	return oldValue.BoundAt, nil
+}
+
+// ResetBoundAt resets all changes to the "bound_at" field.
+func (m *PromotionRelationMutation) ResetBoundAt() {
+	m.bound_at = nil
+}
+
+// SetNotes sets the "notes" field.
+func (m *PromotionRelationMutation) SetNotes(s string) {
+	m.notes = &s
+}
+
+// Notes returns the value of the "notes" field in the mutation.
+func (m *PromotionRelationMutation) Notes() (r string, exists bool) {
+	v := m.notes
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldNotes returns the old "notes" field's value of the PromotionRelation entity.
+// If the PromotionRelation object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PromotionRelationMutation) OldNotes(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldNotes is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldNotes requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldNotes: %w", err)
+	}
+	return oldValue.Notes, nil
+}
+
+// ClearNotes clears the value of the "notes" field.
+func (m *PromotionRelationMutation) ClearNotes() {
+	m.notes = nil
+	m.clearedFields[promotionrelation.FieldNotes] = struct{}{}
+}
+
+// NotesCleared returns if the "notes" field was cleared in this mutation.
+func (m *PromotionRelationMutation) NotesCleared() bool {
+	_, ok := m.clearedFields[promotionrelation.FieldNotes]
+	return ok
+}
+
+// ResetNotes resets all changes to the "notes" field.
+func (m *PromotionRelationMutation) ResetNotes() {
+	m.notes = nil
+	delete(m.clearedFields, promotionrelation.FieldNotes)
+}
+
+// ClearUser clears the "user" edge to the User entity.
+func (m *PromotionRelationMutation) ClearUser() {
+	m.cleareduser = true
+	m.clearedFields[promotionrelation.FieldUserID] = struct{}{}
+}
+
+// UserCleared reports if the "user" edge to the User entity was cleared.
+func (m *PromotionRelationMutation) UserCleared() bool {
+	return m.cleareduser
+}
+
+// UserIDs returns the "user" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// UserID instead. It exists only for internal usage by the builders.
+func (m *PromotionRelationMutation) UserIDs() (ids []int64) {
+	if id := m.user; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetUser resets all changes to the "user" edge.
+func (m *PromotionRelationMutation) ResetUser() {
+	m.user = nil
+	m.cleareduser = false
+}
+
+// ClearAgentUser clears the "agent_user" edge to the User entity.
+func (m *PromotionRelationMutation) ClearAgentUser() {
+	m.clearedagent_user = true
+	m.clearedFields[promotionrelation.FieldAgentUserID] = struct{}{}
+}
+
+// AgentUserCleared reports if the "agent_user" edge to the User entity was cleared.
+func (m *PromotionRelationMutation) AgentUserCleared() bool {
+	return m.AgentUserIDCleared() || m.clearedagent_user
+}
+
+// AgentUserIDs returns the "agent_user" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// AgentUserID instead. It exists only for internal usage by the builders.
+func (m *PromotionRelationMutation) AgentUserIDs() (ids []int64) {
+	if id := m.agent_user; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetAgentUser resets all changes to the "agent_user" edge.
+func (m *PromotionRelationMutation) ResetAgentUser() {
+	m.agent_user = nil
+	m.clearedagent_user = false
+}
+
+// ClearDistributorUser clears the "distributor_user" edge to the User entity.
+func (m *PromotionRelationMutation) ClearDistributorUser() {
+	m.cleareddistributor_user = true
+	m.clearedFields[promotionrelation.FieldDistributorUserID] = struct{}{}
+}
+
+// DistributorUserCleared reports if the "distributor_user" edge to the User entity was cleared.
+func (m *PromotionRelationMutation) DistributorUserCleared() bool {
+	return m.DistributorUserIDCleared() || m.cleareddistributor_user
+}
+
+// DistributorUserIDs returns the "distributor_user" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// DistributorUserID instead. It exists only for internal usage by the builders.
+func (m *PromotionRelationMutation) DistributorUserIDs() (ids []int64) {
+	if id := m.distributor_user; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetDistributorUser resets all changes to the "distributor_user" edge.
+func (m *PromotionRelationMutation) ResetDistributorUser() {
+	m.distributor_user = nil
+	m.cleareddistributor_user = false
+}
+
+// ClearDirectParentUser clears the "direct_parent_user" edge to the User entity.
+func (m *PromotionRelationMutation) ClearDirectParentUser() {
+	m.cleareddirect_parent_user = true
+	m.clearedFields[promotionrelation.FieldDirectParentUserID] = struct{}{}
+}
+
+// DirectParentUserCleared reports if the "direct_parent_user" edge to the User entity was cleared.
+func (m *PromotionRelationMutation) DirectParentUserCleared() bool {
+	return m.DirectParentUserIDCleared() || m.cleareddirect_parent_user
+}
+
+// DirectParentUserIDs returns the "direct_parent_user" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// DirectParentUserID instead. It exists only for internal usage by the builders.
+func (m *PromotionRelationMutation) DirectParentUserIDs() (ids []int64) {
+	if id := m.direct_parent_user; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetDirectParentUser resets all changes to the "direct_parent_user" edge.
+func (m *PromotionRelationMutation) ResetDirectParentUser() {
+	m.direct_parent_user = nil
+	m.cleareddirect_parent_user = false
+}
+
+// Where appends a list predicates to the PromotionRelationMutation builder.
+func (m *PromotionRelationMutation) Where(ps ...predicate.PromotionRelation) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the PromotionRelationMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *PromotionRelationMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.PromotionRelation, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *PromotionRelationMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *PromotionRelationMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (PromotionRelation).
+func (m *PromotionRelationMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *PromotionRelationMutation) Fields() []string {
+	fields := make([]string, 0, 11)
+	if m.created_at != nil {
+		fields = append(fields, promotionrelation.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, promotionrelation.FieldUpdatedAt)
+	}
+	if m.user != nil {
+		fields = append(fields, promotionrelation.FieldUserID)
+	}
+	if m.agent_user != nil {
+		fields = append(fields, promotionrelation.FieldAgentUserID)
+	}
+	if m.distributor_user != nil {
+		fields = append(fields, promotionrelation.FieldDistributorUserID)
+	}
+	if m.direct_parent_user != nil {
+		fields = append(fields, promotionrelation.FieldDirectParentUserID)
+	}
+	if m.direct_parent_role != nil {
+		fields = append(fields, promotionrelation.FieldDirectParentRole)
+	}
+	if m.binding_source != nil {
+		fields = append(fields, promotionrelation.FieldBindingSource)
+	}
+	if m.is_locked != nil {
+		fields = append(fields, promotionrelation.FieldIsLocked)
+	}
+	if m.bound_at != nil {
+		fields = append(fields, promotionrelation.FieldBoundAt)
+	}
+	if m.notes != nil {
+		fields = append(fields, promotionrelation.FieldNotes)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *PromotionRelationMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case promotionrelation.FieldCreatedAt:
+		return m.CreatedAt()
+	case promotionrelation.FieldUpdatedAt:
+		return m.UpdatedAt()
+	case promotionrelation.FieldUserID:
+		return m.UserID()
+	case promotionrelation.FieldAgentUserID:
+		return m.AgentUserID()
+	case promotionrelation.FieldDistributorUserID:
+		return m.DistributorUserID()
+	case promotionrelation.FieldDirectParentUserID:
+		return m.DirectParentUserID()
+	case promotionrelation.FieldDirectParentRole:
+		return m.DirectParentRole()
+	case promotionrelation.FieldBindingSource:
+		return m.BindingSource()
+	case promotionrelation.FieldIsLocked:
+		return m.IsLocked()
+	case promotionrelation.FieldBoundAt:
+		return m.BoundAt()
+	case promotionrelation.FieldNotes:
+		return m.Notes()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *PromotionRelationMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case promotionrelation.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case promotionrelation.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
+	case promotionrelation.FieldUserID:
+		return m.OldUserID(ctx)
+	case promotionrelation.FieldAgentUserID:
+		return m.OldAgentUserID(ctx)
+	case promotionrelation.FieldDistributorUserID:
+		return m.OldDistributorUserID(ctx)
+	case promotionrelation.FieldDirectParentUserID:
+		return m.OldDirectParentUserID(ctx)
+	case promotionrelation.FieldDirectParentRole:
+		return m.OldDirectParentRole(ctx)
+	case promotionrelation.FieldBindingSource:
+		return m.OldBindingSource(ctx)
+	case promotionrelation.FieldIsLocked:
+		return m.OldIsLocked(ctx)
+	case promotionrelation.FieldBoundAt:
+		return m.OldBoundAt(ctx)
+	case promotionrelation.FieldNotes:
+		return m.OldNotes(ctx)
+	}
+	return nil, fmt.Errorf("unknown PromotionRelation field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *PromotionRelationMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case promotionrelation.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case promotionrelation.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
+	case promotionrelation.FieldUserID:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUserID(v)
+		return nil
+	case promotionrelation.FieldAgentUserID:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAgentUserID(v)
+		return nil
+	case promotionrelation.FieldDistributorUserID:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDistributorUserID(v)
+		return nil
+	case promotionrelation.FieldDirectParentUserID:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDirectParentUserID(v)
+		return nil
+	case promotionrelation.FieldDirectParentRole:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDirectParentRole(v)
+		return nil
+	case promotionrelation.FieldBindingSource:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetBindingSource(v)
+		return nil
+	case promotionrelation.FieldIsLocked:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetIsLocked(v)
+		return nil
+	case promotionrelation.FieldBoundAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetBoundAt(v)
+		return nil
+	case promotionrelation.FieldNotes:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetNotes(v)
+		return nil
+	}
+	return fmt.Errorf("unknown PromotionRelation field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *PromotionRelationMutation) AddedFields() []string {
+	var fields []string
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *PromotionRelationMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *PromotionRelationMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown PromotionRelation numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *PromotionRelationMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(promotionrelation.FieldAgentUserID) {
+		fields = append(fields, promotionrelation.FieldAgentUserID)
+	}
+	if m.FieldCleared(promotionrelation.FieldDistributorUserID) {
+		fields = append(fields, promotionrelation.FieldDistributorUserID)
+	}
+	if m.FieldCleared(promotionrelation.FieldDirectParentUserID) {
+		fields = append(fields, promotionrelation.FieldDirectParentUserID)
+	}
+	if m.FieldCleared(promotionrelation.FieldNotes) {
+		fields = append(fields, promotionrelation.FieldNotes)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *PromotionRelationMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *PromotionRelationMutation) ClearField(name string) error {
+	switch name {
+	case promotionrelation.FieldAgentUserID:
+		m.ClearAgentUserID()
+		return nil
+	case promotionrelation.FieldDistributorUserID:
+		m.ClearDistributorUserID()
+		return nil
+	case promotionrelation.FieldDirectParentUserID:
+		m.ClearDirectParentUserID()
+		return nil
+	case promotionrelation.FieldNotes:
+		m.ClearNotes()
+		return nil
+	}
+	return fmt.Errorf("unknown PromotionRelation nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *PromotionRelationMutation) ResetField(name string) error {
+	switch name {
+	case promotionrelation.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case promotionrelation.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
+	case promotionrelation.FieldUserID:
+		m.ResetUserID()
+		return nil
+	case promotionrelation.FieldAgentUserID:
+		m.ResetAgentUserID()
+		return nil
+	case promotionrelation.FieldDistributorUserID:
+		m.ResetDistributorUserID()
+		return nil
+	case promotionrelation.FieldDirectParentUserID:
+		m.ResetDirectParentUserID()
+		return nil
+	case promotionrelation.FieldDirectParentRole:
+		m.ResetDirectParentRole()
+		return nil
+	case promotionrelation.FieldBindingSource:
+		m.ResetBindingSource()
+		return nil
+	case promotionrelation.FieldIsLocked:
+		m.ResetIsLocked()
+		return nil
+	case promotionrelation.FieldBoundAt:
+		m.ResetBoundAt()
+		return nil
+	case promotionrelation.FieldNotes:
+		m.ResetNotes()
+		return nil
+	}
+	return fmt.Errorf("unknown PromotionRelation field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *PromotionRelationMutation) AddedEdges() []string {
+	edges := make([]string, 0, 4)
+	if m.user != nil {
+		edges = append(edges, promotionrelation.EdgeUser)
+	}
+	if m.agent_user != nil {
+		edges = append(edges, promotionrelation.EdgeAgentUser)
+	}
+	if m.distributor_user != nil {
+		edges = append(edges, promotionrelation.EdgeDistributorUser)
+	}
+	if m.direct_parent_user != nil {
+		edges = append(edges, promotionrelation.EdgeDirectParentUser)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *PromotionRelationMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case promotionrelation.EdgeUser:
+		if id := m.user; id != nil {
+			return []ent.Value{*id}
+		}
+	case promotionrelation.EdgeAgentUser:
+		if id := m.agent_user; id != nil {
+			return []ent.Value{*id}
+		}
+	case promotionrelation.EdgeDistributorUser:
+		if id := m.distributor_user; id != nil {
+			return []ent.Value{*id}
+		}
+	case promotionrelation.EdgeDirectParentUser:
+		if id := m.direct_parent_user; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *PromotionRelationMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 4)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *PromotionRelationMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *PromotionRelationMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 4)
+	if m.cleareduser {
+		edges = append(edges, promotionrelation.EdgeUser)
+	}
+	if m.clearedagent_user {
+		edges = append(edges, promotionrelation.EdgeAgentUser)
+	}
+	if m.cleareddistributor_user {
+		edges = append(edges, promotionrelation.EdgeDistributorUser)
+	}
+	if m.cleareddirect_parent_user {
+		edges = append(edges, promotionrelation.EdgeDirectParentUser)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *PromotionRelationMutation) EdgeCleared(name string) bool {
+	switch name {
+	case promotionrelation.EdgeUser:
+		return m.cleareduser
+	case promotionrelation.EdgeAgentUser:
+		return m.clearedagent_user
+	case promotionrelation.EdgeDistributorUser:
+		return m.cleareddistributor_user
+	case promotionrelation.EdgeDirectParentUser:
+		return m.cleareddirect_parent_user
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *PromotionRelationMutation) ClearEdge(name string) error {
+	switch name {
+	case promotionrelation.EdgeUser:
+		m.ClearUser()
+		return nil
+	case promotionrelation.EdgeAgentUser:
+		m.ClearAgentUser()
+		return nil
+	case promotionrelation.EdgeDistributorUser:
+		m.ClearDistributorUser()
+		return nil
+	case promotionrelation.EdgeDirectParentUser:
+		m.ClearDirectParentUser()
+		return nil
+	}
+	return fmt.Errorf("unknown PromotionRelation unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *PromotionRelationMutation) ResetEdge(name string) error {
+	switch name {
+	case promotionrelation.EdgeUser:
+		m.ResetUser()
+		return nil
+	case promotionrelation.EdgeAgentUser:
+		m.ResetAgentUser()
+		return nil
+	case promotionrelation.EdgeDistributorUser:
+		m.ResetDistributorUser()
+		return nil
+	case promotionrelation.EdgeDirectParentUser:
+		m.ResetDirectParentUser()
+		return nil
+	}
+	return fmt.Errorf("unknown PromotionRelation edge %s", name)
+}
+
 // ProxyMutation represents an operation that mutates the Proxy nodes in the graph.
 type ProxyMutation struct {
 	config
@@ -31585,6 +35973,13 @@ type UserMutation struct {
 	addcommission_balance         *float64
 	total_commission_earned       *float64
 	addtotal_commission_earned    *float64
+	is_key_account                *bool
+	key_account_level             *string
+	key_account_discount_rate     *float64
+	addkey_account_discount_rate  *float64
+	key_account_rebate_rate       *float64
+	addkey_account_rebate_rate    *float64
+	key_account_manager_notes     *string
 	clearedFields                 map[string]struct{}
 	inviter                       *int64
 	clearedinviter                bool
@@ -32810,6 +37205,226 @@ func (m *UserMutation) ResetTotalCommissionEarned() {
 	m.addtotal_commission_earned = nil
 }
 
+// SetIsKeyAccount sets the "is_key_account" field.
+func (m *UserMutation) SetIsKeyAccount(b bool) {
+	m.is_key_account = &b
+}
+
+// IsKeyAccount returns the value of the "is_key_account" field in the mutation.
+func (m *UserMutation) IsKeyAccount() (r bool, exists bool) {
+	v := m.is_key_account
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldIsKeyAccount returns the old "is_key_account" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldIsKeyAccount(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldIsKeyAccount is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldIsKeyAccount requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldIsKeyAccount: %w", err)
+	}
+	return oldValue.IsKeyAccount, nil
+}
+
+// ResetIsKeyAccount resets all changes to the "is_key_account" field.
+func (m *UserMutation) ResetIsKeyAccount() {
+	m.is_key_account = nil
+}
+
+// SetKeyAccountLevel sets the "key_account_level" field.
+func (m *UserMutation) SetKeyAccountLevel(s string) {
+	m.key_account_level = &s
+}
+
+// KeyAccountLevel returns the value of the "key_account_level" field in the mutation.
+func (m *UserMutation) KeyAccountLevel() (r string, exists bool) {
+	v := m.key_account_level
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldKeyAccountLevel returns the old "key_account_level" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldKeyAccountLevel(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldKeyAccountLevel is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldKeyAccountLevel requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldKeyAccountLevel: %w", err)
+	}
+	return oldValue.KeyAccountLevel, nil
+}
+
+// ResetKeyAccountLevel resets all changes to the "key_account_level" field.
+func (m *UserMutation) ResetKeyAccountLevel() {
+	m.key_account_level = nil
+}
+
+// SetKeyAccountDiscountRate sets the "key_account_discount_rate" field.
+func (m *UserMutation) SetKeyAccountDiscountRate(f float64) {
+	m.key_account_discount_rate = &f
+	m.addkey_account_discount_rate = nil
+}
+
+// KeyAccountDiscountRate returns the value of the "key_account_discount_rate" field in the mutation.
+func (m *UserMutation) KeyAccountDiscountRate() (r float64, exists bool) {
+	v := m.key_account_discount_rate
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldKeyAccountDiscountRate returns the old "key_account_discount_rate" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldKeyAccountDiscountRate(ctx context.Context) (v float64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldKeyAccountDiscountRate is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldKeyAccountDiscountRate requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldKeyAccountDiscountRate: %w", err)
+	}
+	return oldValue.KeyAccountDiscountRate, nil
+}
+
+// AddKeyAccountDiscountRate adds f to the "key_account_discount_rate" field.
+func (m *UserMutation) AddKeyAccountDiscountRate(f float64) {
+	if m.addkey_account_discount_rate != nil {
+		*m.addkey_account_discount_rate += f
+	} else {
+		m.addkey_account_discount_rate = &f
+	}
+}
+
+// AddedKeyAccountDiscountRate returns the value that was added to the "key_account_discount_rate" field in this mutation.
+func (m *UserMutation) AddedKeyAccountDiscountRate() (r float64, exists bool) {
+	v := m.addkey_account_discount_rate
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetKeyAccountDiscountRate resets all changes to the "key_account_discount_rate" field.
+func (m *UserMutation) ResetKeyAccountDiscountRate() {
+	m.key_account_discount_rate = nil
+	m.addkey_account_discount_rate = nil
+}
+
+// SetKeyAccountRebateRate sets the "key_account_rebate_rate" field.
+func (m *UserMutation) SetKeyAccountRebateRate(f float64) {
+	m.key_account_rebate_rate = &f
+	m.addkey_account_rebate_rate = nil
+}
+
+// KeyAccountRebateRate returns the value of the "key_account_rebate_rate" field in the mutation.
+func (m *UserMutation) KeyAccountRebateRate() (r float64, exists bool) {
+	v := m.key_account_rebate_rate
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldKeyAccountRebateRate returns the old "key_account_rebate_rate" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldKeyAccountRebateRate(ctx context.Context) (v float64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldKeyAccountRebateRate is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldKeyAccountRebateRate requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldKeyAccountRebateRate: %w", err)
+	}
+	return oldValue.KeyAccountRebateRate, nil
+}
+
+// AddKeyAccountRebateRate adds f to the "key_account_rebate_rate" field.
+func (m *UserMutation) AddKeyAccountRebateRate(f float64) {
+	if m.addkey_account_rebate_rate != nil {
+		*m.addkey_account_rebate_rate += f
+	} else {
+		m.addkey_account_rebate_rate = &f
+	}
+}
+
+// AddedKeyAccountRebateRate returns the value that was added to the "key_account_rebate_rate" field in this mutation.
+func (m *UserMutation) AddedKeyAccountRebateRate() (r float64, exists bool) {
+	v := m.addkey_account_rebate_rate
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetKeyAccountRebateRate resets all changes to the "key_account_rebate_rate" field.
+func (m *UserMutation) ResetKeyAccountRebateRate() {
+	m.key_account_rebate_rate = nil
+	m.addkey_account_rebate_rate = nil
+}
+
+// SetKeyAccountManagerNotes sets the "key_account_manager_notes" field.
+func (m *UserMutation) SetKeyAccountManagerNotes(s string) {
+	m.key_account_manager_notes = &s
+}
+
+// KeyAccountManagerNotes returns the value of the "key_account_manager_notes" field in the mutation.
+func (m *UserMutation) KeyAccountManagerNotes() (r string, exists bool) {
+	v := m.key_account_manager_notes
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldKeyAccountManagerNotes returns the old "key_account_manager_notes" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldKeyAccountManagerNotes(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldKeyAccountManagerNotes is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldKeyAccountManagerNotes requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldKeyAccountManagerNotes: %w", err)
+	}
+	return oldValue.KeyAccountManagerNotes, nil
+}
+
+// ResetKeyAccountManagerNotes resets all changes to the "key_account_manager_notes" field.
+func (m *UserMutation) ResetKeyAccountManagerNotes() {
+	m.key_account_manager_notes = nil
+}
+
 // ClearInviter clears the "inviter" edge to the User entity.
 func (m *UserMutation) ClearInviter() {
 	m.clearedinviter = true
@@ -33519,7 +38134,7 @@ func (m *UserMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *UserMutation) Fields() []string {
-	fields := make([]string, 0, 24)
+	fields := make([]string, 0, 29)
 	if m.created_at != nil {
 		fields = append(fields, user.FieldCreatedAt)
 	}
@@ -33592,6 +38207,21 @@ func (m *UserMutation) Fields() []string {
 	if m.total_commission_earned != nil {
 		fields = append(fields, user.FieldTotalCommissionEarned)
 	}
+	if m.is_key_account != nil {
+		fields = append(fields, user.FieldIsKeyAccount)
+	}
+	if m.key_account_level != nil {
+		fields = append(fields, user.FieldKeyAccountLevel)
+	}
+	if m.key_account_discount_rate != nil {
+		fields = append(fields, user.FieldKeyAccountDiscountRate)
+	}
+	if m.key_account_rebate_rate != nil {
+		fields = append(fields, user.FieldKeyAccountRebateRate)
+	}
+	if m.key_account_manager_notes != nil {
+		fields = append(fields, user.FieldKeyAccountManagerNotes)
+	}
 	return fields
 }
 
@@ -33648,6 +38278,16 @@ func (m *UserMutation) Field(name string) (ent.Value, bool) {
 		return m.CommissionBalance()
 	case user.FieldTotalCommissionEarned:
 		return m.TotalCommissionEarned()
+	case user.FieldIsKeyAccount:
+		return m.IsKeyAccount()
+	case user.FieldKeyAccountLevel:
+		return m.KeyAccountLevel()
+	case user.FieldKeyAccountDiscountRate:
+		return m.KeyAccountDiscountRate()
+	case user.FieldKeyAccountRebateRate:
+		return m.KeyAccountRebateRate()
+	case user.FieldKeyAccountManagerNotes:
+		return m.KeyAccountManagerNotes()
 	}
 	return nil, false
 }
@@ -33705,6 +38345,16 @@ func (m *UserMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldCommissionBalance(ctx)
 	case user.FieldTotalCommissionEarned:
 		return m.OldTotalCommissionEarned(ctx)
+	case user.FieldIsKeyAccount:
+		return m.OldIsKeyAccount(ctx)
+	case user.FieldKeyAccountLevel:
+		return m.OldKeyAccountLevel(ctx)
+	case user.FieldKeyAccountDiscountRate:
+		return m.OldKeyAccountDiscountRate(ctx)
+	case user.FieldKeyAccountRebateRate:
+		return m.OldKeyAccountRebateRate(ctx)
+	case user.FieldKeyAccountManagerNotes:
+		return m.OldKeyAccountManagerNotes(ctx)
 	}
 	return nil, fmt.Errorf("unknown User field %s", name)
 }
@@ -33882,6 +38532,41 @@ func (m *UserMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetTotalCommissionEarned(v)
 		return nil
+	case user.FieldIsKeyAccount:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetIsKeyAccount(v)
+		return nil
+	case user.FieldKeyAccountLevel:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetKeyAccountLevel(v)
+		return nil
+	case user.FieldKeyAccountDiscountRate:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetKeyAccountDiscountRate(v)
+		return nil
+	case user.FieldKeyAccountRebateRate:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetKeyAccountRebateRate(v)
+		return nil
+	case user.FieldKeyAccountManagerNotes:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetKeyAccountManagerNotes(v)
+		return nil
 	}
 	return fmt.Errorf("unknown User field %s", name)
 }
@@ -33911,6 +38596,12 @@ func (m *UserMutation) AddedFields() []string {
 	if m.addtotal_commission_earned != nil {
 		fields = append(fields, user.FieldTotalCommissionEarned)
 	}
+	if m.addkey_account_discount_rate != nil {
+		fields = append(fields, user.FieldKeyAccountDiscountRate)
+	}
+	if m.addkey_account_rebate_rate != nil {
+		fields = append(fields, user.FieldKeyAccountRebateRate)
+	}
 	return fields
 }
 
@@ -33933,6 +38624,10 @@ func (m *UserMutation) AddedField(name string) (ent.Value, bool) {
 		return m.AddedCommissionBalance()
 	case user.FieldTotalCommissionEarned:
 		return m.AddedTotalCommissionEarned()
+	case user.FieldKeyAccountDiscountRate:
+		return m.AddedKeyAccountDiscountRate()
+	case user.FieldKeyAccountRebateRate:
+		return m.AddedKeyAccountRebateRate()
 	}
 	return nil, false
 }
@@ -33990,6 +38685,20 @@ func (m *UserMutation) AddField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.AddTotalCommissionEarned(v)
+		return nil
+	case user.FieldKeyAccountDiscountRate:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddKeyAccountDiscountRate(v)
+		return nil
+	case user.FieldKeyAccountRebateRate:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddKeyAccountRebateRate(v)
 		return nil
 	}
 	return fmt.Errorf("unknown User numeric field %s", name)
@@ -34128,6 +38837,21 @@ func (m *UserMutation) ResetField(name string) error {
 		return nil
 	case user.FieldTotalCommissionEarned:
 		m.ResetTotalCommissionEarned()
+		return nil
+	case user.FieldIsKeyAccount:
+		m.ResetIsKeyAccount()
+		return nil
+	case user.FieldKeyAccountLevel:
+		m.ResetKeyAccountLevel()
+		return nil
+	case user.FieldKeyAccountDiscountRate:
+		m.ResetKeyAccountDiscountRate()
+		return nil
+	case user.FieldKeyAccountRebateRate:
+		m.ResetKeyAccountRebateRate()
+		return nil
+	case user.FieldKeyAccountManagerNotes:
+		m.ResetKeyAccountManagerNotes()
 		return nil
 	}
 	return fmt.Errorf("unknown User field %s", name)

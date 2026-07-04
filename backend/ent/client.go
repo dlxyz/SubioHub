@@ -21,6 +21,8 @@ import (
 	"github.com/dlxyz/SubioHub/ent/announcementread"
 	"github.com/dlxyz/SubioHub/ent/apikey"
 	"github.com/dlxyz/SubioHub/ent/commissionlog"
+	"github.com/dlxyz/SubioHub/ent/commissionrule"
+	"github.com/dlxyz/SubioHub/ent/commissionsplitlog"
 	"github.com/dlxyz/SubioHub/ent/errorpassthroughrule"
 	"github.com/dlxyz/SubioHub/ent/group"
 	"github.com/dlxyz/SubioHub/ent/idempotencyrecord"
@@ -31,6 +33,7 @@ import (
 	"github.com/dlxyz/SubioHub/ent/paymentproviderinstance"
 	"github.com/dlxyz/SubioHub/ent/promocode"
 	"github.com/dlxyz/SubioHub/ent/promocodeusage"
+	"github.com/dlxyz/SubioHub/ent/promotionrelation"
 	"github.com/dlxyz/SubioHub/ent/proxy"
 	"github.com/dlxyz/SubioHub/ent/redeemcode"
 	"github.com/dlxyz/SubioHub/ent/securitysecret"
@@ -65,6 +68,10 @@ type Client struct {
 	AnnouncementRead *AnnouncementReadClient
 	// CommissionLog is the client for interacting with the CommissionLog builders.
 	CommissionLog *CommissionLogClient
+	// CommissionRule is the client for interacting with the CommissionRule builders.
+	CommissionRule *CommissionRuleClient
+	// CommissionSplitLog is the client for interacting with the CommissionSplitLog builders.
+	CommissionSplitLog *CommissionSplitLogClient
 	// ErrorPassthroughRule is the client for interacting with the ErrorPassthroughRule builders.
 	ErrorPassthroughRule *ErrorPassthroughRuleClient
 	// Group is the client for interacting with the Group builders.
@@ -85,6 +92,8 @@ type Client struct {
 	PromoCode *PromoCodeClient
 	// PromoCodeUsage is the client for interacting with the PromoCodeUsage builders.
 	PromoCodeUsage *PromoCodeUsageClient
+	// PromotionRelation is the client for interacting with the PromotionRelation builders.
+	PromotionRelation *PromotionRelationClient
 	// Proxy is the client for interacting with the Proxy builders.
 	Proxy *ProxyClient
 	// RedeemCode is the client for interacting with the RedeemCode builders.
@@ -128,6 +137,8 @@ func (c *Client) init() {
 	c.Announcement = NewAnnouncementClient(c.config)
 	c.AnnouncementRead = NewAnnouncementReadClient(c.config)
 	c.CommissionLog = NewCommissionLogClient(c.config)
+	c.CommissionRule = NewCommissionRuleClient(c.config)
+	c.CommissionSplitLog = NewCommissionSplitLogClient(c.config)
 	c.ErrorPassthroughRule = NewErrorPassthroughRuleClient(c.config)
 	c.Group = NewGroupClient(c.config)
 	c.IdempotencyRecord = NewIdempotencyRecordClient(c.config)
@@ -138,6 +149,7 @@ func (c *Client) init() {
 	c.PaymentProviderInstance = NewPaymentProviderInstanceClient(c.config)
 	c.PromoCode = NewPromoCodeClient(c.config)
 	c.PromoCodeUsage = NewPromoCodeUsageClient(c.config)
+	c.PromotionRelation = NewPromotionRelationClient(c.config)
 	c.Proxy = NewProxyClient(c.config)
 	c.RedeemCode = NewRedeemCodeClient(c.config)
 	c.SecuritySecret = NewSecuritySecretClient(c.config)
@@ -249,6 +261,8 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		Announcement:            NewAnnouncementClient(cfg),
 		AnnouncementRead:        NewAnnouncementReadClient(cfg),
 		CommissionLog:           NewCommissionLogClient(cfg),
+		CommissionRule:          NewCommissionRuleClient(cfg),
+		CommissionSplitLog:      NewCommissionSplitLogClient(cfg),
 		ErrorPassthroughRule:    NewErrorPassthroughRuleClient(cfg),
 		Group:                   NewGroupClient(cfg),
 		IdempotencyRecord:       NewIdempotencyRecordClient(cfg),
@@ -259,6 +273,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		PaymentProviderInstance: NewPaymentProviderInstanceClient(cfg),
 		PromoCode:               NewPromoCodeClient(cfg),
 		PromoCodeUsage:          NewPromoCodeUsageClient(cfg),
+		PromotionRelation:       NewPromotionRelationClient(cfg),
 		Proxy:                   NewProxyClient(cfg),
 		RedeemCode:              NewRedeemCodeClient(cfg),
 		SecuritySecret:          NewSecuritySecretClient(cfg),
@@ -297,6 +312,8 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		Announcement:            NewAnnouncementClient(cfg),
 		AnnouncementRead:        NewAnnouncementReadClient(cfg),
 		CommissionLog:           NewCommissionLogClient(cfg),
+		CommissionRule:          NewCommissionRuleClient(cfg),
+		CommissionSplitLog:      NewCommissionSplitLogClient(cfg),
 		ErrorPassthroughRule:    NewErrorPassthroughRuleClient(cfg),
 		Group:                   NewGroupClient(cfg),
 		IdempotencyRecord:       NewIdempotencyRecordClient(cfg),
@@ -307,6 +324,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		PaymentProviderInstance: NewPaymentProviderInstanceClient(cfg),
 		PromoCode:               NewPromoCodeClient(cfg),
 		PromoCodeUsage:          NewPromoCodeUsageClient(cfg),
+		PromotionRelation:       NewPromotionRelationClient(cfg),
 		Proxy:                   NewProxyClient(cfg),
 		RedeemCode:              NewRedeemCodeClient(cfg),
 		SecuritySecret:          NewSecuritySecretClient(cfg),
@@ -350,10 +368,11 @@ func (c *Client) Close() error {
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
 		c.APIKey, c.Account, c.AccountGroup, c.Announcement, c.AnnouncementRead,
-		c.CommissionLog, c.ErrorPassthroughRule, c.Group, c.IdempotencyRecord,
-		c.NewsPost, c.NewsPostTranslation, c.PaymentAuditLog, c.PaymentOrder,
-		c.PaymentProviderInstance, c.PromoCode, c.PromoCodeUsage, c.Proxy,
-		c.RedeemCode, c.SecuritySecret, c.Setting, c.SubscriptionPlan,
+		c.CommissionLog, c.CommissionRule, c.CommissionSplitLog,
+		c.ErrorPassthroughRule, c.Group, c.IdempotencyRecord, c.NewsPost,
+		c.NewsPostTranslation, c.PaymentAuditLog, c.PaymentOrder,
+		c.PaymentProviderInstance, c.PromoCode, c.PromoCodeUsage, c.PromotionRelation,
+		c.Proxy, c.RedeemCode, c.SecuritySecret, c.Setting, c.SubscriptionPlan,
 		c.TLSFingerprintProfile, c.UsageCleanupTask, c.UsageLog, c.User,
 		c.UserAllowedGroup, c.UserAttributeDefinition, c.UserAttributeValue,
 		c.UserSubscription,
@@ -367,10 +386,11 @@ func (c *Client) Use(hooks ...Hook) {
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
 		c.APIKey, c.Account, c.AccountGroup, c.Announcement, c.AnnouncementRead,
-		c.CommissionLog, c.ErrorPassthroughRule, c.Group, c.IdempotencyRecord,
-		c.NewsPost, c.NewsPostTranslation, c.PaymentAuditLog, c.PaymentOrder,
-		c.PaymentProviderInstance, c.PromoCode, c.PromoCodeUsage, c.Proxy,
-		c.RedeemCode, c.SecuritySecret, c.Setting, c.SubscriptionPlan,
+		c.CommissionLog, c.CommissionRule, c.CommissionSplitLog,
+		c.ErrorPassthroughRule, c.Group, c.IdempotencyRecord, c.NewsPost,
+		c.NewsPostTranslation, c.PaymentAuditLog, c.PaymentOrder,
+		c.PaymentProviderInstance, c.PromoCode, c.PromoCodeUsage, c.PromotionRelation,
+		c.Proxy, c.RedeemCode, c.SecuritySecret, c.Setting, c.SubscriptionPlan,
 		c.TLSFingerprintProfile, c.UsageCleanupTask, c.UsageLog, c.User,
 		c.UserAllowedGroup, c.UserAttributeDefinition, c.UserAttributeValue,
 		c.UserSubscription,
@@ -394,6 +414,10 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.AnnouncementRead.mutate(ctx, m)
 	case *CommissionLogMutation:
 		return c.CommissionLog.mutate(ctx, m)
+	case *CommissionRuleMutation:
+		return c.CommissionRule.mutate(ctx, m)
+	case *CommissionSplitLogMutation:
+		return c.CommissionSplitLog.mutate(ctx, m)
 	case *ErrorPassthroughRuleMutation:
 		return c.ErrorPassthroughRule.mutate(ctx, m)
 	case *GroupMutation:
@@ -414,6 +438,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.PromoCode.mutate(ctx, m)
 	case *PromoCodeUsageMutation:
 		return c.PromoCodeUsage.mutate(ctx, m)
+	case *PromotionRelationMutation:
+		return c.PromotionRelation.mutate(ctx, m)
 	case *ProxyMutation:
 		return c.Proxy.mutate(ctx, m)
 	case *RedeemCodeMutation:
@@ -1435,6 +1461,368 @@ func (c *CommissionLogClient) mutate(ctx context.Context, m *CommissionLogMutati
 		return (&CommissionLogDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown CommissionLog mutation op: %q", m.Op())
+	}
+}
+
+// CommissionRuleClient is a client for the CommissionRule schema.
+type CommissionRuleClient struct {
+	config
+}
+
+// NewCommissionRuleClient returns a client for the CommissionRule from the given config.
+func NewCommissionRuleClient(c config) *CommissionRuleClient {
+	return &CommissionRuleClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `commissionrule.Hooks(f(g(h())))`.
+func (c *CommissionRuleClient) Use(hooks ...Hook) {
+	c.hooks.CommissionRule = append(c.hooks.CommissionRule, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `commissionrule.Intercept(f(g(h())))`.
+func (c *CommissionRuleClient) Intercept(interceptors ...Interceptor) {
+	c.inters.CommissionRule = append(c.inters.CommissionRule, interceptors...)
+}
+
+// Create returns a builder for creating a CommissionRule entity.
+func (c *CommissionRuleClient) Create() *CommissionRuleCreate {
+	mutation := newCommissionRuleMutation(c.config, OpCreate)
+	return &CommissionRuleCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of CommissionRule entities.
+func (c *CommissionRuleClient) CreateBulk(builders ...*CommissionRuleCreate) *CommissionRuleCreateBulk {
+	return &CommissionRuleCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *CommissionRuleClient) MapCreateBulk(slice any, setFunc func(*CommissionRuleCreate, int)) *CommissionRuleCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &CommissionRuleCreateBulk{err: fmt.Errorf("calling to CommissionRuleClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*CommissionRuleCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &CommissionRuleCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for CommissionRule.
+func (c *CommissionRuleClient) Update() *CommissionRuleUpdate {
+	mutation := newCommissionRuleMutation(c.config, OpUpdate)
+	return &CommissionRuleUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *CommissionRuleClient) UpdateOne(_m *CommissionRule) *CommissionRuleUpdateOne {
+	mutation := newCommissionRuleMutation(c.config, OpUpdateOne, withCommissionRule(_m))
+	return &CommissionRuleUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *CommissionRuleClient) UpdateOneID(id int64) *CommissionRuleUpdateOne {
+	mutation := newCommissionRuleMutation(c.config, OpUpdateOne, withCommissionRuleID(id))
+	return &CommissionRuleUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for CommissionRule.
+func (c *CommissionRuleClient) Delete() *CommissionRuleDelete {
+	mutation := newCommissionRuleMutation(c.config, OpDelete)
+	return &CommissionRuleDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *CommissionRuleClient) DeleteOne(_m *CommissionRule) *CommissionRuleDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *CommissionRuleClient) DeleteOneID(id int64) *CommissionRuleDeleteOne {
+	builder := c.Delete().Where(commissionrule.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &CommissionRuleDeleteOne{builder}
+}
+
+// Query returns a query builder for CommissionRule.
+func (c *CommissionRuleClient) Query() *CommissionRuleQuery {
+	return &CommissionRuleQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeCommissionRule},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a CommissionRule entity by its id.
+func (c *CommissionRuleClient) Get(ctx context.Context, id int64) (*CommissionRule, error) {
+	return c.Query().Where(commissionrule.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *CommissionRuleClient) GetX(ctx context.Context, id int64) *CommissionRule {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *CommissionRuleClient) Hooks() []Hook {
+	return c.hooks.CommissionRule
+}
+
+// Interceptors returns the client interceptors.
+func (c *CommissionRuleClient) Interceptors() []Interceptor {
+	return c.inters.CommissionRule
+}
+
+func (c *CommissionRuleClient) mutate(ctx context.Context, m *CommissionRuleMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&CommissionRuleCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&CommissionRuleUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&CommissionRuleUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&CommissionRuleDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown CommissionRule mutation op: %q", m.Op())
+	}
+}
+
+// CommissionSplitLogClient is a client for the CommissionSplitLog schema.
+type CommissionSplitLogClient struct {
+	config
+}
+
+// NewCommissionSplitLogClient returns a client for the CommissionSplitLog from the given config.
+func NewCommissionSplitLogClient(c config) *CommissionSplitLogClient {
+	return &CommissionSplitLogClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `commissionsplitlog.Hooks(f(g(h())))`.
+func (c *CommissionSplitLogClient) Use(hooks ...Hook) {
+	c.hooks.CommissionSplitLog = append(c.hooks.CommissionSplitLog, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `commissionsplitlog.Intercept(f(g(h())))`.
+func (c *CommissionSplitLogClient) Intercept(interceptors ...Interceptor) {
+	c.inters.CommissionSplitLog = append(c.inters.CommissionSplitLog, interceptors...)
+}
+
+// Create returns a builder for creating a CommissionSplitLog entity.
+func (c *CommissionSplitLogClient) Create() *CommissionSplitLogCreate {
+	mutation := newCommissionSplitLogMutation(c.config, OpCreate)
+	return &CommissionSplitLogCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of CommissionSplitLog entities.
+func (c *CommissionSplitLogClient) CreateBulk(builders ...*CommissionSplitLogCreate) *CommissionSplitLogCreateBulk {
+	return &CommissionSplitLogCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *CommissionSplitLogClient) MapCreateBulk(slice any, setFunc func(*CommissionSplitLogCreate, int)) *CommissionSplitLogCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &CommissionSplitLogCreateBulk{err: fmt.Errorf("calling to CommissionSplitLogClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*CommissionSplitLogCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &CommissionSplitLogCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for CommissionSplitLog.
+func (c *CommissionSplitLogClient) Update() *CommissionSplitLogUpdate {
+	mutation := newCommissionSplitLogMutation(c.config, OpUpdate)
+	return &CommissionSplitLogUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *CommissionSplitLogClient) UpdateOne(_m *CommissionSplitLog) *CommissionSplitLogUpdateOne {
+	mutation := newCommissionSplitLogMutation(c.config, OpUpdateOne, withCommissionSplitLog(_m))
+	return &CommissionSplitLogUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *CommissionSplitLogClient) UpdateOneID(id int64) *CommissionSplitLogUpdateOne {
+	mutation := newCommissionSplitLogMutation(c.config, OpUpdateOne, withCommissionSplitLogID(id))
+	return &CommissionSplitLogUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for CommissionSplitLog.
+func (c *CommissionSplitLogClient) Delete() *CommissionSplitLogDelete {
+	mutation := newCommissionSplitLogMutation(c.config, OpDelete)
+	return &CommissionSplitLogDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *CommissionSplitLogClient) DeleteOne(_m *CommissionSplitLog) *CommissionSplitLogDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *CommissionSplitLogClient) DeleteOneID(id int64) *CommissionSplitLogDeleteOne {
+	builder := c.Delete().Where(commissionsplitlog.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &CommissionSplitLogDeleteOne{builder}
+}
+
+// Query returns a query builder for CommissionSplitLog.
+func (c *CommissionSplitLogClient) Query() *CommissionSplitLogQuery {
+	return &CommissionSplitLogQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeCommissionSplitLog},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a CommissionSplitLog entity by its id.
+func (c *CommissionSplitLogClient) Get(ctx context.Context, id int64) (*CommissionSplitLog, error) {
+	return c.Query().Where(commissionsplitlog.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *CommissionSplitLogClient) GetX(ctx context.Context, id int64) *CommissionSplitLog {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryPaymentOrder queries the payment_order edge of a CommissionSplitLog.
+func (c *CommissionSplitLogClient) QueryPaymentOrder(_m *CommissionSplitLog) *PaymentOrderQuery {
+	query := (&PaymentOrderClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(commissionsplitlog.Table, commissionsplitlog.FieldID, id),
+			sqlgraph.To(paymentorder.Table, paymentorder.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, commissionsplitlog.PaymentOrderTable, commissionsplitlog.PaymentOrderColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryConsumerUser queries the consumer_user edge of a CommissionSplitLog.
+func (c *CommissionSplitLogClient) QueryConsumerUser(_m *CommissionSplitLog) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(commissionsplitlog.Table, commissionsplitlog.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, commissionsplitlog.ConsumerUserTable, commissionsplitlog.ConsumerUserColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryBeneficiaryUser queries the beneficiary_user edge of a CommissionSplitLog.
+func (c *CommissionSplitLogClient) QueryBeneficiaryUser(_m *CommissionSplitLog) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(commissionsplitlog.Table, commissionsplitlog.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, commissionsplitlog.BeneficiaryUserTable, commissionsplitlog.BeneficiaryUserColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryAgentUser queries the agent_user edge of a CommissionSplitLog.
+func (c *CommissionSplitLogClient) QueryAgentUser(_m *CommissionSplitLog) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(commissionsplitlog.Table, commissionsplitlog.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, commissionsplitlog.AgentUserTable, commissionsplitlog.AgentUserColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryDistributorUser queries the distributor_user edge of a CommissionSplitLog.
+func (c *CommissionSplitLogClient) QueryDistributorUser(_m *CommissionSplitLog) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(commissionsplitlog.Table, commissionsplitlog.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, commissionsplitlog.DistributorUserTable, commissionsplitlog.DistributorUserColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryCommissionRule queries the commission_rule edge of a CommissionSplitLog.
+func (c *CommissionSplitLogClient) QueryCommissionRule(_m *CommissionSplitLog) *CommissionRuleQuery {
+	query := (&CommissionRuleClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(commissionsplitlog.Table, commissionsplitlog.FieldID, id),
+			sqlgraph.To(commissionrule.Table, commissionrule.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, commissionsplitlog.CommissionRuleTable, commissionsplitlog.CommissionRuleColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *CommissionSplitLogClient) Hooks() []Hook {
+	return c.hooks.CommissionSplitLog
+}
+
+// Interceptors returns the client interceptors.
+func (c *CommissionSplitLogClient) Interceptors() []Interceptor {
+	return c.inters.CommissionSplitLog
+}
+
+func (c *CommissionSplitLogClient) mutate(ctx context.Context, m *CommissionSplitLogMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&CommissionSplitLogCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&CommissionSplitLogUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&CommissionSplitLogUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&CommissionSplitLogDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown CommissionSplitLog mutation op: %q", m.Op())
 	}
 }
 
@@ -3007,6 +3395,203 @@ func (c *PromoCodeUsageClient) mutate(ctx context.Context, m *PromoCodeUsageMuta
 		return (&PromoCodeUsageDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown PromoCodeUsage mutation op: %q", m.Op())
+	}
+}
+
+// PromotionRelationClient is a client for the PromotionRelation schema.
+type PromotionRelationClient struct {
+	config
+}
+
+// NewPromotionRelationClient returns a client for the PromotionRelation from the given config.
+func NewPromotionRelationClient(c config) *PromotionRelationClient {
+	return &PromotionRelationClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `promotionrelation.Hooks(f(g(h())))`.
+func (c *PromotionRelationClient) Use(hooks ...Hook) {
+	c.hooks.PromotionRelation = append(c.hooks.PromotionRelation, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `promotionrelation.Intercept(f(g(h())))`.
+func (c *PromotionRelationClient) Intercept(interceptors ...Interceptor) {
+	c.inters.PromotionRelation = append(c.inters.PromotionRelation, interceptors...)
+}
+
+// Create returns a builder for creating a PromotionRelation entity.
+func (c *PromotionRelationClient) Create() *PromotionRelationCreate {
+	mutation := newPromotionRelationMutation(c.config, OpCreate)
+	return &PromotionRelationCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of PromotionRelation entities.
+func (c *PromotionRelationClient) CreateBulk(builders ...*PromotionRelationCreate) *PromotionRelationCreateBulk {
+	return &PromotionRelationCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *PromotionRelationClient) MapCreateBulk(slice any, setFunc func(*PromotionRelationCreate, int)) *PromotionRelationCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &PromotionRelationCreateBulk{err: fmt.Errorf("calling to PromotionRelationClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*PromotionRelationCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &PromotionRelationCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for PromotionRelation.
+func (c *PromotionRelationClient) Update() *PromotionRelationUpdate {
+	mutation := newPromotionRelationMutation(c.config, OpUpdate)
+	return &PromotionRelationUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *PromotionRelationClient) UpdateOne(_m *PromotionRelation) *PromotionRelationUpdateOne {
+	mutation := newPromotionRelationMutation(c.config, OpUpdateOne, withPromotionRelation(_m))
+	return &PromotionRelationUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *PromotionRelationClient) UpdateOneID(id int64) *PromotionRelationUpdateOne {
+	mutation := newPromotionRelationMutation(c.config, OpUpdateOne, withPromotionRelationID(id))
+	return &PromotionRelationUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for PromotionRelation.
+func (c *PromotionRelationClient) Delete() *PromotionRelationDelete {
+	mutation := newPromotionRelationMutation(c.config, OpDelete)
+	return &PromotionRelationDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *PromotionRelationClient) DeleteOne(_m *PromotionRelation) *PromotionRelationDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *PromotionRelationClient) DeleteOneID(id int64) *PromotionRelationDeleteOne {
+	builder := c.Delete().Where(promotionrelation.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &PromotionRelationDeleteOne{builder}
+}
+
+// Query returns a query builder for PromotionRelation.
+func (c *PromotionRelationClient) Query() *PromotionRelationQuery {
+	return &PromotionRelationQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypePromotionRelation},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a PromotionRelation entity by its id.
+func (c *PromotionRelationClient) Get(ctx context.Context, id int64) (*PromotionRelation, error) {
+	return c.Query().Where(promotionrelation.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *PromotionRelationClient) GetX(ctx context.Context, id int64) *PromotionRelation {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryUser queries the user edge of a PromotionRelation.
+func (c *PromotionRelationClient) QueryUser(_m *PromotionRelation) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(promotionrelation.Table, promotionrelation.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, promotionrelation.UserTable, promotionrelation.UserColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryAgentUser queries the agent_user edge of a PromotionRelation.
+func (c *PromotionRelationClient) QueryAgentUser(_m *PromotionRelation) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(promotionrelation.Table, promotionrelation.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, promotionrelation.AgentUserTable, promotionrelation.AgentUserColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryDistributorUser queries the distributor_user edge of a PromotionRelation.
+func (c *PromotionRelationClient) QueryDistributorUser(_m *PromotionRelation) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(promotionrelation.Table, promotionrelation.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, promotionrelation.DistributorUserTable, promotionrelation.DistributorUserColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryDirectParentUser queries the direct_parent_user edge of a PromotionRelation.
+func (c *PromotionRelationClient) QueryDirectParentUser(_m *PromotionRelation) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(promotionrelation.Table, promotionrelation.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, promotionrelation.DirectParentUserTable, promotionrelation.DirectParentUserColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *PromotionRelationClient) Hooks() []Hook {
+	return c.hooks.PromotionRelation
+}
+
+// Interceptors returns the client interceptors.
+func (c *PromotionRelationClient) Interceptors() []Interceptor {
+	return c.inters.PromotionRelation
+}
+
+func (c *PromotionRelationClient) mutate(ctx context.Context, m *PromotionRelationMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&PromotionRelationCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&PromotionRelationUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&PromotionRelationUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&PromotionRelationDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown PromotionRelation mutation op: %q", m.Op())
 	}
 }
 
@@ -5198,19 +5783,23 @@ func (c *UserSubscriptionClient) mutate(ctx context.Context, m *UserSubscription
 type (
 	hooks struct {
 		APIKey, Account, AccountGroup, Announcement, AnnouncementRead, CommissionLog,
-		ErrorPassthroughRule, Group, IdempotencyRecord, NewsPost, NewsPostTranslation,
-		PaymentAuditLog, PaymentOrder, PaymentProviderInstance, PromoCode,
-		PromoCodeUsage, Proxy, RedeemCode, SecuritySecret, Setting, SubscriptionPlan,
-		TLSFingerprintProfile, UsageCleanupTask, UsageLog, User, UserAllowedGroup,
-		UserAttributeDefinition, UserAttributeValue, UserSubscription []ent.Hook
+		CommissionRule, CommissionSplitLog, ErrorPassthroughRule, Group,
+		IdempotencyRecord, NewsPost, NewsPostTranslation, PaymentAuditLog,
+		PaymentOrder, PaymentProviderInstance, PromoCode, PromoCodeUsage,
+		PromotionRelation, Proxy, RedeemCode, SecuritySecret, Setting,
+		SubscriptionPlan, TLSFingerprintProfile, UsageCleanupTask, UsageLog, User,
+		UserAllowedGroup, UserAttributeDefinition, UserAttributeValue,
+		UserSubscription []ent.Hook
 	}
 	inters struct {
 		APIKey, Account, AccountGroup, Announcement, AnnouncementRead, CommissionLog,
-		ErrorPassthroughRule, Group, IdempotencyRecord, NewsPost, NewsPostTranslation,
-		PaymentAuditLog, PaymentOrder, PaymentProviderInstance, PromoCode,
-		PromoCodeUsage, Proxy, RedeemCode, SecuritySecret, Setting, SubscriptionPlan,
-		TLSFingerprintProfile, UsageCleanupTask, UsageLog, User, UserAllowedGroup,
-		UserAttributeDefinition, UserAttributeValue, UserSubscription []ent.Interceptor
+		CommissionRule, CommissionSplitLog, ErrorPassthroughRule, Group,
+		IdempotencyRecord, NewsPost, NewsPostTranslation, PaymentAuditLog,
+		PaymentOrder, PaymentProviderInstance, PromoCode, PromoCodeUsage,
+		PromotionRelation, Proxy, RedeemCode, SecuritySecret, Setting,
+		SubscriptionPlan, TLSFingerprintProfile, UsageCleanupTask, UsageLog, User,
+		UserAllowedGroup, UserAttributeDefinition, UserAttributeValue,
+		UserSubscription []ent.Interceptor
 	}
 )
 

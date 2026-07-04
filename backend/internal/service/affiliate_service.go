@@ -4,8 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	dbent "github.com/dlxyz/SubioHub/ent"
+	"github.com/dlxyz/SubioHub/ent/commissionsplitlog"
 	dbuser "github.com/dlxyz/SubioHub/ent/user"
 	"github.com/dlxyz/SubioHub/internal/pkg/pagination"
 )
@@ -45,7 +47,10 @@ func (s *AffiliateService) BindInviter(ctx context.Context, userID, inviterID in
 	// Note: We might need a direct repo method for this to avoid overriding other fields if they changed concurrently.
 	// But for now, we use the standard Update method.
 	user.InviterID = &inviter.ID
-	return s.userRepo.Update(ctx, user)
+	if err := s.userRepo.Update(ctx, user); err != nil {
+		return err
+	}
+	return upsertPromotionRelationForInviter(ctx, s.dbClient, userID, &inviter.ID, "affiliate inviter binding")
 }
 
 // RecordPendingCommission creates a pending commission log for a given order amount.
@@ -118,6 +123,60 @@ func (s *AffiliateService) SettleCommission(ctx context.Context, logID int64) er
 	if err := s.userRepo.UpdateCommissionBalance(txCtx, log.UserID, log.Amount); err != nil {
 		_ = tx.Rollback()
 		return fmt.Errorf("update commission balance: %w", err)
+	}
+
+	return tx.Commit()
+}
+
+// SettleCommissionSplit confirms a pending diff-based commission split and adds it to the beneficiary's commission balance.
+func (s *AffiliateService) SettleCommissionSplit(ctx context.Context, logID int64) error {
+	tx, err := s.dbClient.Tx(ctx)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if v := recover(); v != nil {
+			_ = tx.Rollback()
+			panic(v)
+		}
+	}()
+
+	txCtx := dbent.NewTxContext(ctx, tx)
+
+	log, err := tx.CommissionSplitLog.Get(txCtx, logID)
+	if err != nil {
+		_ = tx.Rollback()
+		if dbent.IsNotFound(err) {
+			return errors.New("commission split log not found")
+		}
+		return fmt.Errorf("get commission split log: %w", err)
+	}
+
+	if log.Status != "pending" {
+		_ = tx.Rollback()
+		return errors.New("commission split log is not in pending status")
+	}
+
+	updated, err := tx.CommissionSplitLog.Update().
+		Where(
+			commissionsplitlog.IDEQ(logID),
+			commissionsplitlog.StatusEQ("pending"),
+		).
+		SetStatus("settled").
+		SetSettledAt(time.Now()).
+		Save(txCtx)
+	if err != nil {
+		_ = tx.Rollback()
+		return fmt.Errorf("update commission split log status: %w", err)
+	}
+	if updated == 0 {
+		_ = tx.Rollback()
+		return errors.New("commission split log is not in pending status")
+	}
+
+	if err := s.userRepo.UpdateCommissionBalance(txCtx, log.BeneficiaryUserID, log.CommissionAmount); err != nil {
+		_ = tx.Rollback()
+		return fmt.Errorf("update beneficiary commission balance: %w", err)
 	}
 
 	return tx.Commit()
@@ -251,6 +310,84 @@ func (s *AffiliateService) TransferToBalance(ctx context.Context, userID int64, 
 // AdminListCommissions allows admins to list all commissions with optional filters.
 func (s *AffiliateService) AdminListCommissions(ctx context.Context, params pagination.PaginationParams, filters CommissionLogListFilters) ([]CommissionLog, *pagination.PaginationResult, error) {
 	return s.commissionRepo.ListWithFilters(ctx, params, filters)
+}
+
+func (s *AffiliateService) AdminListCommissionSplits(ctx context.Context, params pagination.PaginationParams, filters CommissionSplitLogListFilters) ([]CommissionSplitLog, *pagination.PaginationResult, error) {
+	q := s.dbClient.CommissionSplitLog.Query().
+		WithConsumerUser().
+		WithBeneficiaryUser().
+		WithPaymentOrder()
+
+	if filters.BeneficiaryUserID != nil {
+		q = q.Where(commissionsplitlog.BeneficiaryUserIDEQ(*filters.BeneficiaryUserID))
+	}
+	if filters.BeneficiaryRole != "" {
+		q = q.Where(commissionsplitlog.BeneficiaryRoleEQ(filters.BeneficiaryRole))
+	}
+	if filters.Status != "" {
+		q = q.Where(commissionsplitlog.StatusEQ(filters.Status))
+	}
+
+	total, err := q.Count(ctx)
+	if err != nil {
+		return nil, nil, fmt.Errorf("count commission split logs: %w", err)
+	}
+
+	entities, err := q.
+		Limit(params.PageSize).
+		Offset((params.Page - 1) * params.PageSize).
+		Order(dbent.Desc(commissionsplitlog.FieldCreatedAt)).
+		All(ctx)
+	if err != nil {
+		return nil, nil, fmt.Errorf("list commission split logs: %w", err)
+	}
+
+	items := make([]CommissionSplitLog, 0, len(entities))
+	for _, item := range entities {
+		row := CommissionSplitLog{
+			ID:                item.ID,
+			OrderID:           item.OrderID,
+			ConsumerUserID:    item.ConsumerUserID,
+			BeneficiaryUserID: item.BeneficiaryUserID,
+			BeneficiaryRole:   item.BeneficiaryRole,
+			AgentUserID:       item.AgentUserID,
+			DistributorUserID: item.DistributorUserID,
+			Level:             item.Level,
+			CalcMode:          item.CalcMode,
+			BaseAmount:        item.BaseAmount,
+			TargetRate:        item.TargetRate,
+			ParentRate:        item.ParentRate,
+			CommissionAmount:  item.CommissionAmount,
+			Status:            item.Status,
+			RuleID:            item.RuleID,
+			Remark:            item.Remark,
+			SettledAt:         item.SettledAt,
+			CreatedAt:         item.CreatedAt,
+			UpdatedAt:         item.UpdatedAt,
+		}
+		if item.Edges.ConsumerUser != nil {
+			row.ConsumerUserEmail = item.Edges.ConsumerUser.Email
+		}
+		if item.Edges.BeneficiaryUser != nil {
+			row.BeneficiaryEmail = item.Edges.BeneficiaryUser.Email
+		}
+		if item.Edges.PaymentOrder != nil {
+			row.OrderType = item.Edges.PaymentOrder.OrderType
+			row.OrderStatus = item.Edges.PaymentOrder.Status
+		}
+		items = append(items, row)
+	}
+
+	pages := 0
+	if params.PageSize > 0 {
+		pages = (total + params.PageSize - 1) / params.PageSize
+	}
+	return items, &pagination.PaginationResult{
+		Total:    int64(total),
+		Page:     params.Page,
+		PageSize: params.PageSize,
+		Pages:    pages,
+	}, nil
 }
 
 // AdminUpdateUserCommissionRate updates a specific user's commission rate.

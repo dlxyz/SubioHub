@@ -437,6 +437,90 @@ func (_u *UserUpdate) AddTotalCommissionEarned(v float64) *UserUpdate {
 	return _u
 }
 
+// SetIsKeyAccount sets the "is_key_account" field.
+func (_u *UserUpdate) SetIsKeyAccount(v bool) *UserUpdate {
+	_u.mutation.SetIsKeyAccount(v)
+	return _u
+}
+
+// SetNillableIsKeyAccount sets the "is_key_account" field if the given value is not nil.
+func (_u *UserUpdate) SetNillableIsKeyAccount(v *bool) *UserUpdate {
+	if v != nil {
+		_u.SetIsKeyAccount(*v)
+	}
+	return _u
+}
+
+// SetKeyAccountLevel sets the "key_account_level" field.
+func (_u *UserUpdate) SetKeyAccountLevel(v string) *UserUpdate {
+	_u.mutation.SetKeyAccountLevel(v)
+	return _u
+}
+
+// SetNillableKeyAccountLevel sets the "key_account_level" field if the given value is not nil.
+func (_u *UserUpdate) SetNillableKeyAccountLevel(v *string) *UserUpdate {
+	if v != nil {
+		_u.SetKeyAccountLevel(*v)
+	}
+	return _u
+}
+
+// SetKeyAccountDiscountRate sets the "key_account_discount_rate" field.
+func (_u *UserUpdate) SetKeyAccountDiscountRate(v float64) *UserUpdate {
+	_u.mutation.ResetKeyAccountDiscountRate()
+	_u.mutation.SetKeyAccountDiscountRate(v)
+	return _u
+}
+
+// SetNillableKeyAccountDiscountRate sets the "key_account_discount_rate" field if the given value is not nil.
+func (_u *UserUpdate) SetNillableKeyAccountDiscountRate(v *float64) *UserUpdate {
+	if v != nil {
+		_u.SetKeyAccountDiscountRate(*v)
+	}
+	return _u
+}
+
+// AddKeyAccountDiscountRate adds value to the "key_account_discount_rate" field.
+func (_u *UserUpdate) AddKeyAccountDiscountRate(v float64) *UserUpdate {
+	_u.mutation.AddKeyAccountDiscountRate(v)
+	return _u
+}
+
+// SetKeyAccountRebateRate sets the "key_account_rebate_rate" field.
+func (_u *UserUpdate) SetKeyAccountRebateRate(v float64) *UserUpdate {
+	_u.mutation.ResetKeyAccountRebateRate()
+	_u.mutation.SetKeyAccountRebateRate(v)
+	return _u
+}
+
+// SetNillableKeyAccountRebateRate sets the "key_account_rebate_rate" field if the given value is not nil.
+func (_u *UserUpdate) SetNillableKeyAccountRebateRate(v *float64) *UserUpdate {
+	if v != nil {
+		_u.SetKeyAccountRebateRate(*v)
+	}
+	return _u
+}
+
+// AddKeyAccountRebateRate adds value to the "key_account_rebate_rate" field.
+func (_u *UserUpdate) AddKeyAccountRebateRate(v float64) *UserUpdate {
+	_u.mutation.AddKeyAccountRebateRate(v)
+	return _u
+}
+
+// SetKeyAccountManagerNotes sets the "key_account_manager_notes" field.
+func (_u *UserUpdate) SetKeyAccountManagerNotes(v string) *UserUpdate {
+	_u.mutation.SetKeyAccountManagerNotes(v)
+	return _u
+}
+
+// SetNillableKeyAccountManagerNotes sets the "key_account_manager_notes" field if the given value is not nil.
+func (_u *UserUpdate) SetNillableKeyAccountManagerNotes(v *string) *UserUpdate {
+	if v != nil {
+		_u.SetKeyAccountManagerNotes(*v)
+	}
+	return _u
+}
+
 // SetInviter sets the "inviter" edge to the User entity.
 func (_u *UserUpdate) SetInviter(v *User) *UserUpdate {
 	return _u.SetInviterID(v.ID)
@@ -959,6 +1043,11 @@ func (_u *UserUpdate) check() error {
 			return &ValidationError{Name: "invite_code", err: fmt.Errorf(`ent: validator failed for field "User.invite_code": %w`, err)}
 		}
 	}
+	if v, ok := _u.mutation.KeyAccountLevel(); ok {
+		if err := user.KeyAccountLevelValidator(v); err != nil {
+			return &ValidationError{Name: "key_account_level", err: fmt.Errorf(`ent: validator failed for field "User.key_account_level": %w`, err)}
+		}
+	}
 	return nil
 }
 
@@ -1075,6 +1164,27 @@ func (_u *UserUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if value, ok := _u.mutation.AddedTotalCommissionEarned(); ok {
 		_spec.AddField(user.FieldTotalCommissionEarned, field.TypeFloat64, value)
+	}
+	if value, ok := _u.mutation.IsKeyAccount(); ok {
+		_spec.SetField(user.FieldIsKeyAccount, field.TypeBool, value)
+	}
+	if value, ok := _u.mutation.KeyAccountLevel(); ok {
+		_spec.SetField(user.FieldKeyAccountLevel, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.KeyAccountDiscountRate(); ok {
+		_spec.SetField(user.FieldKeyAccountDiscountRate, field.TypeFloat64, value)
+	}
+	if value, ok := _u.mutation.AddedKeyAccountDiscountRate(); ok {
+		_spec.AddField(user.FieldKeyAccountDiscountRate, field.TypeFloat64, value)
+	}
+	if value, ok := _u.mutation.KeyAccountRebateRate(); ok {
+		_spec.SetField(user.FieldKeyAccountRebateRate, field.TypeFloat64, value)
+	}
+	if value, ok := _u.mutation.AddedKeyAccountRebateRate(); ok {
+		_spec.AddField(user.FieldKeyAccountRebateRate, field.TypeFloat64, value)
+	}
+	if value, ok := _u.mutation.KeyAccountManagerNotes(); ok {
+		_spec.SetField(user.FieldKeyAccountManagerNotes, field.TypeString, value)
 	}
 	if _u.mutation.InviterCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -2076,6 +2186,90 @@ func (_u *UserUpdateOne) AddTotalCommissionEarned(v float64) *UserUpdateOne {
 	return _u
 }
 
+// SetIsKeyAccount sets the "is_key_account" field.
+func (_u *UserUpdateOne) SetIsKeyAccount(v bool) *UserUpdateOne {
+	_u.mutation.SetIsKeyAccount(v)
+	return _u
+}
+
+// SetNillableIsKeyAccount sets the "is_key_account" field if the given value is not nil.
+func (_u *UserUpdateOne) SetNillableIsKeyAccount(v *bool) *UserUpdateOne {
+	if v != nil {
+		_u.SetIsKeyAccount(*v)
+	}
+	return _u
+}
+
+// SetKeyAccountLevel sets the "key_account_level" field.
+func (_u *UserUpdateOne) SetKeyAccountLevel(v string) *UserUpdateOne {
+	_u.mutation.SetKeyAccountLevel(v)
+	return _u
+}
+
+// SetNillableKeyAccountLevel sets the "key_account_level" field if the given value is not nil.
+func (_u *UserUpdateOne) SetNillableKeyAccountLevel(v *string) *UserUpdateOne {
+	if v != nil {
+		_u.SetKeyAccountLevel(*v)
+	}
+	return _u
+}
+
+// SetKeyAccountDiscountRate sets the "key_account_discount_rate" field.
+func (_u *UserUpdateOne) SetKeyAccountDiscountRate(v float64) *UserUpdateOne {
+	_u.mutation.ResetKeyAccountDiscountRate()
+	_u.mutation.SetKeyAccountDiscountRate(v)
+	return _u
+}
+
+// SetNillableKeyAccountDiscountRate sets the "key_account_discount_rate" field if the given value is not nil.
+func (_u *UserUpdateOne) SetNillableKeyAccountDiscountRate(v *float64) *UserUpdateOne {
+	if v != nil {
+		_u.SetKeyAccountDiscountRate(*v)
+	}
+	return _u
+}
+
+// AddKeyAccountDiscountRate adds value to the "key_account_discount_rate" field.
+func (_u *UserUpdateOne) AddKeyAccountDiscountRate(v float64) *UserUpdateOne {
+	_u.mutation.AddKeyAccountDiscountRate(v)
+	return _u
+}
+
+// SetKeyAccountRebateRate sets the "key_account_rebate_rate" field.
+func (_u *UserUpdateOne) SetKeyAccountRebateRate(v float64) *UserUpdateOne {
+	_u.mutation.ResetKeyAccountRebateRate()
+	_u.mutation.SetKeyAccountRebateRate(v)
+	return _u
+}
+
+// SetNillableKeyAccountRebateRate sets the "key_account_rebate_rate" field if the given value is not nil.
+func (_u *UserUpdateOne) SetNillableKeyAccountRebateRate(v *float64) *UserUpdateOne {
+	if v != nil {
+		_u.SetKeyAccountRebateRate(*v)
+	}
+	return _u
+}
+
+// AddKeyAccountRebateRate adds value to the "key_account_rebate_rate" field.
+func (_u *UserUpdateOne) AddKeyAccountRebateRate(v float64) *UserUpdateOne {
+	_u.mutation.AddKeyAccountRebateRate(v)
+	return _u
+}
+
+// SetKeyAccountManagerNotes sets the "key_account_manager_notes" field.
+func (_u *UserUpdateOne) SetKeyAccountManagerNotes(v string) *UserUpdateOne {
+	_u.mutation.SetKeyAccountManagerNotes(v)
+	return _u
+}
+
+// SetNillableKeyAccountManagerNotes sets the "key_account_manager_notes" field if the given value is not nil.
+func (_u *UserUpdateOne) SetNillableKeyAccountManagerNotes(v *string) *UserUpdateOne {
+	if v != nil {
+		_u.SetKeyAccountManagerNotes(*v)
+	}
+	return _u
+}
+
 // SetInviter sets the "inviter" edge to the User entity.
 func (_u *UserUpdateOne) SetInviter(v *User) *UserUpdateOne {
 	return _u.SetInviterID(v.ID)
@@ -2611,6 +2805,11 @@ func (_u *UserUpdateOne) check() error {
 			return &ValidationError{Name: "invite_code", err: fmt.Errorf(`ent: validator failed for field "User.invite_code": %w`, err)}
 		}
 	}
+	if v, ok := _u.mutation.KeyAccountLevel(); ok {
+		if err := user.KeyAccountLevelValidator(v); err != nil {
+			return &ValidationError{Name: "key_account_level", err: fmt.Errorf(`ent: validator failed for field "User.key_account_level": %w`, err)}
+		}
+	}
 	return nil
 }
 
@@ -2744,6 +2943,27 @@ func (_u *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) {
 	}
 	if value, ok := _u.mutation.AddedTotalCommissionEarned(); ok {
 		_spec.AddField(user.FieldTotalCommissionEarned, field.TypeFloat64, value)
+	}
+	if value, ok := _u.mutation.IsKeyAccount(); ok {
+		_spec.SetField(user.FieldIsKeyAccount, field.TypeBool, value)
+	}
+	if value, ok := _u.mutation.KeyAccountLevel(); ok {
+		_spec.SetField(user.FieldKeyAccountLevel, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.KeyAccountDiscountRate(); ok {
+		_spec.SetField(user.FieldKeyAccountDiscountRate, field.TypeFloat64, value)
+	}
+	if value, ok := _u.mutation.AddedKeyAccountDiscountRate(); ok {
+		_spec.AddField(user.FieldKeyAccountDiscountRate, field.TypeFloat64, value)
+	}
+	if value, ok := _u.mutation.KeyAccountRebateRate(); ok {
+		_spec.SetField(user.FieldKeyAccountRebateRate, field.TypeFloat64, value)
+	}
+	if value, ok := _u.mutation.AddedKeyAccountRebateRate(); ok {
+		_spec.AddField(user.FieldKeyAccountRebateRate, field.TypeFloat64, value)
+	}
+	if value, ok := _u.mutation.KeyAccountManagerNotes(); ok {
+		_spec.SetField(user.FieldKeyAccountManagerNotes, field.TypeString, value)
 	}
 	if _u.mutation.InviterCleared() {
 		edge := &sqlgraph.EdgeSpec{

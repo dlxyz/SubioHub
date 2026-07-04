@@ -18,6 +18,8 @@ import (
 	"github.com/dlxyz/SubioHub/ent/announcementread"
 	"github.com/dlxyz/SubioHub/ent/apikey"
 	"github.com/dlxyz/SubioHub/ent/commissionlog"
+	"github.com/dlxyz/SubioHub/ent/commissionrule"
+	"github.com/dlxyz/SubioHub/ent/commissionsplitlog"
 	"github.com/dlxyz/SubioHub/ent/errorpassthroughrule"
 	"github.com/dlxyz/SubioHub/ent/group"
 	"github.com/dlxyz/SubioHub/ent/idempotencyrecord"
@@ -28,6 +30,7 @@ import (
 	"github.com/dlxyz/SubioHub/ent/paymentproviderinstance"
 	"github.com/dlxyz/SubioHub/ent/promocode"
 	"github.com/dlxyz/SubioHub/ent/promocodeusage"
+	"github.com/dlxyz/SubioHub/ent/promotionrelation"
 	"github.com/dlxyz/SubioHub/ent/proxy"
 	"github.com/dlxyz/SubioHub/ent/redeemcode"
 	"github.com/dlxyz/SubioHub/ent/securitysecret"
@@ -107,6 +110,8 @@ func checkColumn(t, c string) error {
 			announcement.Table:            announcement.ValidColumn,
 			announcementread.Table:        announcementread.ValidColumn,
 			commissionlog.Table:           commissionlog.ValidColumn,
+			commissionrule.Table:          commissionrule.ValidColumn,
+			commissionsplitlog.Table:      commissionsplitlog.ValidColumn,
 			errorpassthroughrule.Table:    errorpassthroughrule.ValidColumn,
 			group.Table:                   group.ValidColumn,
 			idempotencyrecord.Table:       idempotencyrecord.ValidColumn,
@@ -117,6 +122,7 @@ func checkColumn(t, c string) error {
 			paymentproviderinstance.Table: paymentproviderinstance.ValidColumn,
 			promocode.Table:               promocode.ValidColumn,
 			promocodeusage.Table:          promocodeusage.ValidColumn,
+			promotionrelation.Table:       promotionrelation.ValidColumn,
 			proxy.Table:                   proxy.ValidColumn,
 			redeemcode.Table:              redeemcode.ValidColumn,
 			securitysecret.Table:          securitysecret.ValidColumn,

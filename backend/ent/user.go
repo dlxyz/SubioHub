@@ -65,6 +65,16 @@ type User struct {
 	CommissionBalance float64 `json:"commission_balance,omitempty"`
 	// 历史累计赚取的总佣金
 	TotalCommissionEarned float64 `json:"total_commission_earned,omitempty"`
+	// 是否为大客户
+	IsKeyAccount bool `json:"is_key_account,omitempty"`
+	// 大客户等级 standard / vip / enterprise
+	KeyAccountLevel string `json:"key_account_level,omitempty"`
+	// 大客户专属折扣系数，1 表示无折扣
+	KeyAccountDiscountRate float64 `json:"key_account_discount_rate,omitempty"`
+	// 大客户专属返点比例
+	KeyAccountRebateRate float64 `json:"key_account_rebate_rate,omitempty"`
+	// 大客户运营备注
+	KeyAccountManagerNotes string `json:"key_account_manager_notes,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the UserQuery when eager-loading is set.
 	Edges        UserEdges `json:"edges"`
@@ -239,13 +249,13 @@ func (*User) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case user.FieldTotpEnabled, user.FieldBalanceNotifyEnabled:
+		case user.FieldTotpEnabled, user.FieldBalanceNotifyEnabled, user.FieldIsKeyAccount:
 			values[i] = new(sql.NullBool)
-		case user.FieldBalance, user.FieldBalanceNotifyThreshold, user.FieldTotalRecharged, user.FieldCommissionRate, user.FieldCommissionBalance, user.FieldTotalCommissionEarned:
+		case user.FieldBalance, user.FieldBalanceNotifyThreshold, user.FieldTotalRecharged, user.FieldCommissionRate, user.FieldCommissionBalance, user.FieldTotalCommissionEarned, user.FieldKeyAccountDiscountRate, user.FieldKeyAccountRebateRate:
 			values[i] = new(sql.NullFloat64)
 		case user.FieldID, user.FieldConcurrency, user.FieldInviterID:
 			values[i] = new(sql.NullInt64)
-		case user.FieldEmail, user.FieldPasswordHash, user.FieldRole, user.FieldStatus, user.FieldUsername, user.FieldNotes, user.FieldTotpSecretEncrypted, user.FieldBalanceNotifyThresholdType, user.FieldBalanceNotifyExtraEmails, user.FieldInviteCode:
+		case user.FieldEmail, user.FieldPasswordHash, user.FieldRole, user.FieldStatus, user.FieldUsername, user.FieldNotes, user.FieldTotpSecretEncrypted, user.FieldBalanceNotifyThresholdType, user.FieldBalanceNotifyExtraEmails, user.FieldInviteCode, user.FieldKeyAccountLevel, user.FieldKeyAccountManagerNotes:
 			values[i] = new(sql.NullString)
 		case user.FieldCreatedAt, user.FieldUpdatedAt, user.FieldDeletedAt, user.FieldTotpEnabledAt:
 			values[i] = new(sql.NullTime)
@@ -418,6 +428,36 @@ func (_m *User) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field total_commission_earned", values[i])
 			} else if value.Valid {
 				_m.TotalCommissionEarned = value.Float64
+			}
+		case user.FieldIsKeyAccount:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field is_key_account", values[i])
+			} else if value.Valid {
+				_m.IsKeyAccount = value.Bool
+			}
+		case user.FieldKeyAccountLevel:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field key_account_level", values[i])
+			} else if value.Valid {
+				_m.KeyAccountLevel = value.String
+			}
+		case user.FieldKeyAccountDiscountRate:
+			if value, ok := values[i].(*sql.NullFloat64); !ok {
+				return fmt.Errorf("unexpected type %T for field key_account_discount_rate", values[i])
+			} else if value.Valid {
+				_m.KeyAccountDiscountRate = value.Float64
+			}
+		case user.FieldKeyAccountRebateRate:
+			if value, ok := values[i].(*sql.NullFloat64); !ok {
+				return fmt.Errorf("unexpected type %T for field key_account_rebate_rate", values[i])
+			} else if value.Valid {
+				_m.KeyAccountRebateRate = value.Float64
+			}
+		case user.FieldKeyAccountManagerNotes:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field key_account_manager_notes", values[i])
+			} else if value.Valid {
+				_m.KeyAccountManagerNotes = value.String
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -606,6 +646,21 @@ func (_m *User) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("total_commission_earned=")
 	builder.WriteString(fmt.Sprintf("%v", _m.TotalCommissionEarned))
+	builder.WriteString(", ")
+	builder.WriteString("is_key_account=")
+	builder.WriteString(fmt.Sprintf("%v", _m.IsKeyAccount))
+	builder.WriteString(", ")
+	builder.WriteString("key_account_level=")
+	builder.WriteString(_m.KeyAccountLevel)
+	builder.WriteString(", ")
+	builder.WriteString("key_account_discount_rate=")
+	builder.WriteString(fmt.Sprintf("%v", _m.KeyAccountDiscountRate))
+	builder.WriteString(", ")
+	builder.WriteString("key_account_rebate_rate=")
+	builder.WriteString(fmt.Sprintf("%v", _m.KeyAccountRebateRate))
+	builder.WriteString(", ")
+	builder.WriteString("key_account_manager_notes=")
+	builder.WriteString(_m.KeyAccountManagerNotes)
 	builder.WriteByte(')')
 	return builder.String()
 }

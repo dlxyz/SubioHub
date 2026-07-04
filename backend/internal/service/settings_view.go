@@ -126,6 +126,18 @@ type SystemSettings struct {
 	AffiliateAutoSettlementEnabled         bool
 	AffiliateManualPayoutSettlementEnabled bool
 
+	// Key account definition
+	KeyAccountVIPRechargeThreshold        float64
+	KeyAccountEnterpriseRechargeThreshold float64
+	KeyAccountVIPMonthlyCostThreshold     float64
+	KeyAccountEnterpriseMonthlyCostThreshold float64
+	KeyAccountVIPDefaultDiscountRate         float64
+	KeyAccountEnterpriseDefaultDiscountRate  float64
+	KeyAccountVIPDefaultRebateRate           float64
+	KeyAccountEnterpriseDefaultRebateRate    float64
+	KeyAccountAutoUpgradeEnabled             bool
+	KeyAccountAutoDowngradeEnabled           bool
+
 	// Account quota notification
 	AccountQuotaNotifyEnabled bool
 	AccountQuotaNotifyEmails  []NotifyEmailEntry

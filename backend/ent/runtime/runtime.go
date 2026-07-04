@@ -11,6 +11,8 @@ import (
 	"github.com/dlxyz/SubioHub/ent/announcementread"
 	"github.com/dlxyz/SubioHub/ent/apikey"
 	"github.com/dlxyz/SubioHub/ent/commissionlog"
+	"github.com/dlxyz/SubioHub/ent/commissionrule"
+	"github.com/dlxyz/SubioHub/ent/commissionsplitlog"
 	"github.com/dlxyz/SubioHub/ent/errorpassthroughrule"
 	"github.com/dlxyz/SubioHub/ent/group"
 	"github.com/dlxyz/SubioHub/ent/idempotencyrecord"
@@ -21,6 +23,7 @@ import (
 	"github.com/dlxyz/SubioHub/ent/paymentproviderinstance"
 	"github.com/dlxyz/SubioHub/ent/promocode"
 	"github.com/dlxyz/SubioHub/ent/promocodeusage"
+	"github.com/dlxyz/SubioHub/ent/promotionrelation"
 	"github.com/dlxyz/SubioHub/ent/proxy"
 	"github.com/dlxyz/SubioHub/ent/redeemcode"
 	"github.com/dlxyz/SubioHub/ent/schema"
@@ -339,6 +342,132 @@ func init() {
 	commissionlog.DefaultReason = commissionlogDescReason.Default.(string)
 	// commissionlog.ReasonValidator is a validator for the "reason" field. It is called by the builders before save.
 	commissionlog.ReasonValidator = commissionlogDescReason.Validators[0].(func(string) error)
+	commissionruleMixin := schema.CommissionRule{}.Mixin()
+	commissionruleMixinFields0 := commissionruleMixin[0].Fields()
+	_ = commissionruleMixinFields0
+	commissionruleFields := schema.CommissionRule{}.Fields()
+	_ = commissionruleFields
+	// commissionruleDescCreatedAt is the schema descriptor for created_at field.
+	commissionruleDescCreatedAt := commissionruleMixinFields0[0].Descriptor()
+	// commissionrule.DefaultCreatedAt holds the default value on creation for the created_at field.
+	commissionrule.DefaultCreatedAt = commissionruleDescCreatedAt.Default.(func() time.Time)
+	// commissionruleDescUpdatedAt is the schema descriptor for updated_at field.
+	commissionruleDescUpdatedAt := commissionruleMixinFields0[1].Descriptor()
+	// commissionrule.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	commissionrule.DefaultUpdatedAt = commissionruleDescUpdatedAt.Default.(func() time.Time)
+	// commissionrule.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	commissionrule.UpdateDefaultUpdatedAt = commissionruleDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// commissionruleDescName is the schema descriptor for name field.
+	commissionruleDescName := commissionruleFields[0].Descriptor()
+	// commissionrule.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	commissionrule.NameValidator = func() func(string) error {
+		validators := commissionruleDescName.Validators
+		fns := [...]func(string) error{
+			validators[0].(func(string) error),
+			validators[1].(func(string) error),
+		}
+		return func(name string) error {
+			for _, fn := range fns {
+				if err := fn(name); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
+	// commissionruleDescStatus is the schema descriptor for status field.
+	commissionruleDescStatus := commissionruleFields[1].Descriptor()
+	// commissionrule.DefaultStatus holds the default value on creation for the status field.
+	commissionrule.DefaultStatus = commissionruleDescStatus.Default.(string)
+	// commissionrule.StatusValidator is a validator for the "status" field. It is called by the builders before save.
+	commissionrule.StatusValidator = commissionruleDescStatus.Validators[0].(func(string) error)
+	// commissionruleDescCalcMode is the schema descriptor for calc_mode field.
+	commissionruleDescCalcMode := commissionruleFields[2].Descriptor()
+	// commissionrule.DefaultCalcMode holds the default value on creation for the calc_mode field.
+	commissionrule.DefaultCalcMode = commissionruleDescCalcMode.Default.(string)
+	// commissionrule.CalcModeValidator is a validator for the "calc_mode" field. It is called by the builders before save.
+	commissionrule.CalcModeValidator = commissionruleDescCalcMode.Validators[0].(func(string) error)
+	// commissionruleDescAgentTargetRate is the schema descriptor for agent_target_rate field.
+	commissionruleDescAgentTargetRate := commissionruleFields[3].Descriptor()
+	// commissionrule.DefaultAgentTargetRate holds the default value on creation for the agent_target_rate field.
+	commissionrule.DefaultAgentTargetRate = commissionruleDescAgentTargetRate.Default.(float64)
+	// commissionruleDescDistributorTargetRate is the schema descriptor for distributor_target_rate field.
+	commissionruleDescDistributorTargetRate := commissionruleFields[4].Descriptor()
+	// commissionrule.DefaultDistributorTargetRate holds the default value on creation for the distributor_target_rate field.
+	commissionrule.DefaultDistributorTargetRate = commissionruleDescDistributorTargetRate.Default.(float64)
+	// commissionruleDescFreezeHours is the schema descriptor for freeze_hours field.
+	commissionruleDescFreezeHours := commissionruleFields[5].Descriptor()
+	// commissionrule.DefaultFreezeHours holds the default value on creation for the freeze_hours field.
+	commissionrule.DefaultFreezeHours = commissionruleDescFreezeHours.Default.(int)
+	// commissionruleDescSettlementMode is the schema descriptor for settlement_mode field.
+	commissionruleDescSettlementMode := commissionruleFields[6].Descriptor()
+	// commissionrule.DefaultSettlementMode holds the default value on creation for the settlement_mode field.
+	commissionrule.DefaultSettlementMode = commissionruleDescSettlementMode.Default.(string)
+	// commissionrule.SettlementModeValidator is a validator for the "settlement_mode" field. It is called by the builders before save.
+	commissionrule.SettlementModeValidator = commissionruleDescSettlementMode.Validators[0].(func(string) error)
+	// commissionruleDescScopeType is the schema descriptor for scope_type field.
+	commissionruleDescScopeType := commissionruleFields[7].Descriptor()
+	// commissionrule.DefaultScopeType holds the default value on creation for the scope_type field.
+	commissionrule.DefaultScopeType = commissionruleDescScopeType.Default.(string)
+	// commissionrule.ScopeTypeValidator is a validator for the "scope_type" field. It is called by the builders before save.
+	commissionrule.ScopeTypeValidator = commissionruleDescScopeType.Validators[0].(func(string) error)
+	// commissionruleDescPriority is the schema descriptor for priority field.
+	commissionruleDescPriority := commissionruleFields[9].Descriptor()
+	// commissionrule.DefaultPriority holds the default value on creation for the priority field.
+	commissionrule.DefaultPriority = commissionruleDescPriority.Default.(int)
+	commissionsplitlogMixin := schema.CommissionSplitLog{}.Mixin()
+	commissionsplitlogMixinFields0 := commissionsplitlogMixin[0].Fields()
+	_ = commissionsplitlogMixinFields0
+	commissionsplitlogFields := schema.CommissionSplitLog{}.Fields()
+	_ = commissionsplitlogFields
+	// commissionsplitlogDescCreatedAt is the schema descriptor for created_at field.
+	commissionsplitlogDescCreatedAt := commissionsplitlogMixinFields0[0].Descriptor()
+	// commissionsplitlog.DefaultCreatedAt holds the default value on creation for the created_at field.
+	commissionsplitlog.DefaultCreatedAt = commissionsplitlogDescCreatedAt.Default.(func() time.Time)
+	// commissionsplitlogDescUpdatedAt is the schema descriptor for updated_at field.
+	commissionsplitlogDescUpdatedAt := commissionsplitlogMixinFields0[1].Descriptor()
+	// commissionsplitlog.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	commissionsplitlog.DefaultUpdatedAt = commissionsplitlogDescUpdatedAt.Default.(func() time.Time)
+	// commissionsplitlog.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	commissionsplitlog.UpdateDefaultUpdatedAt = commissionsplitlogDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// commissionsplitlogDescBeneficiaryRole is the schema descriptor for beneficiary_role field.
+	commissionsplitlogDescBeneficiaryRole := commissionsplitlogFields[3].Descriptor()
+	// commissionsplitlog.DefaultBeneficiaryRole holds the default value on creation for the beneficiary_role field.
+	commissionsplitlog.DefaultBeneficiaryRole = commissionsplitlogDescBeneficiaryRole.Default.(string)
+	// commissionsplitlog.BeneficiaryRoleValidator is a validator for the "beneficiary_role" field. It is called by the builders before save.
+	commissionsplitlog.BeneficiaryRoleValidator = commissionsplitlogDescBeneficiaryRole.Validators[0].(func(string) error)
+	// commissionsplitlogDescLevel is the schema descriptor for level field.
+	commissionsplitlogDescLevel := commissionsplitlogFields[6].Descriptor()
+	// commissionsplitlog.DefaultLevel holds the default value on creation for the level field.
+	commissionsplitlog.DefaultLevel = commissionsplitlogDescLevel.Default.(int)
+	// commissionsplitlogDescCalcMode is the schema descriptor for calc_mode field.
+	commissionsplitlogDescCalcMode := commissionsplitlogFields[7].Descriptor()
+	// commissionsplitlog.DefaultCalcMode holds the default value on creation for the calc_mode field.
+	commissionsplitlog.DefaultCalcMode = commissionsplitlogDescCalcMode.Default.(string)
+	// commissionsplitlog.CalcModeValidator is a validator for the "calc_mode" field. It is called by the builders before save.
+	commissionsplitlog.CalcModeValidator = commissionsplitlogDescCalcMode.Validators[0].(func(string) error)
+	// commissionsplitlogDescBaseAmount is the schema descriptor for base_amount field.
+	commissionsplitlogDescBaseAmount := commissionsplitlogFields[8].Descriptor()
+	// commissionsplitlog.DefaultBaseAmount holds the default value on creation for the base_amount field.
+	commissionsplitlog.DefaultBaseAmount = commissionsplitlogDescBaseAmount.Default.(float64)
+	// commissionsplitlogDescTargetRate is the schema descriptor for target_rate field.
+	commissionsplitlogDescTargetRate := commissionsplitlogFields[9].Descriptor()
+	// commissionsplitlog.DefaultTargetRate holds the default value on creation for the target_rate field.
+	commissionsplitlog.DefaultTargetRate = commissionsplitlogDescTargetRate.Default.(float64)
+	// commissionsplitlogDescParentRate is the schema descriptor for parent_rate field.
+	commissionsplitlogDescParentRate := commissionsplitlogFields[10].Descriptor()
+	// commissionsplitlog.DefaultParentRate holds the default value on creation for the parent_rate field.
+	commissionsplitlog.DefaultParentRate = commissionsplitlogDescParentRate.Default.(float64)
+	// commissionsplitlogDescCommissionAmount is the schema descriptor for commission_amount field.
+	commissionsplitlogDescCommissionAmount := commissionsplitlogFields[11].Descriptor()
+	// commissionsplitlog.DefaultCommissionAmount holds the default value on creation for the commission_amount field.
+	commissionsplitlog.DefaultCommissionAmount = commissionsplitlogDescCommissionAmount.Default.(float64)
+	// commissionsplitlogDescStatus is the schema descriptor for status field.
+	commissionsplitlogDescStatus := commissionsplitlogFields[12].Descriptor()
+	// commissionsplitlog.DefaultStatus holds the default value on creation for the status field.
+	commissionsplitlog.DefaultStatus = commissionsplitlogDescStatus.Default.(string)
+	// commissionsplitlog.StatusValidator is a validator for the "status" field. It is called by the builders before save.
+	commissionsplitlog.StatusValidator = commissionsplitlogDescStatus.Validators[0].(func(string) error)
 	errorpassthroughruleMixin := schema.ErrorPassthroughRule{}.Mixin()
 	errorpassthroughruleMixinFields0 := errorpassthroughruleMixin[0].Fields()
 	_ = errorpassthroughruleMixinFields0
@@ -892,6 +1021,41 @@ func init() {
 	promocodeusageDescUsedAt := promocodeusageFields[3].Descriptor()
 	// promocodeusage.DefaultUsedAt holds the default value on creation for the used_at field.
 	promocodeusage.DefaultUsedAt = promocodeusageDescUsedAt.Default.(func() time.Time)
+	promotionrelationMixin := schema.PromotionRelation{}.Mixin()
+	promotionrelationMixinFields0 := promotionrelationMixin[0].Fields()
+	_ = promotionrelationMixinFields0
+	promotionrelationFields := schema.PromotionRelation{}.Fields()
+	_ = promotionrelationFields
+	// promotionrelationDescCreatedAt is the schema descriptor for created_at field.
+	promotionrelationDescCreatedAt := promotionrelationMixinFields0[0].Descriptor()
+	// promotionrelation.DefaultCreatedAt holds the default value on creation for the created_at field.
+	promotionrelation.DefaultCreatedAt = promotionrelationDescCreatedAt.Default.(func() time.Time)
+	// promotionrelationDescUpdatedAt is the schema descriptor for updated_at field.
+	promotionrelationDescUpdatedAt := promotionrelationMixinFields0[1].Descriptor()
+	// promotionrelation.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	promotionrelation.DefaultUpdatedAt = promotionrelationDescUpdatedAt.Default.(func() time.Time)
+	// promotionrelation.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	promotionrelation.UpdateDefaultUpdatedAt = promotionrelationDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// promotionrelationDescDirectParentRole is the schema descriptor for direct_parent_role field.
+	promotionrelationDescDirectParentRole := promotionrelationFields[4].Descriptor()
+	// promotionrelation.DefaultDirectParentRole holds the default value on creation for the direct_parent_role field.
+	promotionrelation.DefaultDirectParentRole = promotionrelationDescDirectParentRole.Default.(string)
+	// promotionrelation.DirectParentRoleValidator is a validator for the "direct_parent_role" field. It is called by the builders before save.
+	promotionrelation.DirectParentRoleValidator = promotionrelationDescDirectParentRole.Validators[0].(func(string) error)
+	// promotionrelationDescBindingSource is the schema descriptor for binding_source field.
+	promotionrelationDescBindingSource := promotionrelationFields[5].Descriptor()
+	// promotionrelation.DefaultBindingSource holds the default value on creation for the binding_source field.
+	promotionrelation.DefaultBindingSource = promotionrelationDescBindingSource.Default.(string)
+	// promotionrelation.BindingSourceValidator is a validator for the "binding_source" field. It is called by the builders before save.
+	promotionrelation.BindingSourceValidator = promotionrelationDescBindingSource.Validators[0].(func(string) error)
+	// promotionrelationDescIsLocked is the schema descriptor for is_locked field.
+	promotionrelationDescIsLocked := promotionrelationFields[6].Descriptor()
+	// promotionrelation.DefaultIsLocked holds the default value on creation for the is_locked field.
+	promotionrelation.DefaultIsLocked = promotionrelationDescIsLocked.Default.(bool)
+	// promotionrelationDescBoundAt is the schema descriptor for bound_at field.
+	promotionrelationDescBoundAt := promotionrelationFields[7].Descriptor()
+	// promotionrelation.DefaultBoundAt holds the default value on creation for the bound_at field.
+	promotionrelation.DefaultBoundAt = promotionrelationDescBoundAt.Default.(func() time.Time)
 	proxyMixin := schema.Proxy{}.Mixin()
 	proxyMixinHooks1 := proxyMixin[1].Hooks()
 	proxy.Hooks[0] = proxyMixinHooks1[0]
@@ -1485,6 +1649,28 @@ func init() {
 	userDescTotalCommissionEarned := userFields[20].Descriptor()
 	// user.DefaultTotalCommissionEarned holds the default value on creation for the total_commission_earned field.
 	user.DefaultTotalCommissionEarned = userDescTotalCommissionEarned.Default.(float64)
+	// userDescIsKeyAccount is the schema descriptor for is_key_account field.
+	userDescIsKeyAccount := userFields[21].Descriptor()
+	// user.DefaultIsKeyAccount holds the default value on creation for the is_key_account field.
+	user.DefaultIsKeyAccount = userDescIsKeyAccount.Default.(bool)
+	// userDescKeyAccountLevel is the schema descriptor for key_account_level field.
+	userDescKeyAccountLevel := userFields[22].Descriptor()
+	// user.DefaultKeyAccountLevel holds the default value on creation for the key_account_level field.
+	user.DefaultKeyAccountLevel = userDescKeyAccountLevel.Default.(string)
+	// user.KeyAccountLevelValidator is a validator for the "key_account_level" field. It is called by the builders before save.
+	user.KeyAccountLevelValidator = userDescKeyAccountLevel.Validators[0].(func(string) error)
+	// userDescKeyAccountDiscountRate is the schema descriptor for key_account_discount_rate field.
+	userDescKeyAccountDiscountRate := userFields[23].Descriptor()
+	// user.DefaultKeyAccountDiscountRate holds the default value on creation for the key_account_discount_rate field.
+	user.DefaultKeyAccountDiscountRate = userDescKeyAccountDiscountRate.Default.(float64)
+	// userDescKeyAccountRebateRate is the schema descriptor for key_account_rebate_rate field.
+	userDescKeyAccountRebateRate := userFields[24].Descriptor()
+	// user.DefaultKeyAccountRebateRate holds the default value on creation for the key_account_rebate_rate field.
+	user.DefaultKeyAccountRebateRate = userDescKeyAccountRebateRate.Default.(float64)
+	// userDescKeyAccountManagerNotes is the schema descriptor for key_account_manager_notes field.
+	userDescKeyAccountManagerNotes := userFields[25].Descriptor()
+	// user.DefaultKeyAccountManagerNotes holds the default value on creation for the key_account_manager_notes field.
+	user.DefaultKeyAccountManagerNotes = userDescKeyAccountManagerNotes.Default.(string)
 	userallowedgroupFields := schema.UserAllowedGroup{}.Fields()
 	_ = userallowedgroupFields
 	// userallowedgroupDescCreatedAt is the schema descriptor for created_at field.
