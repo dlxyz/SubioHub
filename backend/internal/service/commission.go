@@ -25,29 +25,29 @@ type CommissionLogListFilters struct {
 }
 
 type CommissionSplitLog struct {
-	ID                 int64
-	OrderID            *int64
-	ConsumerUserID     int64
-	ConsumerUserEmail  string
-	BeneficiaryUserID  int64
-	BeneficiaryEmail   string
-	BeneficiaryRole    string
-	AgentUserID        *int64
-	DistributorUserID  *int64
-	Level              int
-	CalcMode           string
-	BaseAmount         float64
-	TargetRate         float64
-	ParentRate         float64
-	CommissionAmount   float64
-	Status             string
-	RuleID             *int64
-	Remark             *string
-	OrderType          string
-	OrderStatus        string
-	SettledAt          *time.Time
-	CreatedAt          time.Time
-	UpdatedAt          time.Time
+	ID                int64
+	OrderID           *int64
+	ConsumerUserID    int64
+	ConsumerUserEmail string
+	BeneficiaryUserID int64
+	BeneficiaryEmail  string
+	BeneficiaryRole   string
+	AgentUserID       *int64
+	DistributorUserID *int64
+	Level             int
+	CalcMode          string
+	BaseAmount        float64
+	TargetRate        float64
+	ParentRate        float64
+	CommissionAmount  float64
+	Status            string
+	RuleID            *int64
+	Remark            *string
+	OrderType         string
+	OrderStatus       string
+	SettledAt         *time.Time
+	CreatedAt         time.Time
+	UpdatedAt         time.Time
 }
 
 type CommissionSplitLogListFilters struct {
