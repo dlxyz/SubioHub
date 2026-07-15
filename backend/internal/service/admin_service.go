@@ -2713,14 +2713,14 @@ func runProxyQualityTarget(ctx context.Context, client *http.Client, target prox
 			item.Message = fmt.Sprintf("HTTP %d", resp.StatusCode)
 		} else {
 			item.Status = "warn"
-			item.Message = fmt.Sprintf("HTTP %d (reachable, but auth or method is restricted)", resp.StatusCode)
+			item.Message = fmt.Sprintf("目标可达，但鉴权或请求方法受限 (HTTP %d)", resp.StatusCode)
 		}
 		return item
 	}
 
 	if resp.StatusCode == http.StatusTooManyRequests {
 		item.Status = "warn"
-		item.Message = "target returned 429, which may indicate rate limiting"
+		item.Message = "目标返回 429，可能触发频率限制"
 		return item
 	}
 
@@ -2740,7 +2740,7 @@ func finalizeProxyQualityResult(result *ProxyQualityCheckResult) {
 	result.Score = score
 	result.Grade = proxyQualityGrade(score)
 	result.Summary = fmt.Sprintf(
-		"passed %d, warned %d, failed %d, challenged %d",
+		"通过 %d 项，告警 %d 项，失败 %d 项，挑战 %d 项",
 		result.PassedCount,
 		result.WarnCount,
 		result.FailedCount,
