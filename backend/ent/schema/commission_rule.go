@@ -12,8 +12,7 @@ import (
 	"entgo.io/ent/schema/index"
 )
 
-// CommissionRule holds the schema definition for the CommissionRule entity.
-// 第一阶段先把规则表建好，后续可逐步接平台默认规则、按代理覆盖、按时间生效。
+// CommissionRule stores the configured target rates for each promotion level.
 type CommissionRule struct {
 	ent.Schema
 }
@@ -35,55 +34,59 @@ func (CommissionRule) Fields() []ent.Field {
 		field.String("name").
 			MaxLen(100).
 			NotEmpty().
-			Comment("规则名称"),
+			Comment("Rule name"),
 		field.String("status").
 			MaxLen(20).
 			Default(domain.StatusActive).
-			Comment("规则状态"),
+			Comment("Rule status"),
 		field.String("calc_mode").
 			MaxLen(20).
 			Default("diff").
-			Comment("分润计算模式：diff=补差法，additive=叠加法"),
+			Comment("Split calculation mode"),
+		field.Float("channel_partner_target_rate").
+			SchemaType(map[string]string{dialect.Postgres: "decimal(5,4)"}).
+			Default(0).
+			Comment("Target rate for channel partners"),
 		field.Float("agent_target_rate").
 			SchemaType(map[string]string{dialect.Postgres: "decimal(5,4)"}).
 			Default(0).
-			Comment("代理层目标比例"),
+			Comment("Target rate for agents"),
 		field.Float("distributor_target_rate").
 			SchemaType(map[string]string{dialect.Postgres: "decimal(5,4)"}).
 			Default(0).
-			Comment("分销层目标比例"),
+			Comment("Target rate for distributors"),
 		field.Int("freeze_hours").
 			Default(168).
-			Comment("冻结小时数，默认 7 天"),
+			Comment("Settlement freeze window in hours"),
 		field.String("settlement_mode").
 			MaxLen(20).
 			Default("manual").
-			Comment("结算模式：manual / auto"),
+			Comment("Settlement mode"),
 		field.String("scope_type").
 			MaxLen(20).
 			Default("global").
-			Comment("作用域：global / agent / distributor"),
+			Comment("Scope type: global / channel_partner / agent / distributor"),
 		field.Int64("scope_id").
 			Optional().
 			Nillable().
-			Comment("作用域对象 ID"),
+			Comment("Scope object ID"),
 		field.Int("priority").
 			Default(0).
-			Comment("优先级，数值越大越优先"),
+			Comment("Rule priority"),
 		field.Time("effective_at").
 			Optional().
 			Nillable().
 			SchemaType(map[string]string{dialect.Postgres: "timestamptz"}).
-			Comment("生效时间"),
+			Comment("Effective time"),
 		field.Time("expired_at").
 			Optional().
 			Nillable().
 			SchemaType(map[string]string{dialect.Postgres: "timestamptz"}).
-			Comment("失效时间"),
+			Comment("Expired time"),
 		field.JSON("config_json", map[string]any{}).
 			Optional().
 			SchemaType(map[string]string{dialect.Postgres: "jsonb"}).
-			Comment("扩展规则配置"),
+			Comment("Extended rule config"),
 	}
 }
 

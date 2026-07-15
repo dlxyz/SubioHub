@@ -7,17 +7,20 @@ import (
 )
 
 type User struct {
-	ID            int64     `json:"id"`
-	Email         string    `json:"email"`
-	Username      string    `json:"username"`
-	InviteCode    string    `json:"invite_code"`
-	Role          string    `json:"role"`
-	Balance       float64   `json:"balance"`
-	Concurrency   int       `json:"concurrency"`
-	Status        string    `json:"status"`
-	AllowedGroups []int64   `json:"allowed_groups"`
-	CreatedAt     time.Time `json:"created_at"`
-	UpdatedAt     time.Time `json:"updated_at"`
+	ID                 int64     `json:"id"`
+	Email              string    `json:"email"`
+	Username           string    `json:"username"`
+	InviteCode         string    `json:"invite_code"`
+	Role               string    `json:"role"`
+	Balance            float64   `json:"balance"`
+	Concurrency        int       `json:"concurrency"`
+	Status             string    `json:"status"`
+	ChannelPartnerID   *int64    `json:"channel_partner_id,omitempty"`
+	AgentOwnerID       *int64    `json:"agent_owner_id,omitempty"`
+	DistributorOwnerID *int64    `json:"distributor_owner_id,omitempty"`
+	AllowedGroups      []int64   `json:"allowed_groups"`
+	CreatedAt          time.Time `json:"created_at"`
+	UpdatedAt          time.Time `json:"updated_at"`
 
 	// 余额不足通知
 	BalanceNotifyEnabled       bool               `json:"balance_notify_enabled"`

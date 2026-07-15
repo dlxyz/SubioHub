@@ -22,17 +22,18 @@ import (
 // CommissionSplitLogQuery is the builder for querying CommissionSplitLog entities.
 type CommissionSplitLogQuery struct {
 	config
-	ctx                 *QueryContext
-	order               []commissionsplitlog.OrderOption
-	inters              []Interceptor
-	predicates          []predicate.CommissionSplitLog
-	withPaymentOrder    *PaymentOrderQuery
-	withConsumerUser    *UserQuery
-	withBeneficiaryUser *UserQuery
-	withAgentUser       *UserQuery
-	withDistributorUser *UserQuery
-	withCommissionRule  *CommissionRuleQuery
-	modifiers           []func(*sql.Selector)
+	ctx                    *QueryContext
+	order                  []commissionsplitlog.OrderOption
+	inters                 []Interceptor
+	predicates             []predicate.CommissionSplitLog
+	withPaymentOrder       *PaymentOrderQuery
+	withConsumerUser       *UserQuery
+	withBeneficiaryUser    *UserQuery
+	withChannelPartnerUser *UserQuery
+	withAgentUser          *UserQuery
+	withDistributorUser    *UserQuery
+	withCommissionRule     *CommissionRuleQuery
+	modifiers              []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -128,6 +129,28 @@ func (_q *CommissionSplitLogQuery) QueryBeneficiaryUser() *UserQuery {
 			sqlgraph.From(commissionsplitlog.Table, commissionsplitlog.FieldID, selector),
 			sqlgraph.To(user.Table, user.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, commissionsplitlog.BeneficiaryUserTable, commissionsplitlog.BeneficiaryUserColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryChannelPartnerUser chains the current query on the "channel_partner_user" edge.
+func (_q *CommissionSplitLogQuery) QueryChannelPartnerUser() *UserQuery {
+	query := (&UserClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(commissionsplitlog.Table, commissionsplitlog.FieldID, selector),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, commissionsplitlog.ChannelPartnerUserTable, commissionsplitlog.ChannelPartnerUserColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -388,17 +411,18 @@ func (_q *CommissionSplitLogQuery) Clone() *CommissionSplitLogQuery {
 		return nil
 	}
 	return &CommissionSplitLogQuery{
-		config:              _q.config,
-		ctx:                 _q.ctx.Clone(),
-		order:               append([]commissionsplitlog.OrderOption{}, _q.order...),
-		inters:              append([]Interceptor{}, _q.inters...),
-		predicates:          append([]predicate.CommissionSplitLog{}, _q.predicates...),
-		withPaymentOrder:    _q.withPaymentOrder.Clone(),
-		withConsumerUser:    _q.withConsumerUser.Clone(),
-		withBeneficiaryUser: _q.withBeneficiaryUser.Clone(),
-		withAgentUser:       _q.withAgentUser.Clone(),
-		withDistributorUser: _q.withDistributorUser.Clone(),
-		withCommissionRule:  _q.withCommissionRule.Clone(),
+		config:                 _q.config,
+		ctx:                    _q.ctx.Clone(),
+		order:                  append([]commissionsplitlog.OrderOption{}, _q.order...),
+		inters:                 append([]Interceptor{}, _q.inters...),
+		predicates:             append([]predicate.CommissionSplitLog{}, _q.predicates...),
+		withPaymentOrder:       _q.withPaymentOrder.Clone(),
+		withConsumerUser:       _q.withConsumerUser.Clone(),
+		withBeneficiaryUser:    _q.withBeneficiaryUser.Clone(),
+		withChannelPartnerUser: _q.withChannelPartnerUser.Clone(),
+		withAgentUser:          _q.withAgentUser.Clone(),
+		withDistributorUser:    _q.withDistributorUser.Clone(),
+		withCommissionRule:     _q.withCommissionRule.Clone(),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
 		path: _q.path,
@@ -435,6 +459,17 @@ func (_q *CommissionSplitLogQuery) WithBeneficiaryUser(opts ...func(*UserQuery))
 		opt(query)
 	}
 	_q.withBeneficiaryUser = query
+	return _q
+}
+
+// WithChannelPartnerUser tells the query-builder to eager-load the nodes that are connected to
+// the "channel_partner_user" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *CommissionSplitLogQuery) WithChannelPartnerUser(opts ...func(*UserQuery)) *CommissionSplitLogQuery {
+	query := (&UserClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withChannelPartnerUser = query
 	return _q
 }
 
@@ -549,10 +584,11 @@ func (_q *CommissionSplitLogQuery) sqlAll(ctx context.Context, hooks ...queryHoo
 	var (
 		nodes       = []*CommissionSplitLog{}
 		_spec       = _q.querySpec()
-		loadedTypes = [6]bool{
+		loadedTypes = [7]bool{
 			_q.withPaymentOrder != nil,
 			_q.withConsumerUser != nil,
 			_q.withBeneficiaryUser != nil,
+			_q.withChannelPartnerUser != nil,
 			_q.withAgentUser != nil,
 			_q.withDistributorUser != nil,
 			_q.withCommissionRule != nil,
@@ -594,6 +630,12 @@ func (_q *CommissionSplitLogQuery) sqlAll(ctx context.Context, hooks ...queryHoo
 	if query := _q.withBeneficiaryUser; query != nil {
 		if err := _q.loadBeneficiaryUser(ctx, query, nodes, nil,
 			func(n *CommissionSplitLog, e *User) { n.Edges.BeneficiaryUser = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withChannelPartnerUser; query != nil {
+		if err := _q.loadChannelPartnerUser(ctx, query, nodes, nil,
+			func(n *CommissionSplitLog, e *User) { n.Edges.ChannelPartnerUser = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -701,6 +743,38 @@ func (_q *CommissionSplitLogQuery) loadBeneficiaryUser(ctx context.Context, quer
 		nodes, ok := nodeids[n.ID]
 		if !ok {
 			return fmt.Errorf(`unexpected foreign-key "beneficiary_user_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
+func (_q *CommissionSplitLogQuery) loadChannelPartnerUser(ctx context.Context, query *UserQuery, nodes []*CommissionSplitLog, init func(*CommissionSplitLog), assign func(*CommissionSplitLog, *User)) error {
+	ids := make([]int64, 0, len(nodes))
+	nodeids := make(map[int64][]*CommissionSplitLog)
+	for i := range nodes {
+		if nodes[i].ChannelPartnerUserID == nil {
+			continue
+		}
+		fk := *nodes[i].ChannelPartnerUserID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(user.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "channel_partner_user_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -841,6 +915,9 @@ func (_q *CommissionSplitLogQuery) querySpec() *sqlgraph.QuerySpec {
 		}
 		if _q.withBeneficiaryUser != nil {
 			_spec.Node.AddColumnOnce(commissionsplitlog.FieldBeneficiaryUserID)
+		}
+		if _q.withChannelPartnerUser != nil {
+			_spec.Node.AddColumnOnce(commissionsplitlog.FieldChannelPartnerUserID)
 		}
 		if _q.withAgentUser != nil {
 			_spec.Node.AddColumnOnce(commissionsplitlog.FieldAgentUserID)

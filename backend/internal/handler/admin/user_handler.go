@@ -46,11 +46,11 @@ type CreateUserRequest struct {
 }
 
 // UpdateUserRequest represents admin update user request
-// 使用指针类型来区分"未提供"和"设置为0"
+// Pointer fields let us distinguish "not provided" from "set to zero or empty".
 type UpdateUserRequest struct {
 	Email                  string   `json:"email" binding:"omitempty,email"`
 	Password               string   `json:"password" binding:"omitempty,min=6"`
-	Role                   *string  `json:"role" binding:"omitempty,oneof=user agent distributor"`
+	Role                   *string  `json:"role" binding:"omitempty,oneof=user channel_partner agent distributor"`
 	Username               *string  `json:"username"`
 	Notes                  *string  `json:"notes"`
 	Balance                *float64 `json:"balance"`
@@ -62,6 +62,9 @@ type UpdateUserRequest struct {
 	KeyAccountDiscountRate *float64 `json:"key_account_discount_rate" binding:"omitempty,min=0,max=1"`
 	KeyAccountRebateRate   *float64 `json:"key_account_rebate_rate" binding:"omitempty,min=0,max=1"`
 	KeyAccountManagerNotes *string  `json:"key_account_manager_notes"`
+	ChannelPartnerID       *int64   `json:"channel_partner_id"`
+	AgentOwnerID           *int64   `json:"agent_owner_id"`
+	DistributorOwnerID     *int64   `json:"distributor_owner_id"`
 	// GroupRates 用户专属分组倍率配置
 	// map[groupID]*rate，nil 表示删除该分组的专属倍率
 	GroupRates map[int64]*float64 `json:"group_rates"`
@@ -97,12 +100,15 @@ func (h *UserHandler) List(c *gin.Context) {
 	}
 
 	filters := service.UserListFilters{
-		Status:          c.Query("status"),
-		Role:            c.Query("role"),
-		Search:          search,
-		KeyAccountLevel: strings.TrimSpace(c.Query("key_account_level")),
-		GroupName:       strings.TrimSpace(c.Query("group_name")),
-		Attributes:      parseAttributeFilters(c),
+		Status:             c.Query("status"),
+		Role:               c.Query("role"),
+		Search:             search,
+		ChannelPartnerID:   parseOptionalInt64(c.Query("channel_partner_id")),
+		AgentOwnerID:       parseOptionalInt64(c.Query("agent_owner_id")),
+		DistributorOwnerID: parseOptionalInt64(c.Query("distributor_owner_id")),
+		KeyAccountLevel:    strings.TrimSpace(c.Query("key_account_level")),
+		GroupName:          strings.TrimSpace(c.Query("group_name")),
+		Attributes:         parseAttributeFilters(c),
 	}
 	if raw, ok := c.GetQuery("is_key_account"); ok {
 		if parsed := parseOptionalBool(raw); parsed != nil {
@@ -185,6 +191,30 @@ func parseOptionalBool(raw string) *bool {
 		return nil
 	}
 }
+func parseOptionalInt64(raw string) *int64 {
+	value := strings.TrimSpace(raw)
+	if value == "" {
+		return nil
+	}
+	parsed, err := strconv.ParseInt(value, 10, 64)
+	if err != nil || parsed <= 0 {
+		return nil
+	}
+	return &parsed
+}
+
+func int64Patch(value *int64) **int64 {
+	if value == nil {
+		return nil
+	}
+	if *value <= 0 {
+		var cleared *int64
+		return &cleared
+	}
+	actual := *value
+	resolved := &actual
+	return &resolved
+}
 
 // GetByID handles getting a user by ID
 // GET /api/v1/admin/users/:id
@@ -262,6 +292,9 @@ func (h *UserHandler) Update(c *gin.Context) {
 		KeyAccountRebateRate:   req.KeyAccountRebateRate,
 		KeyAccountManagerNotes: req.KeyAccountManagerNotes,
 		GroupRates:             req.GroupRates,
+		ChannelPartnerID:       int64Patch(req.ChannelPartnerID),
+		AgentOwnerID:           int64Patch(req.AgentOwnerID),
+		DistributorOwnerID:     int64Patch(req.DistributorOwnerID),
 	})
 	if err != nil {
 		response.ErrorFrom(c, err)

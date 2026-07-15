@@ -55,25 +55,31 @@ type User struct {
 	BalanceNotifyExtraEmails string `json:"balance_notify_extra_emails,omitempty"`
 	// TotalRecharged holds the value of the "total_recharged" field.
 	TotalRecharged float64 `json:"total_recharged,omitempty"`
-	// 邀请人的 User ID
+	// Direct inviter user ID
 	InviterID *int64 `json:"inviter_id,omitempty"`
-	// 用户专属邀请码
+	// User invite code
 	InviteCode string `json:"invite_code,omitempty"`
-	// 专属返佣比例 (默认 0.10 即 10%)
+	// User commission rate
 	CommissionRate float64 `json:"commission_rate,omitempty"`
-	// 当前可提现或划转的佣金余额
+	// Available commission balance
 	CommissionBalance float64 `json:"commission_balance,omitempty"`
-	// 历史累计赚取的总佣金
+	// Total historical commission earned
 	TotalCommissionEarned float64 `json:"total_commission_earned,omitempty"`
-	// 是否为大客户
+	// Top-level marketing channel partner owner user ID
+	ChannelPartnerID *int64 `json:"channel_partner_id,omitempty"`
+	// Owning agent user ID within the marketing hierarchy
+	AgentOwnerID *int64 `json:"agent_owner_id,omitempty"`
+	// Owning distributor user ID within the marketing hierarchy
+	DistributorOwnerID *int64 `json:"distributor_owner_id,omitempty"`
+	// Whether the user is a key account
 	IsKeyAccount bool `json:"is_key_account,omitempty"`
-	// 大客户等级 standard / vip / enterprise
+	// Key account level
 	KeyAccountLevel string `json:"key_account_level,omitempty"`
-	// 大客户专属折扣系数，1 表示无折扣
+	// Key account discount rate
 	KeyAccountDiscountRate float64 `json:"key_account_discount_rate,omitempty"`
-	// 大客户专属返点比例
+	// Key account rebate rate
 	KeyAccountRebateRate float64 `json:"key_account_rebate_rate,omitempty"`
-	// 大客户运营备注
+	// Key account manager notes
 	KeyAccountManagerNotes string `json:"key_account_manager_notes,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the UserQuery when eager-loading is set.
@@ -87,6 +93,18 @@ type UserEdges struct {
 	Inviter *User `json:"inviter,omitempty"`
 	// Invitees holds the value of the invitees edge.
 	Invitees []*User `json:"invitees,omitempty"`
+	// ChannelPartner holds the value of the channel_partner edge.
+	ChannelPartner *User `json:"channel_partner,omitempty"`
+	// ChannelMembers holds the value of the channel_members edge.
+	ChannelMembers []*User `json:"channel_members,omitempty"`
+	// AgentOwner holds the value of the agent_owner edge.
+	AgentOwner *User `json:"agent_owner,omitempty"`
+	// AgentMembers holds the value of the agent_members edge.
+	AgentMembers []*User `json:"agent_members,omitempty"`
+	// DistributorOwner holds the value of the distributor_owner edge.
+	DistributorOwner *User `json:"distributor_owner,omitempty"`
+	// DistributorMembers holds the value of the distributor_members edge.
+	DistributorMembers []*User `json:"distributor_members,omitempty"`
 	// CommissionLogs holds the value of the commission_logs edge.
 	CommissionLogs []*CommissionLog `json:"commission_logs,omitempty"`
 	// APIKeys holds the value of the api_keys edge.
@@ -113,7 +131,7 @@ type UserEdges struct {
 	UserAllowedGroups []*UserAllowedGroup `json:"user_allowed_groups,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [14]bool
+	loadedTypes [20]bool
 }
 
 // InviterOrErr returns the Inviter value or an error if the edge
@@ -136,10 +154,70 @@ func (e UserEdges) InviteesOrErr() ([]*User, error) {
 	return nil, &NotLoadedError{edge: "invitees"}
 }
 
+// ChannelPartnerOrErr returns the ChannelPartner value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e UserEdges) ChannelPartnerOrErr() (*User, error) {
+	if e.ChannelPartner != nil {
+		return e.ChannelPartner, nil
+	} else if e.loadedTypes[2] {
+		return nil, &NotFoundError{label: user.Label}
+	}
+	return nil, &NotLoadedError{edge: "channel_partner"}
+}
+
+// ChannelMembersOrErr returns the ChannelMembers value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) ChannelMembersOrErr() ([]*User, error) {
+	if e.loadedTypes[3] {
+		return e.ChannelMembers, nil
+	}
+	return nil, &NotLoadedError{edge: "channel_members"}
+}
+
+// AgentOwnerOrErr returns the AgentOwner value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e UserEdges) AgentOwnerOrErr() (*User, error) {
+	if e.AgentOwner != nil {
+		return e.AgentOwner, nil
+	} else if e.loadedTypes[4] {
+		return nil, &NotFoundError{label: user.Label}
+	}
+	return nil, &NotLoadedError{edge: "agent_owner"}
+}
+
+// AgentMembersOrErr returns the AgentMembers value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) AgentMembersOrErr() ([]*User, error) {
+	if e.loadedTypes[5] {
+		return e.AgentMembers, nil
+	}
+	return nil, &NotLoadedError{edge: "agent_members"}
+}
+
+// DistributorOwnerOrErr returns the DistributorOwner value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e UserEdges) DistributorOwnerOrErr() (*User, error) {
+	if e.DistributorOwner != nil {
+		return e.DistributorOwner, nil
+	} else if e.loadedTypes[6] {
+		return nil, &NotFoundError{label: user.Label}
+	}
+	return nil, &NotLoadedError{edge: "distributor_owner"}
+}
+
+// DistributorMembersOrErr returns the DistributorMembers value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) DistributorMembersOrErr() ([]*User, error) {
+	if e.loadedTypes[7] {
+		return e.DistributorMembers, nil
+	}
+	return nil, &NotLoadedError{edge: "distributor_members"}
+}
+
 // CommissionLogsOrErr returns the CommissionLogs value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) CommissionLogsOrErr() ([]*CommissionLog, error) {
-	if e.loadedTypes[2] {
+	if e.loadedTypes[8] {
 		return e.CommissionLogs, nil
 	}
 	return nil, &NotLoadedError{edge: "commission_logs"}
@@ -148,7 +226,7 @@ func (e UserEdges) CommissionLogsOrErr() ([]*CommissionLog, error) {
 // APIKeysOrErr returns the APIKeys value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) APIKeysOrErr() ([]*APIKey, error) {
-	if e.loadedTypes[3] {
+	if e.loadedTypes[9] {
 		return e.APIKeys, nil
 	}
 	return nil, &NotLoadedError{edge: "api_keys"}
@@ -157,7 +235,7 @@ func (e UserEdges) APIKeysOrErr() ([]*APIKey, error) {
 // RedeemCodesOrErr returns the RedeemCodes value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) RedeemCodesOrErr() ([]*RedeemCode, error) {
-	if e.loadedTypes[4] {
+	if e.loadedTypes[10] {
 		return e.RedeemCodes, nil
 	}
 	return nil, &NotLoadedError{edge: "redeem_codes"}
@@ -166,7 +244,7 @@ func (e UserEdges) RedeemCodesOrErr() ([]*RedeemCode, error) {
 // SubscriptionsOrErr returns the Subscriptions value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) SubscriptionsOrErr() ([]*UserSubscription, error) {
-	if e.loadedTypes[5] {
+	if e.loadedTypes[11] {
 		return e.Subscriptions, nil
 	}
 	return nil, &NotLoadedError{edge: "subscriptions"}
@@ -175,7 +253,7 @@ func (e UserEdges) SubscriptionsOrErr() ([]*UserSubscription, error) {
 // AssignedSubscriptionsOrErr returns the AssignedSubscriptions value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) AssignedSubscriptionsOrErr() ([]*UserSubscription, error) {
-	if e.loadedTypes[6] {
+	if e.loadedTypes[12] {
 		return e.AssignedSubscriptions, nil
 	}
 	return nil, &NotLoadedError{edge: "assigned_subscriptions"}
@@ -184,7 +262,7 @@ func (e UserEdges) AssignedSubscriptionsOrErr() ([]*UserSubscription, error) {
 // AnnouncementReadsOrErr returns the AnnouncementReads value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) AnnouncementReadsOrErr() ([]*AnnouncementRead, error) {
-	if e.loadedTypes[7] {
+	if e.loadedTypes[13] {
 		return e.AnnouncementReads, nil
 	}
 	return nil, &NotLoadedError{edge: "announcement_reads"}
@@ -193,7 +271,7 @@ func (e UserEdges) AnnouncementReadsOrErr() ([]*AnnouncementRead, error) {
 // AllowedGroupsOrErr returns the AllowedGroups value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) AllowedGroupsOrErr() ([]*Group, error) {
-	if e.loadedTypes[8] {
+	if e.loadedTypes[14] {
 		return e.AllowedGroups, nil
 	}
 	return nil, &NotLoadedError{edge: "allowed_groups"}
@@ -202,7 +280,7 @@ func (e UserEdges) AllowedGroupsOrErr() ([]*Group, error) {
 // UsageLogsOrErr returns the UsageLogs value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) UsageLogsOrErr() ([]*UsageLog, error) {
-	if e.loadedTypes[9] {
+	if e.loadedTypes[15] {
 		return e.UsageLogs, nil
 	}
 	return nil, &NotLoadedError{edge: "usage_logs"}
@@ -211,7 +289,7 @@ func (e UserEdges) UsageLogsOrErr() ([]*UsageLog, error) {
 // AttributeValuesOrErr returns the AttributeValues value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) AttributeValuesOrErr() ([]*UserAttributeValue, error) {
-	if e.loadedTypes[10] {
+	if e.loadedTypes[16] {
 		return e.AttributeValues, nil
 	}
 	return nil, &NotLoadedError{edge: "attribute_values"}
@@ -220,7 +298,7 @@ func (e UserEdges) AttributeValuesOrErr() ([]*UserAttributeValue, error) {
 // PromoCodeUsagesOrErr returns the PromoCodeUsages value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) PromoCodeUsagesOrErr() ([]*PromoCodeUsage, error) {
-	if e.loadedTypes[11] {
+	if e.loadedTypes[17] {
 		return e.PromoCodeUsages, nil
 	}
 	return nil, &NotLoadedError{edge: "promo_code_usages"}
@@ -229,7 +307,7 @@ func (e UserEdges) PromoCodeUsagesOrErr() ([]*PromoCodeUsage, error) {
 // PaymentOrdersOrErr returns the PaymentOrders value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) PaymentOrdersOrErr() ([]*PaymentOrder, error) {
-	if e.loadedTypes[12] {
+	if e.loadedTypes[18] {
 		return e.PaymentOrders, nil
 	}
 	return nil, &NotLoadedError{edge: "payment_orders"}
@@ -238,7 +316,7 @@ func (e UserEdges) PaymentOrdersOrErr() ([]*PaymentOrder, error) {
 // UserAllowedGroupsOrErr returns the UserAllowedGroups value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) UserAllowedGroupsOrErr() ([]*UserAllowedGroup, error) {
-	if e.loadedTypes[13] {
+	if e.loadedTypes[19] {
 		return e.UserAllowedGroups, nil
 	}
 	return nil, &NotLoadedError{edge: "user_allowed_groups"}
@@ -253,7 +331,7 @@ func (*User) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullBool)
 		case user.FieldBalance, user.FieldBalanceNotifyThreshold, user.FieldTotalRecharged, user.FieldCommissionRate, user.FieldCommissionBalance, user.FieldTotalCommissionEarned, user.FieldKeyAccountDiscountRate, user.FieldKeyAccountRebateRate:
 			values[i] = new(sql.NullFloat64)
-		case user.FieldID, user.FieldConcurrency, user.FieldInviterID:
+		case user.FieldID, user.FieldConcurrency, user.FieldInviterID, user.FieldChannelPartnerID, user.FieldAgentOwnerID, user.FieldDistributorOwnerID:
 			values[i] = new(sql.NullInt64)
 		case user.FieldEmail, user.FieldPasswordHash, user.FieldRole, user.FieldStatus, user.FieldUsername, user.FieldNotes, user.FieldTotpSecretEncrypted, user.FieldBalanceNotifyThresholdType, user.FieldBalanceNotifyExtraEmails, user.FieldInviteCode, user.FieldKeyAccountLevel, user.FieldKeyAccountManagerNotes:
 			values[i] = new(sql.NullString)
@@ -429,6 +507,27 @@ func (_m *User) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.TotalCommissionEarned = value.Float64
 			}
+		case user.FieldChannelPartnerID:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field channel_partner_id", values[i])
+			} else if value.Valid {
+				_m.ChannelPartnerID = new(int64)
+				*_m.ChannelPartnerID = value.Int64
+			}
+		case user.FieldAgentOwnerID:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field agent_owner_id", values[i])
+			} else if value.Valid {
+				_m.AgentOwnerID = new(int64)
+				*_m.AgentOwnerID = value.Int64
+			}
+		case user.FieldDistributorOwnerID:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field distributor_owner_id", values[i])
+			} else if value.Valid {
+				_m.DistributorOwnerID = new(int64)
+				*_m.DistributorOwnerID = value.Int64
+			}
 		case user.FieldIsKeyAccount:
 			if value, ok := values[i].(*sql.NullBool); !ok {
 				return fmt.Errorf("unexpected type %T for field is_key_account", values[i])
@@ -480,6 +579,36 @@ func (_m *User) QueryInviter() *UserQuery {
 // QueryInvitees queries the "invitees" edge of the User entity.
 func (_m *User) QueryInvitees() *UserQuery {
 	return NewUserClient(_m.config).QueryInvitees(_m)
+}
+
+// QueryChannelPartner queries the "channel_partner" edge of the User entity.
+func (_m *User) QueryChannelPartner() *UserQuery {
+	return NewUserClient(_m.config).QueryChannelPartner(_m)
+}
+
+// QueryChannelMembers queries the "channel_members" edge of the User entity.
+func (_m *User) QueryChannelMembers() *UserQuery {
+	return NewUserClient(_m.config).QueryChannelMembers(_m)
+}
+
+// QueryAgentOwner queries the "agent_owner" edge of the User entity.
+func (_m *User) QueryAgentOwner() *UserQuery {
+	return NewUserClient(_m.config).QueryAgentOwner(_m)
+}
+
+// QueryAgentMembers queries the "agent_members" edge of the User entity.
+func (_m *User) QueryAgentMembers() *UserQuery {
+	return NewUserClient(_m.config).QueryAgentMembers(_m)
+}
+
+// QueryDistributorOwner queries the "distributor_owner" edge of the User entity.
+func (_m *User) QueryDistributorOwner() *UserQuery {
+	return NewUserClient(_m.config).QueryDistributorOwner(_m)
+}
+
+// QueryDistributorMembers queries the "distributor_members" edge of the User entity.
+func (_m *User) QueryDistributorMembers() *UserQuery {
+	return NewUserClient(_m.config).QueryDistributorMembers(_m)
 }
 
 // QueryCommissionLogs queries the "commission_logs" edge of the User entity.
@@ -646,6 +775,21 @@ func (_m *User) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("total_commission_earned=")
 	builder.WriteString(fmt.Sprintf("%v", _m.TotalCommissionEarned))
+	builder.WriteString(", ")
+	if v := _m.ChannelPartnerID; v != nil {
+		builder.WriteString("channel_partner_id=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
+	if v := _m.AgentOwnerID; v != nil {
+		builder.WriteString("agent_owner_id=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
+	if v := _m.DistributorOwnerID; v != nil {
+		builder.WriteString("distributor_owner_id=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
 	builder.WriteString(", ")
 	builder.WriteString("is_key_account=")
 	builder.WriteString(fmt.Sprintf("%v", _m.IsKeyAccount))

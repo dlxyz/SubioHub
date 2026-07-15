@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { api } from '@/lib/api';
+import { api } from "@/lib/api";
 
 export interface AdminDashboardStats {
   total_users?: number;
@@ -54,7 +54,7 @@ export interface AdminSystemUpdateInfo {
   release_info?: AdminSystemReleaseInfo | null;
   cached?: boolean;
   warning?: string;
-  build_type?: 'source' | 'release' | string;
+  build_type?: "source" | "release" | string;
 }
 
 export interface AdminSystemVersionInfo {
@@ -84,6 +84,9 @@ export interface AdminUser {
   balance?: number;
   concurrency?: number;
   current_concurrency?: number;
+  channel_partner_id?: number | null;
+  agent_owner_id?: number | null;
+  distributor_owner_id?: number | null;
   group_name?: string;
   allowed_groups?: Array<{ id: number; name: string }> | number[];
   total_recharged?: number;
@@ -96,6 +99,7 @@ export interface AdminUser {
   key_account_rebate_rate?: number;
   key_account_manager_notes?: string;
   created_at?: string;
+  updated_at?: string;
 }
 
 export interface AdminUserApiKey {
@@ -228,7 +232,7 @@ export interface OpenAIMessagesDispatchModelConfig {
   exact_model_mappings?: Record<string, string>;
 }
 
-export type AdminChannelBillingMode = 'token' | 'per_request' | 'image';
+export type AdminChannelBillingMode = "token" | "per_request" | "image";
 
 export interface AdminChannelPricingInterval {
   id?: number;
@@ -318,19 +322,19 @@ export interface AdminSubscriptionProgress {
 }
 
 export type AdminRedeemCodeType =
-  | 'balance'
-  | 'concurrency'
-  | 'subscription'
-  | 'invitation'
-  | 'admin_balance'
-  | 'admin_concurrency';
+  | "balance"
+  | "concurrency"
+  | "subscription"
+  | "invitation"
+  | "admin_balance"
+  | "admin_concurrency";
 
 export interface AdminRedeemCode {
   id: number;
   code: string;
   type: AdminRedeemCodeType | string;
   value: number;
-  status: 'unused' | 'used' | 'expired' | string;
+  status: "unused" | "used" | "expired" | string;
   used_by?: number | null;
   used_at?: string | null;
   created_at?: string;
@@ -347,7 +351,7 @@ export interface AdminPromoCode {
   bonus_amount: number;
   max_uses: number;
   used_count: number;
-  status: 'active' | 'disabled' | string;
+  status: "active" | "disabled" | string;
   expires_at?: string | null;
   notes?: string | null;
   created_at?: string;
@@ -375,7 +379,7 @@ export interface AdminUpdatePromoCodePayload {
   code?: string;
   bonus_amount?: number;
   max_uses?: number;
-  status?: 'active' | 'disabled';
+  status?: "active" | "disabled";
   expires_at?: number | null;
   notes?: string;
 }
@@ -734,6 +738,7 @@ export interface AdminCommissionSplitLog {
   beneficiary_user_id: number;
   beneficiary_email?: string;
   beneficiary_role: string;
+  channel_partner_user_id?: number | null;
   agent_user_id?: number | null;
   distributor_user_id?: number | null;
   level: number;
@@ -952,7 +957,7 @@ export interface AdminUsageCleanupTask {
 type ApiRecord = Record<string, unknown>;
 
 function asRecord(payload: unknown): ApiRecord | null {
-  if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
+  if (!payload || typeof payload !== "object" || Array.isArray(payload)) {
     return null;
   }
   return payload as ApiRecord;
@@ -970,7 +975,8 @@ function getValue(record: ApiRecord | null, ...keys: string[]) {
 
 function unwrapData<T>(payload: unknown): T {
   const record = asRecord(payload);
-  const hasEnvelope = record && ('code' in record || 'message' in record) && 'data' in record;
+  const hasEnvelope =
+    record && ("code" in record || "message" in record) && "data" in record;
   return (hasEnvelope ? record?.data : payload) as T;
 }
 
@@ -978,7 +984,7 @@ function normalizeArray<T>(payload: unknown): T[] {
   const unwrapped = unwrapData<unknown>(payload);
   if (Array.isArray(unwrapped)) return unwrapped as T[];
   const record = asRecord(unwrapped);
-  const candidates = ['items', 'data', 'list', 'results'];
+  const candidates = ["items", "data", "list", "results"];
   for (const key of candidates) {
     const value = record?.[key];
     if (Array.isArray(value)) {
@@ -996,132 +1002,207 @@ function normalizePaginated<T>(payload: unknown): PaginatedResult<T> {
   return {
     items,
     total: Number(
-      getValue(record, 'total', 'count') ?? getValue(pagination, 'total', 'Total') ?? items.length ?? 0
-    ),
-    page: Number(getValue(record, 'page', 'Page') ?? getValue(pagination, 'page', 'Page') ?? 1),
-    pageSize: Number(
-      getValue(record, 'page_size', 'pageSize', 'PageSize') ??
-        getValue(pagination, 'page_size', 'pageSize', 'PageSize') ??
+      getValue(record, "total", "count") ??
+        getValue(pagination, "total", "Total") ??
         items.length ??
-        0
+        0,
+    ),
+    page: Number(
+      getValue(record, "page", "Page") ??
+        getValue(pagination, "page", "Page") ??
+        1,
+    ),
+    pageSize: Number(
+      getValue(record, "page_size", "pageSize", "PageSize") ??
+        getValue(pagination, "page_size", "pageSize", "PageSize") ??
+        items.length ??
+        0,
     ),
   };
 }
 
 function normalizeCommissionLog(payload: unknown): AdminCommissionLog {
   const record = asRecord(payload);
-  const inviteeIDValue = getValue(record, 'invitee_id', 'InviteeID');
+  const inviteeIDValue = getValue(record, "invitee_id", "InviteeID");
   return {
-    id: Number(getValue(record, 'id', 'ID') ?? 0),
-    user_id: Number(getValue(record, 'user_id', 'UserID') ?? 0),
+    id: Number(getValue(record, "id", "ID") ?? 0),
+    user_id: Number(getValue(record, "user_id", "UserID") ?? 0),
     invitee_id: inviteeIDValue == null ? null : Number(inviteeIDValue),
-    order_id: (getValue(record, 'order_id', 'OrderID') as number | null | undefined) ?? null,
-    amount: Number(getValue(record, 'amount', 'Amount') ?? 0),
-    status: String(getValue(record, 'status', 'Status') ?? ''),
-    reason: String(getValue(record, 'reason', 'Reason') ?? ''),
-    created_at: getValue(record, 'created_at', 'CreatedAt') as string | undefined,
-    updated_at: getValue(record, 'updated_at', 'UpdatedAt') as string | undefined,
+    order_id:
+      (getValue(record, "order_id", "OrderID") as number | null | undefined) ??
+      null,
+    amount: Number(getValue(record, "amount", "Amount") ?? 0),
+    status: String(getValue(record, "status", "Status") ?? ""),
+    reason: String(getValue(record, "reason", "Reason") ?? ""),
+    created_at: getValue(record, "created_at", "CreatedAt") as
+      string | undefined,
+    updated_at: getValue(record, "updated_at", "UpdatedAt") as
+      string | undefined,
   };
 }
 
-function normalizeCommissionSplitLog(payload: unknown): AdminCommissionSplitLog {
+function normalizeCommissionSplitLog(
+  payload: unknown,
+): AdminCommissionSplitLog {
   const record = asRecord(payload);
   return {
-    id: Number(getValue(record, 'id', 'ID') ?? 0),
-    order_id: (getValue(record, 'order_id', 'OrderID') as number | null | undefined) ?? null,
-    consumer_user_id: Number(getValue(record, 'consumer_user_id', 'ConsumerUserID') ?? 0),
-    consumer_user_email: (getValue(record, 'consumer_user_email', 'ConsumerUserEmail') as string | undefined) ?? undefined,
-    beneficiary_user_id: Number(getValue(record, 'beneficiary_user_id', 'BeneficiaryUserID') ?? 0),
-    beneficiary_email: (getValue(record, 'beneficiary_email', 'BeneficiaryEmail') as string | undefined) ?? undefined,
-    beneficiary_role: String(getValue(record, 'beneficiary_role', 'BeneficiaryRole') ?? ''),
-    agent_user_id: (getValue(record, 'agent_user_id', 'AgentUserID') as number | null | undefined) ?? null,
-    distributor_user_id: (getValue(record, 'distributor_user_id', 'DistributorUserID') as number | null | undefined) ?? null,
-    level: Number(getValue(record, 'level', 'Level') ?? 0),
-    calc_mode: String(getValue(record, 'calc_mode', 'CalcMode') ?? ''),
-    base_amount: Number(getValue(record, 'base_amount', 'BaseAmount') ?? 0),
-    target_rate: Number(getValue(record, 'target_rate', 'TargetRate') ?? 0),
-    parent_rate: Number(getValue(record, 'parent_rate', 'ParentRate') ?? 0),
-    commission_amount: Number(getValue(record, 'commission_amount', 'CommissionAmount') ?? 0),
-    status: String(getValue(record, 'status', 'Status') ?? ''),
-    rule_id: (getValue(record, 'rule_id', 'RuleID') as number | null | undefined) ?? null,
-    remark: (getValue(record, 'remark', 'Remark') as string | null | undefined) ?? null,
-    order_type: (getValue(record, 'order_type', 'OrderType') as string | undefined) ?? undefined,
-    order_status: (getValue(record, 'order_status', 'OrderStatus') as string | undefined) ?? undefined,
-    settled_at: (getValue(record, 'settled_at', 'SettledAt') as string | null | undefined) ?? null,
-    created_at: getValue(record, 'created_at', 'CreatedAt') as string | undefined,
-    updated_at: getValue(record, 'updated_at', 'UpdatedAt') as string | undefined,
+    id: Number(getValue(record, "id", "ID") ?? 0),
+    order_id:
+      (getValue(record, "order_id", "OrderID") as number | null | undefined) ??
+      null,
+    consumer_user_id: Number(
+      getValue(record, "consumer_user_id", "ConsumerUserID") ?? 0,
+    ),
+    consumer_user_email:
+      (getValue(record, "consumer_user_email", "ConsumerUserEmail") as
+        string | undefined) ?? undefined,
+    beneficiary_user_id: Number(
+      getValue(record, "beneficiary_user_id", "BeneficiaryUserID") ?? 0,
+    ),
+    beneficiary_email:
+      (getValue(record, "beneficiary_email", "BeneficiaryEmail") as
+        string | undefined) ?? undefined,
+    beneficiary_role: String(
+      getValue(record, "beneficiary_role", "BeneficiaryRole") ?? "",
+    ),
+    agent_user_id:
+      (getValue(record, "agent_user_id", "AgentUserID") as
+        number | null | undefined) ?? null,
+    distributor_user_id:
+      (getValue(record, "distributor_user_id", "DistributorUserID") as
+        number | null | undefined) ?? null,
+    level: Number(getValue(record, "level", "Level") ?? 0),
+    calc_mode: String(getValue(record, "calc_mode", "CalcMode") ?? ""),
+    base_amount: Number(getValue(record, "base_amount", "BaseAmount") ?? 0),
+    target_rate: Number(getValue(record, "target_rate", "TargetRate") ?? 0),
+    parent_rate: Number(getValue(record, "parent_rate", "ParentRate") ?? 0),
+    commission_amount: Number(
+      getValue(record, "commission_amount", "CommissionAmount") ?? 0,
+    ),
+    status: String(getValue(record, "status", "Status") ?? ""),
+    rule_id:
+      (getValue(record, "rule_id", "RuleID") as number | null | undefined) ??
+      null,
+    remark:
+      (getValue(record, "remark", "Remark") as string | null | undefined) ??
+      null,
+    order_type:
+      (getValue(record, "order_type", "OrderType") as string | undefined) ??
+      undefined,
+    order_status:
+      (getValue(record, "order_status", "OrderStatus") as string | undefined) ??
+      undefined,
+    settled_at:
+      (getValue(record, "settled_at", "SettledAt") as
+        string | null | undefined) ?? null,
+    created_at: getValue(record, "created_at", "CreatedAt") as
+      string | undefined,
+    updated_at: getValue(record, "updated_at", "UpdatedAt") as
+      string | undefined,
   };
 }
 
 function normalizePaymentOrder(payload: unknown): AdminPaymentOrder {
   const record = asRecord(payload);
   return {
-    id: Number(getValue(record, 'id', 'ID') ?? 0),
-    user_id: Number(getValue(record, 'user_id', 'UserID') ?? 0),
-    user_email: getValue(record, 'user_email', 'UserEmail') as string | undefined,
-    user_name: getValue(record, 'user_name', 'UserName') as string | undefined,
-    amount: Number(getValue(record, 'amount', 'Amount') ?? 0),
-    pay_amount: Number(getValue(record, 'pay_amount', 'PayAmount') ?? 0),
-    fee_rate: Number(getValue(record, 'fee_rate', 'FeeRate') ?? 0),
-    payment_type: String(getValue(record, 'payment_type', 'PaymentType') ?? ''),
-    out_trade_no: String(getValue(record, 'out_trade_no', 'OutTradeNo') ?? ''),
-    payment_trade_no: getValue(record, 'payment_trade_no', 'PaymentTradeNo') as string | undefined,
-    status: String(getValue(record, 'status', 'Status') ?? ''),
-    order_type: String(getValue(record, 'order_type', 'OrderType') ?? ''),
-    created_at: getValue(record, 'created_at', 'CreatedAt') as string | undefined,
-    expires_at: getValue(record, 'expires_at', 'ExpiresAt') as string | undefined,
-    paid_at: getValue(record, 'paid_at', 'PaidAt') as string | undefined,
-    completed_at: getValue(record, 'completed_at', 'CompletedAt') as string | undefined,
-    refund_amount: Number(getValue(record, 'refund_amount', 'RefundAmount') ?? 0),
-    refund_reason: (getValue(record, 'refund_reason', 'RefundReason') as string | null | undefined) ?? null,
-    refund_requested_at: getValue(record, 'refund_requested_at', 'RefundRequestedAt') as string | undefined,
-    refund_requested_by: Number(getValue(record, 'refund_requested_by', 'RefundRequestedBy') ?? 0),
+    id: Number(getValue(record, "id", "ID") ?? 0),
+    user_id: Number(getValue(record, "user_id", "UserID") ?? 0),
+    user_email: getValue(record, "user_email", "UserEmail") as
+      string | undefined,
+    user_name: getValue(record, "user_name", "UserName") as string | undefined,
+    amount: Number(getValue(record, "amount", "Amount") ?? 0),
+    pay_amount: Number(getValue(record, "pay_amount", "PayAmount") ?? 0),
+    fee_rate: Number(getValue(record, "fee_rate", "FeeRate") ?? 0),
+    payment_type: String(getValue(record, "payment_type", "PaymentType") ?? ""),
+    out_trade_no: String(getValue(record, "out_trade_no", "OutTradeNo") ?? ""),
+    payment_trade_no: getValue(record, "payment_trade_no", "PaymentTradeNo") as
+      string | undefined,
+    status: String(getValue(record, "status", "Status") ?? ""),
+    order_type: String(getValue(record, "order_type", "OrderType") ?? ""),
+    created_at: getValue(record, "created_at", "CreatedAt") as
+      string | undefined,
+    expires_at: getValue(record, "expires_at", "ExpiresAt") as
+      string | undefined,
+    paid_at: getValue(record, "paid_at", "PaidAt") as string | undefined,
+    completed_at: getValue(record, "completed_at", "CompletedAt") as
+      string | undefined,
+    refund_amount: Number(
+      getValue(record, "refund_amount", "RefundAmount") ?? 0,
+    ),
+    refund_reason:
+      (getValue(record, "refund_reason", "RefundReason") as
+        string | null | undefined) ?? null,
+    refund_requested_at: getValue(
+      record,
+      "refund_requested_at",
+      "RefundRequestedAt",
+    ) as string | undefined,
+    refund_requested_by: Number(
+      getValue(record, "refund_requested_by", "RefundRequestedBy") ?? 0,
+    ),
     refund_request_reason:
-      (getValue(record, 'refund_request_reason', 'RefundRequestReason') as string | null | undefined) ?? null,
-    failed_reason: (getValue(record, 'failed_reason', 'FailedReason') as string | null | undefined) ?? null,
+      (getValue(record, "refund_request_reason", "RefundRequestReason") as
+        string | null | undefined) ?? null,
+    failed_reason:
+      (getValue(record, "failed_reason", "FailedReason") as
+        string | null | undefined) ?? null,
     provider_instance_id:
-      (getValue(record, 'provider_instance_id', 'ProviderInstanceID') as string | null | undefined) ?? null,
+      (getValue(record, "provider_instance_id", "ProviderInstanceID") as
+        string | null | undefined) ?? null,
   };
 }
 
 function normalizeOrderAuditLog(payload: unknown): AdminOrderAuditLog {
   const record = asRecord(payload);
   return {
-    id: Number(getValue(record, 'id', 'ID') ?? 0),
-    action: String(getValue(record, 'action', 'Action') ?? ''),
-    detail: (getValue(record, 'detail', 'Detail') as string | null | undefined) ?? null,
-    operator: (getValue(record, 'operator', 'Operator') as string | null | undefined) ?? null,
-    created_at: getValue(record, 'created_at', 'CreatedAt') as string | undefined,
+    id: Number(getValue(record, "id", "ID") ?? 0),
+    action: String(getValue(record, "action", "Action") ?? ""),
+    detail:
+      (getValue(record, "detail", "Detail") as string | null | undefined) ??
+      null,
+    operator:
+      (getValue(record, "operator", "Operator") as string | null | undefined) ??
+      null,
+    created_at: getValue(record, "created_at", "CreatedAt") as
+      string | undefined,
   };
 }
 
-function normalizePaymentDashboardStats(payload: unknown): AdminPaymentDashboardStats {
+function normalizePaymentDashboardStats(
+  payload: unknown,
+): AdminPaymentDashboardStats {
   const record = asRecord(payload);
-  const dailySeries = normalizeArray<ApiRecord>(getValue(record, 'daily_series', 'dailySeries')).map((item) => ({
-    date: String(getValue(item, 'date', 'Date') ?? ''),
-    amount: Number(getValue(item, 'amount', 'Amount') ?? 0),
-    count: Number(getValue(item, 'count', 'Count') ?? 0),
+  const dailySeries = normalizeArray<ApiRecord>(
+    getValue(record, "daily_series", "dailySeries"),
+  ).map((item) => ({
+    date: String(getValue(item, "date", "Date") ?? ""),
+    amount: Number(getValue(item, "amount", "Amount") ?? 0),
+    count: Number(getValue(item, "count", "Count") ?? 0),
   }));
-  const paymentMethods = normalizeArray<ApiRecord>(getValue(record, 'payment_methods', 'paymentMethods')).map(
-    (item) => ({
-      type: String(getValue(item, 'type', 'Type') ?? ''),
-      amount: Number(getValue(item, 'amount', 'Amount') ?? 0),
-      count: Number(getValue(item, 'count', 'Count') ?? 0),
-    })
-  );
-  const topUsers = normalizeArray<ApiRecord>(getValue(record, 'top_users', 'topUsers')).map((item) => ({
-    user_id: Number(getValue(item, 'user_id', 'UserID') ?? 0),
-    email: String(getValue(item, 'email', 'Email') ?? ''),
-    amount: Number(getValue(item, 'amount', 'Amount') ?? 0),
+  const paymentMethods = normalizeArray<ApiRecord>(
+    getValue(record, "payment_methods", "paymentMethods"),
+  ).map((item) => ({
+    type: String(getValue(item, "type", "Type") ?? ""),
+    amount: Number(getValue(item, "amount", "Amount") ?? 0),
+    count: Number(getValue(item, "count", "Count") ?? 0),
+  }));
+  const topUsers = normalizeArray<ApiRecord>(
+    getValue(record, "top_users", "topUsers"),
+  ).map((item) => ({
+    user_id: Number(getValue(item, "user_id", "UserID") ?? 0),
+    email: String(getValue(item, "email", "Email") ?? ""),
+    amount: Number(getValue(item, "amount", "Amount") ?? 0),
   }));
 
   return {
-    today_amount: Number(getValue(record, 'today_amount', 'TodayAmount') ?? 0),
-    total_amount: Number(getValue(record, 'total_amount', 'TotalAmount') ?? 0),
-    today_count: Number(getValue(record, 'today_count', 'TodayCount') ?? 0),
-    total_count: Number(getValue(record, 'total_count', 'TotalCount') ?? 0),
-    avg_amount: Number(getValue(record, 'avg_amount', 'AvgAmount') ?? 0),
-    pending_orders: Number(getValue(record, 'pending_orders', 'PendingOrders') ?? 0),
+    today_amount: Number(getValue(record, "today_amount", "TodayAmount") ?? 0),
+    total_amount: Number(getValue(record, "total_amount", "TotalAmount") ?? 0),
+    today_count: Number(getValue(record, "today_count", "TodayCount") ?? 0),
+    total_count: Number(getValue(record, "total_count", "TotalCount") ?? 0),
+    avg_amount: Number(getValue(record, "avg_amount", "AvgAmount") ?? 0),
+    pending_orders: Number(
+      getValue(record, "pending_orders", "PendingOrders") ?? 0,
+    ),
     daily_series: dailySeries,
     payment_methods: paymentMethods,
     top_users: topUsers,
@@ -1130,31 +1211,39 @@ function normalizePaymentDashboardStats(payload: unknown): AdminPaymentDashboard
 
 function normalizeSubscriptionPlan(payload: unknown): AdminSubscriptionPlan {
   const record = asRecord(payload);
-  const rawFeatures = getValue(record, 'features', 'Features');
+  const rawFeatures = getValue(record, "features", "Features");
   let features: string[] = [];
   if (Array.isArray(rawFeatures)) {
     features = rawFeatures.map((item) => String(item)).filter(Boolean);
-  } else if (typeof rawFeatures === 'string') {
+  } else if (typeof rawFeatures === "string") {
     features = rawFeatures
-      .split('\n')
+      .split("\n")
       .map((item) => item.trim())
       .filter(Boolean);
   }
 
   return {
-    id: Number(getValue(record, 'id', 'ID') ?? 0),
-    group_id: Number(getValue(record, 'group_id', 'GroupID') ?? 0),
-    name: String(getValue(record, 'name', 'Name') ?? ''),
-    product_name: getValue(record, 'product_name', 'ProductName') as string | undefined,
-    description: String(getValue(record, 'description', 'Description') ?? ''),
-    price: Number(getValue(record, 'price', 'Price') ?? 0),
-    original_price: (getValue(record, 'original_price', 'OriginalPrice') as number | null | undefined) ?? null,
-    validity_days: Number(getValue(record, 'validity_days', 'ValidityDays') ?? 0),
-    validity_unit: String(getValue(record, 'validity_unit', 'ValidityUnit') ?? 'days'),
+    id: Number(getValue(record, "id", "ID") ?? 0),
+    group_id: Number(getValue(record, "group_id", "GroupID") ?? 0),
+    name: String(getValue(record, "name", "Name") ?? ""),
+    product_name: getValue(record, "product_name", "ProductName") as
+      string | undefined,
+    description: String(getValue(record, "description", "Description") ?? ""),
+    price: Number(getValue(record, "price", "Price") ?? 0),
+    original_price:
+      (getValue(record, "original_price", "OriginalPrice") as
+        number | null | undefined) ?? null,
+    validity_days: Number(
+      getValue(record, "validity_days", "ValidityDays") ?? 0,
+    ),
+    validity_unit: String(
+      getValue(record, "validity_unit", "ValidityUnit") ?? "days",
+    ),
     features,
-    for_sale: Boolean(getValue(record, 'for_sale', 'ForSale') ?? false),
-    sort_order: Number(getValue(record, 'sort_order', 'SortOrder') ?? 0),
-    created_at: getValue(record, 'created_at', 'CreatedAt') as string | undefined,
+    for_sale: Boolean(getValue(record, "for_sale", "ForSale") ?? false),
+    sort_order: Number(getValue(record, "sort_order", "SortOrder") ?? 0),
+    created_at: getValue(record, "created_at", "CreatedAt") as
+      string | undefined,
   };
 }
 
@@ -1162,133 +1251,216 @@ function normalizeUsageEntityRef(payload: unknown): AdminUsageEntityRef | null {
   const record = asRecord(payload);
   if (!record) return null;
   return {
-    id: Number(getValue(record, 'id', 'ID') ?? 0),
-    name: getValue(record, 'name', 'Name') as string | undefined,
-    email: getValue(record, 'email', 'Email') as string | undefined,
+    id: Number(getValue(record, "id", "ID") ?? 0),
+    name: getValue(record, "name", "Name") as string | undefined,
+    email: getValue(record, "email", "Email") as string | undefined,
   };
 }
 
-function normalizeUsageAccountRef(payload: unknown): AdminUsageAccountRef | null {
+function normalizeUsageAccountRef(
+  payload: unknown,
+): AdminUsageAccountRef | null {
   const record = asRecord(payload);
   if (!record) return null;
   return {
-    id: Number(getValue(record, 'id', 'ID') ?? 0),
-    name: String(getValue(record, 'name', 'Name') ?? ''),
+    id: Number(getValue(record, "id", "ID") ?? 0),
+    name: String(getValue(record, "name", "Name") ?? ""),
   };
 }
 
 function normalizeUsageLog(payload: unknown): AdminUsageLog {
   const record = asRecord(payload);
   return {
-    id: Number(getValue(record, 'id', 'ID') ?? 0),
-    user_id: Number(getValue(record, 'user_id', 'UserID') ?? 0),
-    api_key_id: (getValue(record, 'api_key_id', 'APIKeyID') as number | null | undefined) ?? null,
-    account_id: (getValue(record, 'account_id', 'AccountID') as number | null | undefined) ?? null,
-    channel_id: (getValue(record, 'channel_id', 'ChannelID') as number | null | undefined) ?? null,
-    group_id: (getValue(record, 'group_id', 'GroupID') as number | null | undefined) ?? null,
-    model: String(getValue(record, 'model', 'Model') ?? ''),
-    upstream_model: (getValue(record, 'upstream_model', 'UpstreamModel') as string | null | undefined) ?? null,
-    request_type: String(getValue(record, 'request_type', 'RequestType') ?? ''),
-    stream: Boolean(getValue(record, 'stream', 'Stream') ?? false),
-    billing_type: Number(getValue(record, 'billing_type', 'BillingType') ?? 0),
-    billing_mode: (getValue(record, 'billing_mode', 'BillingMode') as string | null | undefined) ?? null,
-    input_tokens: Number(getValue(record, 'input_tokens', 'InputTokens') ?? 0),
-    output_tokens: Number(getValue(record, 'output_tokens', 'OutputTokens') ?? 0),
-    total_cost: Number(getValue(record, 'total_cost', 'TotalCost') ?? 0),
-    actual_cost: Number(getValue(record, 'actual_cost', 'ActualCost') ?? 0),
-    rate_multiplier: Number(getValue(record, 'rate_multiplier', 'RateMultiplier') ?? 0),
-    duration_ms: (getValue(record, 'duration_ms', 'DurationMs') as number | null | undefined) ?? null,
-    first_token_ms: (getValue(record, 'first_token_ms', 'FirstTokenMs') as number | null | undefined) ?? null,
-    ip_address: (getValue(record, 'ip_address', 'IPAddress') as string | null | undefined) ?? null,
-    user: normalizeUsageEntityRef(getValue(record, 'user', 'User')),
-    api_key: normalizeUsageEntityRef(getValue(record, 'api_key', 'APIKey')),
-    group: normalizeUsageEntityRef(getValue(record, 'group', 'Group')),
-    account: normalizeUsageAccountRef(getValue(record, 'account', 'Account')),
-    created_at: getValue(record, 'created_at', 'CreatedAt') as string | undefined,
+    id: Number(getValue(record, "id", "ID") ?? 0),
+    user_id: Number(getValue(record, "user_id", "UserID") ?? 0),
+    api_key_id:
+      (getValue(record, "api_key_id", "APIKeyID") as
+        number | null | undefined) ?? null,
+    account_id:
+      (getValue(record, "account_id", "AccountID") as
+        number | null | undefined) ?? null,
+    channel_id:
+      (getValue(record, "channel_id", "ChannelID") as
+        number | null | undefined) ?? null,
+    group_id:
+      (getValue(record, "group_id", "GroupID") as number | null | undefined) ??
+      null,
+    model: String(getValue(record, "model", "Model") ?? ""),
+    upstream_model:
+      (getValue(record, "upstream_model", "UpstreamModel") as
+        string | null | undefined) ?? null,
+    request_type: String(getValue(record, "request_type", "RequestType") ?? ""),
+    stream: Boolean(getValue(record, "stream", "Stream") ?? false),
+    billing_type: Number(getValue(record, "billing_type", "BillingType") ?? 0),
+    billing_mode:
+      (getValue(record, "billing_mode", "BillingMode") as
+        string | null | undefined) ?? null,
+    input_tokens: Number(getValue(record, "input_tokens", "InputTokens") ?? 0),
+    output_tokens: Number(
+      getValue(record, "output_tokens", "OutputTokens") ?? 0,
+    ),
+    total_cost: Number(getValue(record, "total_cost", "TotalCost") ?? 0),
+    actual_cost: Number(getValue(record, "actual_cost", "ActualCost") ?? 0),
+    rate_multiplier: Number(
+      getValue(record, "rate_multiplier", "RateMultiplier") ?? 0,
+    ),
+    duration_ms:
+      (getValue(record, "duration_ms", "DurationMs") as
+        number | null | undefined) ?? null,
+    first_token_ms:
+      (getValue(record, "first_token_ms", "FirstTokenMs") as
+        number | null | undefined) ?? null,
+    ip_address:
+      (getValue(record, "ip_address", "IPAddress") as
+        string | null | undefined) ?? null,
+    user: normalizeUsageEntityRef(getValue(record, "user", "User")),
+    api_key: normalizeUsageEntityRef(getValue(record, "api_key", "APIKey")),
+    group: normalizeUsageEntityRef(getValue(record, "group", "Group")),
+    account: normalizeUsageAccountRef(getValue(record, "account", "Account")),
+    created_at: getValue(record, "created_at", "CreatedAt") as
+      string | undefined,
   };
 }
 
 function normalizeUsageStats(payload: unknown): AdminUsageStats {
   const record = asRecord(payload);
   return {
-    total_requests: Number(getValue(record, 'total_requests', 'TotalRequests') ?? 0),
-    total_input_tokens: Number(getValue(record, 'total_input_tokens', 'TotalInputTokens') ?? 0),
-    total_output_tokens: Number(getValue(record, 'total_output_tokens', 'TotalOutputTokens') ?? 0),
-    total_cache_tokens: Number(getValue(record, 'total_cache_tokens', 'TotalCacheTokens') ?? 0),
-    total_tokens: Number(getValue(record, 'total_tokens', 'TotalTokens') ?? 0),
-    total_cost: Number(getValue(record, 'total_cost', 'TotalCost') ?? 0),
-    total_actual_cost: Number(getValue(record, 'total_actual_cost', 'TotalActualCost') ?? 0),
-    average_duration_ms: Number(getValue(record, 'average_duration_ms', 'AverageDurationMs') ?? 0),
+    total_requests: Number(
+      getValue(record, "total_requests", "TotalRequests") ?? 0,
+    ),
+    total_input_tokens: Number(
+      getValue(record, "total_input_tokens", "TotalInputTokens") ?? 0,
+    ),
+    total_output_tokens: Number(
+      getValue(record, "total_output_tokens", "TotalOutputTokens") ?? 0,
+    ),
+    total_cache_tokens: Number(
+      getValue(record, "total_cache_tokens", "TotalCacheTokens") ?? 0,
+    ),
+    total_tokens: Number(getValue(record, "total_tokens", "TotalTokens") ?? 0),
+    total_cost: Number(getValue(record, "total_cost", "TotalCost") ?? 0),
+    total_actual_cost: Number(
+      getValue(record, "total_actual_cost", "TotalActualCost") ?? 0,
+    ),
+    average_duration_ms: Number(
+      getValue(record, "average_duration_ms", "AverageDurationMs") ?? 0,
+    ),
   };
 }
 
 function normalizeUsageCleanupTask(payload: unknown): AdminUsageCleanupTask {
   const record = asRecord(payload);
-  const filters = asRecord(getValue(record, 'filters', 'Filters'));
+  const filters = asRecord(getValue(record, "filters", "Filters"));
   return {
-    id: Number(getValue(record, 'id', 'ID') ?? 0),
-    status: String(getValue(record, 'status', 'Status') ?? ''),
+    id: Number(getValue(record, "id", "ID") ?? 0),
+    status: String(getValue(record, "status", "Status") ?? ""),
     filters: {
-      start_time: getValue(filters, 'start_time', 'StartTime') as string | undefined,
-      end_time: getValue(filters, 'end_time', 'EndTime') as string | undefined,
-      user_id: (getValue(filters, 'user_id', 'UserID') as number | undefined) ?? undefined,
-      api_key_id: (getValue(filters, 'api_key_id', 'APIKeyID') as number | undefined) ?? undefined,
-      account_id: (getValue(filters, 'account_id', 'AccountID') as number | undefined) ?? undefined,
-      group_id: (getValue(filters, 'group_id', 'GroupID') as number | undefined) ?? undefined,
-      model: (getValue(filters, 'model', 'Model') as string | null | undefined) ?? null,
-      request_type: (getValue(filters, 'request_type', 'RequestType') as string | null | undefined) ?? null,
-      stream: (getValue(filters, 'stream', 'Stream') as boolean | null | undefined) ?? null,
-      billing_type: (getValue(filters, 'billing_type', 'BillingType') as number | null | undefined) ?? null,
+      start_time: getValue(filters, "start_time", "StartTime") as
+        string | undefined,
+      end_time: getValue(filters, "end_time", "EndTime") as string | undefined,
+      user_id:
+        (getValue(filters, "user_id", "UserID") as number | undefined) ??
+        undefined,
+      api_key_id:
+        (getValue(filters, "api_key_id", "APIKeyID") as number | undefined) ??
+        undefined,
+      account_id:
+        (getValue(filters, "account_id", "AccountID") as number | undefined) ??
+        undefined,
+      group_id:
+        (getValue(filters, "group_id", "GroupID") as number | undefined) ??
+        undefined,
+      model:
+        (getValue(filters, "model", "Model") as string | null | undefined) ??
+        null,
+      request_type:
+        (getValue(filters, "request_type", "RequestType") as
+          string | null | undefined) ?? null,
+      stream:
+        (getValue(filters, "stream", "Stream") as boolean | null | undefined) ??
+        null,
+      billing_type:
+        (getValue(filters, "billing_type", "BillingType") as
+          number | null | undefined) ?? null,
     },
-    created_by: Number(getValue(record, 'created_by', 'CreatedBy') ?? 0),
-    deleted_rows: Number(getValue(record, 'deleted_rows', 'DeletedRows') ?? 0),
-    error_message: (getValue(record, 'error_message', 'ErrorMessage') as string | null | undefined) ?? null,
-    canceled_by: (getValue(record, 'canceled_by', 'CanceledBy') as number | null | undefined) ?? null,
-    canceled_at: (getValue(record, 'canceled_at', 'CanceledAt') as string | null | undefined) ?? null,
-    started_at: (getValue(record, 'started_at', 'StartedAt') as string | null | undefined) ?? null,
-    finished_at: (getValue(record, 'finished_at', 'FinishedAt') as string | null | undefined) ?? null,
-    created_at: getValue(record, 'created_at', 'CreatedAt') as string | undefined,
-    updated_at: getValue(record, 'updated_at', 'UpdatedAt') as string | undefined,
+    created_by: Number(getValue(record, "created_by", "CreatedBy") ?? 0),
+    deleted_rows: Number(getValue(record, "deleted_rows", "DeletedRows") ?? 0),
+    error_message:
+      (getValue(record, "error_message", "ErrorMessage") as
+        string | null | undefined) ?? null,
+    canceled_by:
+      (getValue(record, "canceled_by", "CanceledBy") as
+        number | null | undefined) ?? null,
+    canceled_at:
+      (getValue(record, "canceled_at", "CanceledAt") as
+        string | null | undefined) ?? null,
+    started_at:
+      (getValue(record, "started_at", "StartedAt") as
+        string | null | undefined) ?? null,
+    finished_at:
+      (getValue(record, "finished_at", "FinishedAt") as
+        string | null | undefined) ?? null,
+    created_at: getValue(record, "created_at", "CreatedAt") as
+      string | undefined,
+    updated_at: getValue(record, "updated_at", "UpdatedAt") as
+      string | undefined,
   };
 }
 
 export async function getAdminDashboardSnapshot(): Promise<AdminDashboardSnapshot> {
   try {
-    const snapshot = (await api.get('/admin/dashboard/snapshot-v2')) as AdminDashboardSnapshot;
+    const snapshot = (await api.get(
+      "/admin/dashboard/snapshot-v2",
+    )) as AdminDashboardSnapshot;
     if (snapshot?.stats) {
       return snapshot;
     }
   } catch {
     // Fall through to stats endpoint.
   }
-  const stats = (await api.get('/admin/dashboard/stats')) as AdminDashboardStats;
+  const stats = (await api.get(
+    "/admin/dashboard/stats",
+  )) as AdminDashboardStats;
   return { stats };
 }
 
 export async function getAdminSystemVersion(): Promise<AdminSystemVersionInfo> {
-  return (await api.get('/admin/system/version')) as AdminSystemVersionInfo;
+  return (await api.get("/admin/system/version")) as AdminSystemVersionInfo;
 }
 
-export async function checkAdminSystemUpdates(force = false): Promise<AdminSystemUpdateInfo> {
-  return (await api.get('/admin/system/check-updates', {
-    params: force ? { force: 'true' } : undefined,
+export async function checkAdminSystemUpdates(
+  force = false,
+): Promise<AdminSystemUpdateInfo> {
+  return (await api.get("/admin/system/check-updates", {
+    params: force ? { force: "true" } : undefined,
   })) as AdminSystemUpdateInfo;
 }
 
 export async function performAdminSystemUpdate(): Promise<AdminSystemOperationResult> {
-  return (await api.post('/admin/system/update', {})) as AdminSystemOperationResult;
+  return (await api.post(
+    "/admin/system/update",
+    {},
+  )) as AdminSystemOperationResult;
 }
 
 export async function rollbackAdminSystemUpdate(): Promise<AdminSystemOperationResult> {
-  return (await api.post('/admin/system/rollback', {})) as AdminSystemOperationResult;
+  return (await api.post(
+    "/admin/system/rollback",
+    {},
+  )) as AdminSystemOperationResult;
 }
 
 export async function restartAdminSystemService(): Promise<AdminSystemOperationResult> {
-  return (await api.post('/admin/system/restart', {})) as AdminSystemOperationResult;
+  return (await api.post(
+    "/admin/system/restart",
+    {},
+  )) as AdminSystemOperationResult;
 }
 
-export async function listAdminUsers(params?: Record<string, unknown>): Promise<PaginatedResult<AdminUser>> {
-  const payload = (await api.get('/admin/users', { params })) as unknown;
+export async function listAdminUsers(
+  params?: Record<string, unknown>,
+): Promise<PaginatedResult<AdminUser>> {
+  const payload = (await api.get("/admin/users", { params })) as unknown;
   return normalizePaginated<AdminUser>(payload);
 }
 
@@ -1301,122 +1473,200 @@ export async function createAdminUser(payload: {
   concurrency?: number;
   allowed_groups?: number[];
 }): Promise<AdminUser> {
-  return (await api.post('/admin/users', payload)) as AdminUser;
+  return (await api.post("/admin/users", payload)) as AdminUser;
 }
 
-export async function updateAdminUser(id: number, payload: Record<string, unknown>): Promise<AdminUser> {
+export async function updateAdminUser(
+  id: number,
+  payload: Record<string, unknown>,
+): Promise<AdminUser> {
   return (await api.put(`/admin/users/${id}`, payload)) as AdminUser;
 }
 
-export async function deleteAdminUser(id: number): Promise<{ message?: string }> {
+export async function deleteAdminUser(
+  id: number,
+): Promise<{ message?: string }> {
   return (await api.delete(`/admin/users/${id}`)) as { message?: string };
 }
 
-export async function updateAdminUserBalance(id: number, payload: {
-  balance: number;
-  operation: 'set' | 'add' | 'subtract';
-  notes?: string;
-}): Promise<AdminUser> {
+export async function updateAdminUserBalance(
+  id: number,
+  payload: {
+    balance: number;
+    operation: "set" | "add" | "subtract";
+    notes?: string;
+  },
+): Promise<AdminUser> {
   return (await api.post(`/admin/users/${id}/balance`, payload)) as AdminUser;
 }
 
 export async function listAdminUserApiKeys(
   id: number,
-  params?: Record<string, unknown>
+  params?: Record<string, unknown>,
 ): Promise<PaginatedResult<AdminUserApiKey>> {
-  const payload = (await api.get(`/admin/users/${id}/api-keys`, { params })) as unknown;
+  const payload = (await api.get(`/admin/users/${id}/api-keys`, {
+    params,
+  })) as unknown;
   return normalizePaginated<AdminUserApiKey>(payload);
 }
 
 export async function listAdminUserBalanceHistory(
   id: number,
-  params?: Record<string, unknown>
+  params?: Record<string, unknown>,
 ): Promise<AdminUserBalanceHistoryResult> {
-  const payload = unwrapData<Record<string, unknown>>((await api.get(`/admin/users/${id}/balance-history`, { params })) as unknown);
+  const payload = unwrapData<Record<string, unknown>>(
+    (await api.get(`/admin/users/${id}/balance-history`, {
+      params,
+    })) as unknown,
+  );
   const paginated = normalizePaginated<AdminUserBalanceHistoryItem>(payload);
   return {
     ...paginated,
     total_recharged:
-      typeof payload?.total_recharged === 'number' ? payload.total_recharged : Number(payload?.total_recharged ?? 0),
+      typeof payload?.total_recharged === "number"
+        ? payload.total_recharged
+        : Number(payload?.total_recharged ?? 0),
   };
 }
 
 export async function getAdminUserUsageStats(
   id: number,
-  params?: Record<string, unknown>
+  params?: Record<string, unknown>,
 ): Promise<AdminUserUsageStats> {
-  return unwrapData<AdminUserUsageStats>((await api.get(`/admin/users/${id}/usage`, { params })) as unknown);
+  return unwrapData<AdminUserUsageStats>(
+    (await api.get(`/admin/users/${id}/usage`, { params })) as unknown,
+  );
 }
 
 export async function syncAdminKeyAccounts(payload?: {
   dry_run?: boolean;
 }): Promise<AdminKeyAccountSyncResult> {
-  return unwrapData<AdminKeyAccountSyncResult>((await api.post('/admin/users/key-accounts/auto-sync', payload || {})) as unknown);
+  return unwrapData<AdminKeyAccountSyncResult>(
+    (await api.post(
+      "/admin/users/key-accounts/auto-sync",
+      payload || {},
+    )) as unknown,
+  );
 }
 
-export async function listAdminGroups(params?: Record<string, unknown>): Promise<PaginatedResult<AdminGroup>> {
-  const payload = (await api.get('/admin/groups', { params })) as unknown;
+export async function listAdminGroups(
+  params?: Record<string, unknown>,
+): Promise<PaginatedResult<AdminGroup>> {
+  const payload = (await api.get("/admin/groups", { params })) as unknown;
   return normalizePaginated<AdminGroup>(payload);
 }
 
-export async function listAdminRedeemCodes(params?: Record<string, unknown>): Promise<PaginatedResult<AdminRedeemCode>> {
-  const payload = (await api.get('/admin/redeem-codes', { params })) as unknown;
+export async function listAdminRedeemCodes(
+  params?: Record<string, unknown>,
+): Promise<PaginatedResult<AdminRedeemCode>> {
+  const payload = (await api.get("/admin/redeem-codes", { params })) as unknown;
   return normalizePaginated<AdminRedeemCode>(payload);
 }
 
-export async function listAdminPromoCodes(params?: Record<string, unknown>): Promise<PaginatedResult<AdminPromoCode>> {
-  const payload = (await api.get('/admin/promo-codes', { params })) as unknown;
+export async function listAdminPromoCodes(
+  params?: Record<string, unknown>,
+): Promise<PaginatedResult<AdminPromoCode>> {
+  const payload = (await api.get("/admin/promo-codes", { params })) as unknown;
   return normalizePaginated<AdminPromoCode>(payload);
 }
 
 export async function getAdminPromoCode(id: number): Promise<AdminPromoCode> {
-  return unwrapData<AdminPromoCode>((await api.get(`/admin/promo-codes/${id}`)) as unknown);
+  return unwrapData<AdminPromoCode>(
+    (await api.get(`/admin/promo-codes/${id}`)) as unknown,
+  );
 }
 
-export async function createAdminPromoCode(payload: AdminCreatePromoCodePayload): Promise<AdminPromoCode> {
-  return unwrapData<AdminPromoCode>((await api.post('/admin/promo-codes', payload)) as unknown);
+export async function createAdminPromoCode(
+  payload: AdminCreatePromoCodePayload,
+): Promise<AdminPromoCode> {
+  return unwrapData<AdminPromoCode>(
+    (await api.post("/admin/promo-codes", payload)) as unknown,
+  );
 }
 
-export async function updateAdminPromoCode(id: number, payload: AdminUpdatePromoCodePayload): Promise<AdminPromoCode> {
-  return unwrapData<AdminPromoCode>((await api.put(`/admin/promo-codes/${id}`, payload)) as unknown);
+export async function updateAdminPromoCode(
+  id: number,
+  payload: AdminUpdatePromoCodePayload,
+): Promise<AdminPromoCode> {
+  return unwrapData<AdminPromoCode>(
+    (await api.put(`/admin/promo-codes/${id}`, payload)) as unknown,
+  );
 }
 
-export async function deleteAdminPromoCode(id: number): Promise<{ message?: string }> {
-  return unwrapData<{ message?: string }>((await api.delete(`/admin/promo-codes/${id}`)) as unknown) || {};
+export async function deleteAdminPromoCode(
+  id: number,
+): Promise<{ message?: string }> {
+  return (
+    unwrapData<{ message?: string }>(
+      (await api.delete(`/admin/promo-codes/${id}`)) as unknown,
+    ) || {}
+  );
 }
 
 export async function listAdminPromoCodeUsages(
   id: number,
-  params?: Record<string, unknown>
+  params?: Record<string, unknown>,
 ): Promise<PaginatedResult<AdminPromoCodeUsage>> {
-  const payload = (await api.get(`/admin/promo-codes/${id}/usages`, { params })) as unknown;
+  const payload = (await api.get(`/admin/promo-codes/${id}/usages`, {
+    params,
+  })) as unknown;
   return normalizePaginated<AdminPromoCodeUsage>(payload);
 }
 
 export async function generateAdminRedeemCodes(payload: {
   count: number;
-  type: AdminRedeemCodeType | 'balance' | 'concurrency' | 'subscription' | 'invitation';
+  type:
+    | AdminRedeemCodeType
+    | "balance"
+    | "concurrency"
+    | "subscription"
+    | "invitation";
   value: number;
   group_id?: number | null;
   validity_days?: number;
 }): Promise<AdminRedeemCode[]> {
-  return unwrapData<AdminRedeemCode[]>((await api.post('/admin/redeem-codes/generate', payload)) as unknown) || [];
+  return (
+    unwrapData<AdminRedeemCode[]>(
+      (await api.post("/admin/redeem-codes/generate", payload)) as unknown,
+    ) || []
+  );
 }
 
-export async function deleteAdminRedeemCode(id: number): Promise<{ message?: string }> {
-  return unwrapData<{ message?: string }>((await api.delete(`/admin/redeem-codes/${id}`)) as unknown) || {};
+export async function deleteAdminRedeemCode(
+  id: number,
+): Promise<{ message?: string }> {
+  return (
+    unwrapData<{ message?: string }>(
+      (await api.delete(`/admin/redeem-codes/${id}`)) as unknown,
+    ) || {}
+  );
 }
 
-export async function batchDeleteAdminRedeemCodes(ids: number[]): Promise<{ deleted: number; message?: string }> {
-  return unwrapData<{ deleted: number; message?: string }>((await api.post('/admin/redeem-codes/batch-delete', { ids })) as unknown) || { deleted: 0 };
+export async function batchDeleteAdminRedeemCodes(
+  ids: number[],
+): Promise<{ deleted: number; message?: string }> {
+  return (
+    unwrapData<{ deleted: number; message?: string }>(
+      (await api.post("/admin/redeem-codes/batch-delete", { ids })) as unknown,
+    ) || { deleted: 0 }
+  );
 }
 
-export async function expireAdminRedeemCode(id: number): Promise<AdminRedeemCode> {
-  return unwrapData<AdminRedeemCode>((await api.post(`/admin/redeem-codes/${id}/expire`)) as unknown);
+export async function expireAdminRedeemCode(
+  id: number,
+): Promise<AdminRedeemCode> {
+  return unwrapData<AdminRedeemCode>(
+    (await api.post(`/admin/redeem-codes/${id}/expire`)) as unknown,
+  );
 }
 
-export async function exportAdminRedeemCodes(params?: Record<string, unknown>): Promise<Blob> {
-  return (await api.get('/admin/redeem-codes/export', { params, responseType: 'blob' })) as Blob;
+export async function exportAdminRedeemCodes(
+  params?: Record<string, unknown>,
+): Promise<Blob> {
+  return (await api.get("/admin/redeem-codes/export", {
+    params,
+    responseType: "blob",
+  })) as Blob;
 }
 
 export async function createAdminGroup(payload: {
@@ -1437,47 +1687,80 @@ export async function createAdminGroup(payload: {
   require_privacy_set?: boolean;
   model_routing_enabled?: boolean;
 }): Promise<AdminGroup> {
-  return (await api.post('/admin/groups', payload)) as AdminGroup;
+  return (await api.post("/admin/groups", payload)) as AdminGroup;
 }
 
-export async function updateAdminGroup(id: number, payload: Record<string, unknown>): Promise<AdminGroup> {
+export async function updateAdminGroup(
+  id: number,
+  payload: Record<string, unknown>,
+): Promise<AdminGroup> {
   return (await api.put(`/admin/groups/${id}`, payload)) as AdminGroup;
 }
 
-export async function deleteAdminGroup(id: number): Promise<{ message?: string }> {
+export async function deleteAdminGroup(
+  id: number,
+): Promise<{ message?: string }> {
   return (await api.delete(`/admin/groups/${id}`)) as { message?: string };
 }
 
-export async function listAdminGroupUsageSummary(params?: Record<string, unknown>): Promise<AdminGroupUsageSummary[]> {
-  return unwrapData<AdminGroupUsageSummary[]>((await api.get('/admin/groups/usage-summary', { params })) as unknown) || [];
+export async function listAdminGroupUsageSummary(
+  params?: Record<string, unknown>,
+): Promise<AdminGroupUsageSummary[]> {
+  return (
+    unwrapData<AdminGroupUsageSummary[]>(
+      (await api.get("/admin/groups/usage-summary", { params })) as unknown,
+    ) || []
+  );
 }
 
-export async function listAdminGroupCapacitySummary(): Promise<AdminGroupCapacitySummary[]> {
-  return unwrapData<AdminGroupCapacitySummary[]>((await api.get('/admin/groups/capacity-summary')) as unknown) || [];
+export async function listAdminGroupCapacitySummary(): Promise<
+  AdminGroupCapacitySummary[]
+> {
+  return (
+    unwrapData<AdminGroupCapacitySummary[]>(
+      (await api.get("/admin/groups/capacity-summary")) as unknown,
+    ) || []
+  );
 }
 
-export async function listAdminGroupRateMultipliers(id: number): Promise<AdminGroupRateMultiplierEntry[]> {
-  return unwrapData<AdminGroupRateMultiplierEntry[]>((await api.get(`/admin/groups/${id}/rate-multipliers`)) as unknown) || [];
+export async function listAdminGroupRateMultipliers(
+  id: number,
+): Promise<AdminGroupRateMultiplierEntry[]> {
+  return (
+    unwrapData<AdminGroupRateMultiplierEntry[]>(
+      (await api.get(`/admin/groups/${id}/rate-multipliers`)) as unknown,
+    ) || []
+  );
 }
 
 export async function batchSetAdminGroupRateMultipliers(
   id: number,
-  entries: Array<{ user_id: number; rate_multiplier: number }>
+  entries: Array<{ user_id: number; rate_multiplier: number }>,
 ): Promise<{ message?: string }> {
-  return (await api.put(`/admin/groups/${id}/rate-multipliers`, { entries })) as { message?: string };
+  return (await api.put(`/admin/groups/${id}/rate-multipliers`, {
+    entries,
+  })) as { message?: string };
 }
 
-export async function clearAdminGroupRateMultipliers(id: number): Promise<{ message?: string }> {
-  return (await api.delete(`/admin/groups/${id}/rate-multipliers`)) as { message?: string };
+export async function clearAdminGroupRateMultipliers(
+  id: number,
+): Promise<{ message?: string }> {
+  return (await api.delete(`/admin/groups/${id}/rate-multipliers`)) as {
+    message?: string;
+  };
 }
 
-export async function listAdminChannels(params?: Record<string, unknown>): Promise<PaginatedResult<AdminChannel>> {
-  const payload = (await api.get('/admin/channels', { params })) as unknown;
+export async function listAdminChannels(
+  params?: Record<string, unknown>,
+): Promise<PaginatedResult<AdminChannel>> {
+  const payload = (await api.get("/admin/channels", { params })) as unknown;
   return normalizePaginated<AdminChannel>(payload);
 }
 
 export async function getAdminChannel(id: number): Promise<AdminChannel> {
-  return unwrapData<AdminChannel>((await api.get(`/admin/channels/${id}`)) as unknown);
+  return unwrapData<AdminChannel>(
+    (await api.get(`/admin/channels/${id}`)) as unknown,
+  );
 }
 
 export async function createAdminChannel(payload: {
@@ -1494,14 +1777,19 @@ export async function createAdminChannel(payload: {
   apply_pricing_to_account_stats?: boolean;
   account_stats_pricing_rules?: AdminChannelAccountStatsPricingRule[];
 }): Promise<AdminChannel> {
-  return (await api.post('/admin/channels', payload)) as AdminChannel;
+  return (await api.post("/admin/channels", payload)) as AdminChannel;
 }
 
-export async function updateAdminChannel(id: number, payload: Record<string, unknown>): Promise<AdminChannel> {
+export async function updateAdminChannel(
+  id: number,
+  payload: Record<string, unknown>,
+): Promise<AdminChannel> {
   return (await api.put(`/admin/channels/${id}`, payload)) as AdminChannel;
 }
 
-export async function deleteAdminChannel(id: number): Promise<{ message?: string }> {
+export async function deleteAdminChannel(
+  id: number,
+): Promise<{ message?: string }> {
   return (await api.delete(`/admin/channels/${id}`)) as { message?: string };
 }
 
@@ -1520,20 +1808,34 @@ export async function testDomesticChannelConnection(payload: {
   provider_config: Record<string, unknown>;
   test_model?: string;
 }): Promise<DomesticChannelConnectionTestResult> {
-  return unwrapData<DomesticChannelConnectionTestResult>((await api.post('/admin/channels/test-connection', payload)) as unknown);
+  return unwrapData<DomesticChannelConnectionTestResult>(
+    (await api.post("/admin/channels/test-connection", payload)) as unknown,
+  );
 }
 
-export async function listAdminSubscriptions(params?: Record<string, unknown>): Promise<PaginatedResult<AdminSubscription>> {
-  const payload = (await api.get('/admin/subscriptions', { params })) as unknown;
+export async function listAdminSubscriptions(
+  params?: Record<string, unknown>,
+): Promise<PaginatedResult<AdminSubscription>> {
+  const payload = (await api.get("/admin/subscriptions", {
+    params,
+  })) as unknown;
   return normalizePaginated<AdminSubscription>(payload);
 }
 
-export async function getAdminSubscription(id: number): Promise<AdminSubscription> {
-  return unwrapData<AdminSubscription>((await api.get(`/admin/subscriptions/${id}`)) as unknown);
+export async function getAdminSubscription(
+  id: number,
+): Promise<AdminSubscription> {
+  return unwrapData<AdminSubscription>(
+    (await api.get(`/admin/subscriptions/${id}`)) as unknown,
+  );
 }
 
-export async function getAdminSubscriptionProgress(id: number): Promise<AdminSubscriptionProgress> {
-  return unwrapData<AdminSubscriptionProgress>((await api.get(`/admin/subscriptions/${id}/progress`)) as unknown);
+export async function getAdminSubscriptionProgress(
+  id: number,
+): Promise<AdminSubscriptionProgress> {
+  return unwrapData<AdminSubscriptionProgress>(
+    (await api.get(`/admin/subscriptions/${id}/progress`)) as unknown,
+  );
 }
 
 export async function assignAdminSubscription(payload: {
@@ -1542,86 +1844,141 @@ export async function assignAdminSubscription(payload: {
   validity_days?: number;
   notes?: string;
 }): Promise<AdminSubscription> {
-  return (await api.post('/admin/subscriptions/assign', payload)) as AdminSubscription;
+  return (await api.post(
+    "/admin/subscriptions/assign",
+    payload,
+  )) as AdminSubscription;
 }
 
-export async function extendAdminSubscription(id: number, payload: { days: number }): Promise<AdminSubscription> {
-  return (await api.post(`/admin/subscriptions/${id}/extend`, payload)) as AdminSubscription;
+export async function extendAdminSubscription(
+  id: number,
+  payload: { days: number },
+): Promise<AdminSubscription> {
+  return (await api.post(
+    `/admin/subscriptions/${id}/extend`,
+    payload,
+  )) as AdminSubscription;
 }
 
 export async function resetAdminSubscriptionQuota(
   id: number,
-  payload: { daily: boolean; weekly: boolean; monthly: boolean }
+  payload: { daily: boolean; weekly: boolean; monthly: boolean },
 ): Promise<AdminSubscription> {
-  return (await api.post(`/admin/subscriptions/${id}/reset-quota`, payload)) as AdminSubscription;
+  return (await api.post(
+    `/admin/subscriptions/${id}/reset-quota`,
+    payload,
+  )) as AdminSubscription;
 }
 
-export async function revokeAdminSubscription(id: number): Promise<{ message?: string }> {
-  return (await api.delete(`/admin/subscriptions/${id}`)) as { message?: string };
+export async function revokeAdminSubscription(
+  id: number,
+): Promise<{ message?: string }> {
+  return (await api.delete(`/admin/subscriptions/${id}`)) as {
+    message?: string;
+  };
 }
 
-export async function listAdminAccounts(params?: Record<string, unknown>): Promise<PaginatedResult<AdminAccount>> {
-  const payload = (await api.get('/admin/accounts', { params })) as unknown;
+export async function listAdminAccounts(
+  params?: Record<string, unknown>,
+): Promise<PaginatedResult<AdminAccount>> {
+  const payload = (await api.get("/admin/accounts", { params })) as unknown;
   return normalizePaginated<AdminAccount>(payload);
 }
 
-export async function createAdminAccount(payload: AdminCreateAccountPayload): Promise<AdminAccount> {
-  return (await api.post('/admin/accounts', payload)) as AdminAccount;
+export async function createAdminAccount(
+  payload: AdminCreateAccountPayload,
+): Promise<AdminAccount> {
+  return (await api.post("/admin/accounts", payload)) as AdminAccount;
 }
 
 export async function generateAdminAccountAuthUrl(
   endpoint: string,
-  payload: Record<string, unknown> = {}
+  payload: Record<string, unknown> = {},
 ): Promise<AdminAccountAuthUrlResult> {
-  return unwrapData<AdminAccountAuthUrlResult>((await api.post(endpoint, payload)) as unknown);
+  return unwrapData<AdminAccountAuthUrlResult>(
+    (await api.post(endpoint, payload)) as unknown,
+  );
 }
 
 export async function exchangeAdminAccountCode(
   endpoint: string,
-  payload: AdminAccountAuthExchangePayload | Record<string, unknown>
+  payload: AdminAccountAuthExchangePayload | Record<string, unknown>,
 ): Promise<Record<string, unknown>> {
-  return unwrapData<Record<string, unknown>>((await api.post(endpoint, payload)) as unknown);
+  return unwrapData<Record<string, unknown>>(
+    (await api.post(endpoint, payload)) as unknown,
+  );
 }
 
 export async function getGeminiOAuthCapabilities(): Promise<GeminiOAuthCapabilities | null> {
   try {
-    return unwrapData<GeminiOAuthCapabilities>((await api.get('/admin/gemini/oauth/capabilities')) as unknown);
+    return unwrapData<GeminiOAuthCapabilities>(
+      (await api.get("/admin/gemini/oauth/capabilities")) as unknown,
+    );
   } catch {
     return null;
   }
 }
 
-export async function getAdminAntigravityDefaultModelMapping(): Promise<Record<string, string>> {
+export async function getAdminAntigravityDefaultModelMapping(): Promise<
+  Record<string, string>
+> {
   return unwrapData<Record<string, string>>(
-    (await api.get('/admin/accounts/antigravity/default-model-mapping')) as unknown
+    (await api.get(
+      "/admin/accounts/antigravity/default-model-mapping",
+    )) as unknown,
   );
 }
 
-export async function listAdminTLSFingerprintProfiles(): Promise<AdminTLSFingerprintProfile[]> {
-  const payload = unwrapData<unknown>((await api.get('/admin/tls-fingerprint-profiles')) as unknown);
+export async function listAdminTLSFingerprintProfiles(): Promise<
+  AdminTLSFingerprintProfile[]
+> {
+  const payload = unwrapData<unknown>(
+    (await api.get("/admin/tls-fingerprint-profiles")) as unknown,
+  );
   return normalizeArray<AdminTLSFingerprintProfile>(payload);
 }
 
-export async function listAdminProxies(params?: Record<string, unknown>): Promise<AdminProxy[]> {
-  const payload = unwrapData<unknown>((await api.get('/admin/proxies/all', { params })) as unknown);
+export async function listAdminProxies(
+  params?: Record<string, unknown>,
+): Promise<AdminProxy[]> {
+  const payload = unwrapData<unknown>(
+    (await api.get("/admin/proxies/all", { params })) as unknown,
+  );
   return normalizeArray<AdminProxy>(payload);
 }
 
-export async function listAdminProxyPage(params?: Record<string, unknown>): Promise<PaginatedResult<AdminProxy>> {
-  const payload = unwrapData<unknown>((await api.get('/admin/proxies', { params })) as unknown);
+export async function listAdminProxyPage(
+  params?: Record<string, unknown>,
+): Promise<PaginatedResult<AdminProxy>> {
+  const payload = unwrapData<unknown>(
+    (await api.get("/admin/proxies", { params })) as unknown,
+  );
   return normalizePaginated<AdminProxy>(payload);
 }
 
-export async function createAdminProxy(payload: AdminCreateProxyPayload): Promise<AdminProxy> {
-  return unwrapData<AdminProxy>((await api.post('/admin/proxies', payload)) as unknown);
+export async function createAdminProxy(
+  payload: AdminCreateProxyPayload,
+): Promise<AdminProxy> {
+  return unwrapData<AdminProxy>(
+    (await api.post("/admin/proxies", payload)) as unknown,
+  );
 }
 
-export async function updateAdminProxy(id: number, payload: AdminUpdateProxyPayload): Promise<AdminProxy> {
-  return unwrapData<AdminProxy>((await api.put(`/admin/proxies/${id}`, payload)) as unknown);
+export async function updateAdminProxy(
+  id: number,
+  payload: AdminUpdateProxyPayload,
+): Promise<AdminProxy> {
+  return unwrapData<AdminProxy>(
+    (await api.put(`/admin/proxies/${id}`, payload)) as unknown,
+  );
 }
 
-export async function deleteAdminProxy(id: number): Promise<{ message: string }> {
-  return unwrapData<{ message: string }>((await api.delete(`/admin/proxies/${id}`)) as unknown);
+export async function deleteAdminProxy(
+  id: number,
+): Promise<{ message: string }> {
+  return unwrapData<{ message: string }>(
+    (await api.delete(`/admin/proxies/${id}`)) as unknown,
+  );
 }
 
 export async function testAdminProxy(id: number): Promise<{
@@ -1646,12 +2003,22 @@ export async function testAdminProxy(id: number): Promise<{
   }>((await api.post(`/admin/proxies/${id}/test`)) as unknown);
 }
 
-export async function checkAdminProxyQuality(id: number): Promise<AdminProxyQualityCheckResult> {
-  return unwrapData<AdminProxyQualityCheckResult>((await api.post(`/admin/proxies/${id}/quality-check`)) as unknown);
+export async function checkAdminProxyQuality(
+  id: number,
+): Promise<AdminProxyQualityCheckResult> {
+  return unwrapData<AdminProxyQualityCheckResult>(
+    (await api.post(`/admin/proxies/${id}/quality-check`)) as unknown,
+  );
 }
 
-export async function getAdminProxyAccounts(id: number): Promise<AdminProxyAccountSummary[]> {
-  return unwrapData<AdminProxyAccountSummary[]>((await api.get(`/admin/proxies/${id}/accounts`)) as unknown) || [];
+export async function getAdminProxyAccounts(
+  id: number,
+): Promise<AdminProxyAccountSummary[]> {
+  return (
+    unwrapData<AdminProxyAccountSummary[]>(
+      (await api.get(`/admin/proxies/${id}/accounts`)) as unknown,
+    ) || []
+  );
 }
 
 export async function batchCreateAdminProxies(
@@ -1661,9 +2028,11 @@ export async function batchCreateAdminProxies(
     port: number;
     username?: string;
     password?: string;
-  }>
+  }>,
 ): Promise<{ created: number; skipped: number }> {
-  return unwrapData<{ created: number; skipped: number }>((await api.post('/admin/proxies/batch', { proxies })) as unknown);
+  return unwrapData<{ created: number; skipped: number }>(
+    (await api.post("/admin/proxies/batch", { proxies })) as unknown,
+  );
 }
 
 export async function batchDeleteAdminProxies(ids: number[]): Promise<{
@@ -1673,7 +2042,7 @@ export async function batchDeleteAdminProxies(ids: number[]): Promise<{
   return unwrapData<{
     deleted_ids: number[];
     skipped: Array<{ id: number; reason: string }>;
-  }>((await api.post('/admin/proxies/batch-delete', { ids })) as unknown);
+  }>((await api.post("/admin/proxies/batch-delete", { ids })) as unknown);
 }
 
 export async function exportAdminProxyData(options?: {
@@ -1688,7 +2057,7 @@ export async function exportAdminProxyData(options?: {
 }): Promise<AdminProxyDataPayload> {
   const params: Record<string, string> = {};
   if (options?.ids && options.ids.length > 0) {
-    params.ids = options.ids.join(',');
+    params.ids = options.ids.join(",");
   } else if (options?.filters) {
     const { protocol, status, search, sort_by, sort_order } = options.filters;
     if (protocol) params.protocol = protocol;
@@ -1697,16 +2066,23 @@ export async function exportAdminProxyData(options?: {
     if (sort_by) params.sort_by = sort_by;
     if (sort_order) params.sort_order = sort_order;
   }
-  return unwrapData<AdminProxyDataPayload>((await api.get('/admin/proxies/data', { params })) as unknown);
+  return unwrapData<AdminProxyDataPayload>(
+    (await api.get("/admin/proxies/data", { params })) as unknown,
+  );
 }
 
 export async function importAdminProxyData(payload: {
   data: AdminProxyDataPayload;
 }): Promise<AdminProxyDataImportResult> {
-  return unwrapData<AdminProxyDataImportResult>((await api.post('/admin/proxies/data', payload)) as unknown);
+  return unwrapData<AdminProxyDataImportResult>(
+    (await api.post("/admin/proxies/data", payload)) as unknown,
+  );
 }
 
-export async function updateAdminAccount(id: number, payload: Record<string, unknown>): Promise<AdminAccount> {
+export async function updateAdminAccount(
+  id: number,
+  payload: Record<string, unknown>,
+): Promise<AdminAccount> {
   return (await api.put(`/admin/accounts/${id}`, payload)) as AdminAccount;
 }
 
@@ -1719,11 +2095,17 @@ export async function testAdminAccount(id: number) {
 }
 
 export async function getAdminSettings(): Promise<SystemSettings> {
-  return unwrapData<SystemSettings>((await api.get('/admin/settings')) as unknown);
+  return unwrapData<SystemSettings>(
+    (await api.get("/admin/settings")) as unknown,
+  );
 }
 
-export async function updateAdminSettings(payload: Record<string, unknown>): Promise<SystemSettings> {
-  return unwrapData<SystemSettings>((await api.put('/admin/settings', payload)) as unknown);
+export async function updateAdminSettings(
+  payload: Record<string, unknown>,
+): Promise<SystemSettings> {
+  return unwrapData<SystemSettings>(
+    (await api.put("/admin/settings", payload)) as unknown,
+  );
 }
 
 export async function testAdminSMTPConnection(payload: {
@@ -1733,7 +2115,9 @@ export async function testAdminSMTPConnection(payload: {
   smtp_password?: string;
   smtp_use_tls?: boolean;
 }): Promise<{ message: string }> {
-  return unwrapData<{ message: string }>((await api.post('/admin/settings/test-smtp', payload)) as unknown);
+  return unwrapData<{ message: string }>(
+    (await api.post("/admin/settings/test-smtp", payload)) as unknown,
+  );
 }
 
 export async function sendAdminTestEmail(payload: {
@@ -1746,25 +2130,35 @@ export async function sendAdminTestEmail(payload: {
   smtp_from_name?: string;
   smtp_use_tls?: boolean;
 }): Promise<{ message: string }> {
-  return unwrapData<{ message: string }>((await api.post('/admin/settings/send-test-email', payload)) as unknown);
+  return unwrapData<{ message: string }>(
+    (await api.post("/admin/settings/send-test-email", payload)) as unknown,
+  );
 }
 
 export async function getAdminAPIKeyStatus(): Promise<AdminAPIKeyStatus> {
-  return unwrapData<AdminAPIKeyStatus>((await api.get('/admin/settings/admin-api-key')) as unknown);
+  return unwrapData<AdminAPIKeyStatus>(
+    (await api.get("/admin/settings/admin-api-key")) as unknown,
+  );
 }
 
 export async function regenerateAdminAPIKey(): Promise<{ key: string }> {
-  return unwrapData<{ key: string }>((await api.post('/admin/settings/admin-api-key/regenerate')) as unknown);
+  return unwrapData<{ key: string }>(
+    (await api.post("/admin/settings/admin-api-key/regenerate")) as unknown,
+  );
 }
 
 export async function deleteAdminAPIKey(): Promise<{ message: string }> {
-  return unwrapData<{ message: string }>((await api.delete('/admin/settings/admin-api-key')) as unknown);
+  return unwrapData<{ message: string }>(
+    (await api.delete("/admin/settings/admin-api-key")) as unknown,
+  );
 }
 
 export async function listAdminAnnouncements(
-  params?: Record<string, unknown>
+  params?: Record<string, unknown>,
 ): Promise<PaginatedResult<AdminAnnouncement>> {
-  const payload = (await api.get('/admin/announcements', { params })) as unknown;
+  const payload = (await api.get("/admin/announcements", {
+    params,
+  })) as unknown;
   return normalizePaginated<AdminAnnouncement>(payload);
 }
 
@@ -1774,11 +2168,13 @@ export async function createAdminAnnouncement(payload: {
   status?: string;
   notify_mode?: string;
 }): Promise<AdminAnnouncement> {
-  return (await api.post('/admin/announcements', payload)) as AdminAnnouncement;
+  return (await api.post("/admin/announcements", payload)) as AdminAnnouncement;
 }
 
-export async function listAdminNews(params?: Record<string, unknown>): Promise<PaginatedResult<AdminNewsPost>> {
-  const payload = (await api.get('/admin/news', { params })) as unknown;
+export async function listAdminNews(
+  params?: Record<string, unknown>,
+): Promise<PaginatedResult<AdminNewsPost>> {
+  const payload = (await api.get("/admin/news", { params })) as unknown;
   return normalizePaginated<AdminNewsPost>(payload);
 }
 
@@ -1799,7 +2195,7 @@ export async function createAdminNews(payload: {
     translation_status?: string;
   }>;
 }): Promise<AdminNewsPost> {
-  return (await api.post('/admin/news', payload)) as AdminNewsPost;
+  return (await api.post("/admin/news", payload)) as AdminNewsPost;
 }
 
 export async function updateAdminNews(
@@ -1820,157 +2216,255 @@ export async function updateAdminNews(
       seo_description?: string | null;
       translation_status?: string;
     }>;
-  }
+  },
 ): Promise<AdminNewsPost> {
   return (await api.put(`/admin/news/${id}`, payload)) as AdminNewsPost;
 }
 
-export async function deleteAdminNews(id: number): Promise<{ message?: string }> {
+export async function deleteAdminNews(
+  id: number,
+): Promise<{ message?: string }> {
   return (await api.delete(`/admin/news/${id}`)) as { message?: string };
 }
 
 export async function aiTranslateAdminNews(
   id: number,
   locale: string,
-  payload?: { source_locale?: string }
+  payload?: { source_locale?: string },
 ): Promise<AdminNewsAITranslateResult> {
-  return (await api.post(`/admin/news/${id}/translations/${encodeURIComponent(locale)}/ai-translate`, payload || {})) as AdminNewsAITranslateResult;
+  return (await api.post(
+    `/admin/news/${id}/translations/${encodeURIComponent(locale)}/ai-translate`,
+    payload || {},
+  )) as AdminNewsAITranslateResult;
 }
 
 export async function listAdminAffiliateCommissions(
-  params?: Record<string, unknown>
+  params?: Record<string, unknown>,
 ): Promise<PaginatedResult<AdminCommissionLog>> {
-  const payload = unwrapData<unknown>((await api.get('/admin/affiliate/commissions', { params })) as unknown);
+  const payload = unwrapData<unknown>(
+    (await api.get("/admin/affiliate/commissions", { params })) as unknown,
+  );
   const record = asRecord(payload);
   const pagination = asRecord(record?.pagination);
   const items = normalizeArray<ApiRecord>(payload).map(normalizeCommissionLog);
   return {
     items,
-    total: Number(getValue(pagination, 'total', 'Total') ?? getValue(record, 'total') ?? items.length ?? 0),
-    page: Number(getValue(pagination, 'page', 'Page') ?? getValue(record, 'page') ?? params?.page ?? 1),
+    total: Number(
+      getValue(pagination, "total", "Total") ??
+        getValue(record, "total") ??
+        items.length ??
+        0,
+    ),
+    page: Number(
+      getValue(pagination, "page", "Page") ??
+        getValue(record, "page") ??
+        params?.page ??
+        1,
+    ),
     pageSize: Number(
-      getValue(pagination, 'page_size', 'pageSize', 'PageSize') ??
-        getValue(record, 'page_size') ??
+      getValue(pagination, "page_size", "pageSize", "PageSize") ??
+        getValue(record, "page_size") ??
         params?.page_size ??
         items.length ??
-        0
+        0,
     ),
   };
 }
 
 export async function listAdminAffiliateCommissionSplits(
-  params?: Record<string, unknown>
+  params?: Record<string, unknown>,
 ): Promise<PaginatedResult<AdminCommissionSplitLog>> {
-  const payload = unwrapData<unknown>((await api.get('/admin/affiliate/commission-splits', { params })) as unknown);
+  const payload = unwrapData<unknown>(
+    (await api.get("/admin/affiliate/commission-splits", {
+      params,
+    })) as unknown,
+  );
   const record = asRecord(payload);
   const pagination = asRecord(record?.pagination);
-  const items = normalizeArray<ApiRecord>(payload).map(normalizeCommissionSplitLog);
+  const items = normalizeArray<ApiRecord>(payload).map(
+    normalizeCommissionSplitLog,
+  );
   return {
     items,
-    total: Number(getValue(pagination, 'total', 'Total') ?? getValue(record, 'total') ?? items.length ?? 0),
-    page: Number(getValue(pagination, 'page', 'Page') ?? getValue(record, 'page') ?? params?.page ?? 1),
+    total: Number(
+      getValue(pagination, "total", "Total") ??
+        getValue(record, "total") ??
+        items.length ??
+        0,
+    ),
+    page: Number(
+      getValue(pagination, "page", "Page") ??
+        getValue(record, "page") ??
+        params?.page ??
+        1,
+    ),
     pageSize: Number(
-      getValue(pagination, 'page_size', 'pageSize', 'PageSize') ??
-        getValue(record, 'page_size') ??
+      getValue(pagination, "page_size", "pageSize", "PageSize") ??
+        getValue(record, "page_size") ??
         params?.page_size ??
         items.length ??
-        0
+        0,
     ),
   };
 }
 
-export async function settleAdminAffiliateCommission(id: number): Promise<{ message: string }> {
-  return (await api.post(`/admin/affiliate/commissions/${id}/settle`)) as { message: string };
+export async function settleAdminAffiliateCommission(
+  id: number,
+): Promise<{ message: string }> {
+  return (await api.post(`/admin/affiliate/commissions/${id}/settle`)) as {
+    message: string;
+  };
 }
 
-export async function settleAdminAffiliateCommissionSplit(id: number): Promise<{ message: string }> {
-  return (await api.post(`/admin/affiliate/commission-splits/${id}/settle`)) as { message: string };
+export async function settleAdminAffiliateCommissionSplit(
+  id: number,
+): Promise<{ message: string }> {
+  return (await api.post(
+    `/admin/affiliate/commission-splits/${id}/settle`,
+  )) as { message: string };
 }
 
 export async function updateAdminAffiliateUserRate(
   id: number,
-  rate: number
+  rate: number,
 ): Promise<{ message: string }> {
-  return (await api.post(`/admin/affiliate/users/${id}/rate`, { rate })) as { message: string };
+  return (await api.post(`/admin/affiliate/users/${id}/rate`, { rate })) as {
+    message: string;
+  };
 }
 
 export async function listAdminPaymentOrders(
-  params?: Record<string, unknown>
+  params?: Record<string, unknown>,
 ): Promise<PaginatedResult<AdminPaymentOrder>> {
-  const payload = unwrapData<unknown>((await api.get('/admin/payment/orders', { params })) as unknown);
+  const payload = unwrapData<unknown>(
+    (await api.get("/admin/payment/orders", { params })) as unknown,
+  );
   const record = asRecord(payload);
   const pagination = asRecord(record?.pagination);
   const items = normalizeArray<ApiRecord>(payload).map(normalizePaymentOrder);
   return {
     items,
-    total: Number(getValue(pagination, 'total', 'Total') ?? getValue(record, 'total') ?? items.length ?? 0),
-    page: Number(getValue(pagination, 'page', 'Page') ?? getValue(record, 'page') ?? params?.page ?? 1),
+    total: Number(
+      getValue(pagination, "total", "Total") ??
+        getValue(record, "total") ??
+        items.length ??
+        0,
+    ),
+    page: Number(
+      getValue(pagination, "page", "Page") ??
+        getValue(record, "page") ??
+        params?.page ??
+        1,
+    ),
     pageSize: Number(
-      getValue(pagination, 'page_size', 'pageSize', 'PageSize') ??
-        getValue(record, 'page_size') ??
+      getValue(pagination, "page_size", "pageSize", "PageSize") ??
+        getValue(record, "page_size") ??
         params?.page_size ??
         items.length ??
-        0
+        0,
     ),
   };
 }
 
 export async function getAdminPaymentOrder(
-  id: number
+  id: number,
 ): Promise<{ order: AdminPaymentOrder; auditLogs: AdminOrderAuditLog[] }> {
-  const payload = unwrapData<unknown>((await api.get(`/admin/payment/orders/${id}`)) as unknown);
+  const payload = unwrapData<unknown>(
+    (await api.get(`/admin/payment/orders/${id}`)) as unknown,
+  );
   const record = asRecord(payload);
   return {
-    order: normalizePaymentOrder(getValue(record, 'order') ?? payload),
-    auditLogs: normalizeArray<ApiRecord>(getValue(record, 'auditLogs', 'audit_logs')).map(normalizeOrderAuditLog),
+    order: normalizePaymentOrder(getValue(record, "order") ?? payload),
+    auditLogs: normalizeArray<ApiRecord>(
+      getValue(record, "auditLogs", "audit_logs"),
+    ).map(normalizeOrderAuditLog),
   };
 }
 
-export async function cancelAdminPaymentOrder(id: number): Promise<{ message: string }> {
-  return (await api.post(`/admin/payment/orders/${id}/cancel`)) as { message: string };
+export async function cancelAdminPaymentOrder(
+  id: number,
+): Promise<{ message: string }> {
+  return (await api.post(`/admin/payment/orders/${id}/cancel`)) as {
+    message: string;
+  };
 }
 
-export async function retryAdminPaymentOrder(id: number): Promise<{ message: string }> {
-  return (await api.post(`/admin/payment/orders/${id}/retry`)) as { message: string };
+export async function retryAdminPaymentOrder(
+  id: number,
+): Promise<{ message: string }> {
+  return (await api.post(`/admin/payment/orders/${id}/retry`)) as {
+    message: string;
+  };
 }
 
 export async function refundAdminPaymentOrder(
   id: number,
-  payload: { amount: number; reason: string; deduct_balance?: boolean; force?: boolean }
+  payload: {
+    amount: number;
+    reason: string;
+    deduct_balance?: boolean;
+    force?: boolean;
+  },
 ): Promise<{ message?: string }> {
-  return (await api.post(`/admin/payment/orders/${id}/refund`, payload)) as { message?: string };
+  return (await api.post(`/admin/payment/orders/${id}/refund`, payload)) as {
+    message?: string;
+  };
 }
 
-export async function getAdminPaymentDashboard(days = 30): Promise<AdminPaymentDashboardStats> {
-  const payload = unwrapData<unknown>((await api.get('/admin/payment/dashboard', {
-    params: { days },
-  })) as unknown);
+export async function getAdminPaymentDashboard(
+  days = 30,
+): Promise<AdminPaymentDashboardStats> {
+  const payload = unwrapData<unknown>(
+    (await api.get("/admin/payment/dashboard", {
+      params: { days },
+    })) as unknown,
+  );
   return normalizePaymentDashboardStats(payload);
 }
 
-export async function listAdminPaymentProviders(): Promise<AdminPaymentProviderInstance[]> {
-  return unwrapData<AdminPaymentProviderInstance[]>((await api.get('/admin/payment/providers')) as unknown) || [];
+export async function listAdminPaymentProviders(): Promise<
+  AdminPaymentProviderInstance[]
+> {
+  return (
+    unwrapData<AdminPaymentProviderInstance[]>(
+      (await api.get("/admin/payment/providers")) as unknown,
+    ) || []
+  );
 }
 
 export async function createAdminPaymentProvider(
-  payload: AdminCreatePaymentProviderPayload
+  payload: AdminCreatePaymentProviderPayload,
 ): Promise<AdminPaymentProviderInstance> {
-  return unwrapData<AdminPaymentProviderInstance>((await api.post('/admin/payment/providers', payload)) as unknown);
+  return unwrapData<AdminPaymentProviderInstance>(
+    (await api.post("/admin/payment/providers", payload)) as unknown,
+  );
 }
 
 export async function updateAdminPaymentProvider(
   id: number,
-  payload: AdminUpdatePaymentProviderPayload
+  payload: AdminUpdatePaymentProviderPayload,
 ): Promise<AdminPaymentProviderInstance> {
-  return unwrapData<AdminPaymentProviderInstance>((await api.put(`/admin/payment/providers/${id}`, payload)) as unknown);
+  return unwrapData<AdminPaymentProviderInstance>(
+    (await api.put(`/admin/payment/providers/${id}`, payload)) as unknown,
+  );
 }
 
-export async function deleteAdminPaymentProvider(id: number): Promise<{ message?: string }> {
-  return unwrapData<{ message?: string }>((await api.delete(`/admin/payment/providers/${id}`)) as unknown) || {};
+export async function deleteAdminPaymentProvider(
+  id: number,
+): Promise<{ message?: string }> {
+  return (
+    unwrapData<{ message?: string }>(
+      (await api.delete(`/admin/payment/providers/${id}`)) as unknown,
+    ) || {}
+  );
 }
 
-export async function listAdminPaymentPlans(): Promise<AdminSubscriptionPlan[]> {
-  const payload = unwrapData<unknown>((await api.get('/admin/payment/plans')) as unknown);
+export async function listAdminPaymentPlans(): Promise<
+  AdminSubscriptionPlan[]
+> {
+  const payload = unwrapData<unknown>(
+    (await api.get("/admin/payment/plans")) as unknown,
+  );
   return normalizeArray<ApiRecord>(payload).map(normalizeSubscriptionPlan);
 }
 
@@ -1987,63 +2481,101 @@ export async function createAdminPaymentPlan(payload: {
   for_sale?: boolean;
   sort_order?: number;
 }): Promise<AdminSubscriptionPlan> {
-  return normalizeSubscriptionPlan((await api.post('/admin/payment/plans', payload)) as unknown);
+  return normalizeSubscriptionPlan(
+    (await api.post("/admin/payment/plans", payload)) as unknown,
+  );
 }
 
 export async function updateAdminPaymentPlan(
   id: number,
-  payload: Record<string, unknown>
+  payload: Record<string, unknown>,
 ): Promise<AdminSubscriptionPlan> {
-  return normalizeSubscriptionPlan((await api.put(`/admin/payment/plans/${id}`, payload)) as unknown);
+  return normalizeSubscriptionPlan(
+    (await api.put(`/admin/payment/plans/${id}`, payload)) as unknown,
+  );
 }
 
-export async function deleteAdminPaymentPlan(id: number): Promise<{ message?: string }> {
-  return (await api.delete(`/admin/payment/plans/${id}`)) as { message?: string };
+export async function deleteAdminPaymentPlan(
+  id: number,
+): Promise<{ message?: string }> {
+  return (await api.delete(`/admin/payment/plans/${id}`)) as {
+    message?: string;
+  };
 }
 
 export async function listAdminUsageLogs(
-  params?: Record<string, unknown>
+  params?: Record<string, unknown>,
 ): Promise<PaginatedResult<AdminUsageLog>> {
-  const payload = unwrapData<unknown>((await api.get('/admin/usage', { params })) as unknown);
+  const payload = unwrapData<unknown>(
+    (await api.get("/admin/usage", { params })) as unknown,
+  );
   const record = asRecord(payload);
   const pagination = asRecord(record?.pagination);
   const items = normalizeArray<ApiRecord>(payload).map(normalizeUsageLog);
   return {
     items,
-    total: Number(getValue(pagination, 'total', 'Total') ?? getValue(record, 'total') ?? items.length ?? 0),
-    page: Number(getValue(pagination, 'page', 'Page') ?? getValue(record, 'page') ?? params?.page ?? 1),
+    total: Number(
+      getValue(pagination, "total", "Total") ??
+        getValue(record, "total") ??
+        items.length ??
+        0,
+    ),
+    page: Number(
+      getValue(pagination, "page", "Page") ??
+        getValue(record, "page") ??
+        params?.page ??
+        1,
+    ),
     pageSize: Number(
-      getValue(pagination, 'page_size', 'pageSize', 'PageSize') ??
-        getValue(record, 'page_size') ??
+      getValue(pagination, "page_size", "pageSize", "PageSize") ??
+        getValue(record, "page_size") ??
         params?.page_size ??
         items.length ??
-        0
+        0,
     ),
   };
 }
 
-export async function getAdminUsageStats(params?: Record<string, unknown>): Promise<AdminUsageStats> {
-  const payload = unwrapData<unknown>((await api.get('/admin/usage/stats', { params })) as unknown);
+export async function getAdminUsageStats(
+  params?: Record<string, unknown>,
+): Promise<AdminUsageStats> {
+  const payload = unwrapData<unknown>(
+    (await api.get("/admin/usage/stats", { params })) as unknown,
+  );
   return normalizeUsageStats(payload);
 }
 
 export async function listAdminUsageCleanupTasks(
-  params?: Record<string, unknown>
+  params?: Record<string, unknown>,
 ): Promise<PaginatedResult<AdminUsageCleanupTask>> {
-  const payload = unwrapData<unknown>((await api.get('/admin/usage/cleanup-tasks', { params })) as unknown);
+  const payload = unwrapData<unknown>(
+    (await api.get("/admin/usage/cleanup-tasks", { params })) as unknown,
+  );
   const record = asRecord(payload);
   const pagination = asRecord(record?.pagination);
-  const items = normalizeArray<ApiRecord>(payload).map(normalizeUsageCleanupTask);
+  const items = normalizeArray<ApiRecord>(payload).map(
+    normalizeUsageCleanupTask,
+  );
   return {
     items,
-    total: Number(getValue(pagination, 'total', 'Total') ?? getValue(record, 'total') ?? items.length ?? 0),
-    page: Number(getValue(pagination, 'page', 'Page') ?? getValue(record, 'page') ?? params?.page ?? 1),
+    total: Number(
+      getValue(pagination, "total", "Total") ??
+        getValue(record, "total") ??
+        items.length ??
+        0,
+    ),
+    page: Number(
+      getValue(pagination, "page", "Page") ??
+        getValue(record, "page") ??
+        params?.page ??
+        1,
+    ),
     pageSize: Number(
-      getValue(pagination, 'page_size', 'pageSize', 'PageSize') ??
-        getValue(record, 'page_size') ??
+      getValue(pagination, "page_size", "pageSize", "PageSize") ??
+        getValue(record, "page_size") ??
         params?.page_size ??
         items.length ??
-        0
+        0,
     ),
   };
 }
@@ -2061,11 +2593,13 @@ export async function createAdminUsageCleanupTask(payload: {
   billing_type?: number | null;
   timezone?: string;
 }): Promise<AdminUsageCleanupTask> {
-  return normalizeUsageCleanupTask((await api.post('/admin/usage/cleanup-tasks', payload)) as unknown);
+  return normalizeUsageCleanupTask(
+    (await api.post("/admin/usage/cleanup-tasks", payload)) as unknown,
+  );
 }
 
 export async function cancelAdminUsageCleanupTask(
-  id: number
+  id: number,
 ): Promise<{ id: number; status: string; message?: string }> {
   return (await api.post(`/admin/usage/cleanup-tasks/${id}/cancel`)) as {
     id: number;

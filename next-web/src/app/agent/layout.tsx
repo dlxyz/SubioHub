@@ -15,7 +15,7 @@ const agentNavigation = [
     items: [
       { label: '代理总览', href: '/agent', icon: LayoutDashboard, desc: '查看代理后台入口与业务目录' },
       { label: '销售统计', href: '/agent/proxies', icon: BarChart3, desc: '查看渠道数量、佣金记录与销售概览' },
-      { label: '渠道分销', href: '/agent/channel-affiliate', icon: HandCoins, desc: '查看渠道接入、分销佣金与推广记录' },
+      { label: '分销管理', href: '/agent/channel-affiliate', icon: HandCoins, desc: '管理下级分销人员、查看分销佣金与推广记录' },
       { label: '提现管理', href: '/agent/withdrawals', icon: Wallet, desc: '查看可划转佣金、待结算金额与处理记录' },
       { label: '大客户管理', href: '/agent/key-accounts', icon: Building2, desc: '查看代理权限范围内的重点合作伙伴与运营提示' },
     ],
@@ -171,17 +171,19 @@ export default function AgentLayout({ children }: { children: React.ReactNode })
               </div>
             </Link>
 
-            <Link
-              href="/admin/dashboard"
-              onClick={() => setSidebarOpen(false)}
-              className="flex items-center rounded-2xl border border-purple-200/70 px-3 py-3 text-sm font-medium text-purple-700 transition hover:bg-purple-50 dark:border-purple-500/20 dark:text-purple-300 dark:hover:bg-purple-500/10"
-            >
-              <ShieldCheck className="mr-3 h-5 w-5 text-purple-500" />
-              <div>
-                <div>管理后台</div>
-                <div className="mt-0.5 text-xs text-purple-500/80 dark:text-purple-300/70">切换到系统管理后台</div>
-              </div>
-            </Link>
+            {user?.role === "admin" && (
+              <Link
+                href="/admin/dashboard"
+                onClick={() => setSidebarOpen(false)}
+                className="flex items-center rounded-2xl border border-purple-200/70 px-3 py-3 text-sm font-medium text-purple-700 transition hover:bg-purple-50 dark:border-purple-500/20 dark:text-purple-300 dark:hover:bg-purple-500/10"
+              >
+                <ShieldCheck className="mr-3 h-5 w-5 text-purple-500" />
+                <div>
+                  <div>管理后台</div>
+                  <div className="mt-0.5 text-xs text-purple-500/80 dark:text-purple-300/70">切换到系统管理后台</div>
+                </div>
+              </Link>
+            )}
           </div>
         </nav>
 

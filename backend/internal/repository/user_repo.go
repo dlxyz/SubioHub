@@ -39,8 +39,8 @@ func (r *userRepository) Create(ctx context.Context, userIn *service.User) error
 		return nil
 	}
 
-	// 统一使用 ent 的事务：保证用户与允许分组的更新原子化，
-	// 并避免基于 *sql.Tx 手动构造 ent client 导致的 ExecQuerier 断言错误。
+	// Use an ent transaction so the user row and allowed-group bindings stay atomic.
+	// This also avoids manually building an ent client from *sql.Tx.
 	tx, err := r.client.Tx(ctx)
 	if err != nil && !errors.Is(err, dbent.ErrTxStarted) {
 		return err
@@ -51,7 +51,7 @@ func (r *userRepository) Create(ctx context.Context, userIn *service.User) error
 		defer func() { _ = tx.Rollback() }()
 		txClient = tx.Client()
 	} else {
-		// 已处于外部事务中（ErrTxStarted），复用当前 client 并由调用方负责提交/回滚。
+		// Already inside an outer transaction. Reuse the current client and let the caller finish it.
 		txClient = r.client
 	}
 
@@ -78,7 +78,10 @@ func (r *userRepository) Create(ctx context.Context, userIn *service.User) error
 			SetConcurrency(userIn.Concurrency).
 			SetStatus(userIn.Status).
 			SetInviteCode(inviteCode).
-			SetNillableInviterID(userIn.InviterID)
+			SetNillableInviterID(userIn.InviterID).
+			SetNillableChannelPartnerID(userIn.ChannelPartnerID).
+			SetNillableAgentOwnerID(userIn.AgentOwnerID).
+			SetNillableDistributorOwnerID(userIn.DistributorOwnerID)
 		created, createErr = createOp.Save(ctx)
 		if createErr == nil {
 			userIn.InviteCode = inviteCode
@@ -146,7 +149,7 @@ func (r *userRepository) Update(ctx context.Context, userIn *service.User) error
 		return nil
 	}
 
-	// 使用 ent 事务包裹用户更新与 allowed_groups 同步，避免跨层事务不一致。
+	// Wrap the user update and allowed-group sync in the same ent transaction.
 	tx, err := r.client.Tx(ctx)
 	if err != nil && !errors.Is(err, dbent.ErrTxStarted) {
 		return err
@@ -157,7 +160,7 @@ func (r *userRepository) Update(ctx context.Context, userIn *service.User) error
 		defer func() { _ = tx.Rollback() }()
 		txClient = tx.Client()
 	} else {
-		// 已处于外部事务中（ErrTxStarted），复用当前 client 并由调用方负责提交/回滚。
+		// Already inside an outer transaction. Reuse the current client and let the caller finish it.
 		txClient = r.client
 	}
 
@@ -184,6 +187,21 @@ func (r *userRepository) Update(ctx context.Context, userIn *service.User) error
 		updateOp = updateOp.SetInviterID(*userIn.InviterID)
 	} else {
 		updateOp = updateOp.ClearInviterID()
+	}
+	if userIn.ChannelPartnerID != nil {
+		updateOp = updateOp.SetChannelPartnerID(*userIn.ChannelPartnerID)
+	} else {
+		updateOp = updateOp.ClearChannelPartnerID()
+	}
+	if userIn.AgentOwnerID != nil {
+		updateOp = updateOp.SetAgentOwnerID(*userIn.AgentOwnerID)
+	} else {
+		updateOp = updateOp.ClearAgentOwnerID()
+	}
+	if userIn.DistributorOwnerID != nil {
+		updateOp = updateOp.SetDistributorOwnerID(*userIn.DistributorOwnerID)
+	} else {
+		updateOp = updateOp.ClearDistributorOwnerID()
 	}
 	if inviteCode := strings.ToUpper(strings.TrimSpace(userIn.InviteCode)); inviteCode != "" {
 		updateOp = updateOp.SetInviteCode(inviteCode)
@@ -233,6 +251,15 @@ func (r *userRepository) ListWithFilters(ctx context.Context, params pagination.
 	}
 	if filters.Role != "" {
 		q = q.Where(dbuser.RoleEQ(filters.Role))
+	}
+	if filters.ChannelPartnerID != nil {
+		q = q.Where(dbuser.ChannelPartnerIDEQ(*filters.ChannelPartnerID))
+	}
+	if filters.AgentOwnerID != nil {
+		q = q.Where(dbuser.AgentOwnerIDEQ(*filters.AgentOwnerID))
+	}
+	if filters.DistributorOwnerID != nil {
+		q = q.Where(dbuser.DistributorOwnerIDEQ(*filters.DistributorOwnerID))
 	}
 	if filters.IsKeyAccount != nil {
 		q = q.Where(dbuser.IsKeyAccountEQ(*filters.IsKeyAccount))
@@ -448,9 +475,9 @@ func (r *userRepository) UpdateBalance(ctx context.Context, id int64, amount flo
 	return nil
 }
 
-// DeductBalance 扣除用户余额
-// 透支策略：允许余额变为负数，确保当前请求能够完成
-// 中间件会阻止余额 <= 0 的用户发起后续请求
+// DeductBalance deducts user balance.
+// Negative balances are allowed so the current request can complete.
+// Middleware blocks follow-up requests once the user balance is <= 0.
 func (r *userRepository) DeductBalance(ctx context.Context, id int64, amount float64) error {
 	client := clientFromContext(ctx, r.client)
 	n, err := client.User.Update().
@@ -509,7 +536,7 @@ func (r *userRepository) AddGroupToAllowedGroups(ctx context.Context, userID int
 }
 
 func (r *userRepository) RemoveGroupFromAllowedGroups(ctx context.Context, groupID int64) (int64, error) {
-	// 仅操作 user_allowed_groups 联接表，legacy users.allowed_groups 列已弃用。
+	// Only operate on the user_allowed_groups join table; the legacy users.allowed_groups column is deprecated.
 	affected, err := r.client.UserAllowedGroup.Delete().
 		Where(userallowedgroup.GroupIDEQ(groupID)).
 		Exec(ctx)
@@ -519,7 +546,7 @@ func (r *userRepository) RemoveGroupFromAllowedGroups(ctx context.Context, group
 	return int64(affected), nil
 }
 
-// RemoveGroupFromUserAllowedGroups 移除单个用户的指定分组权限
+// RemoveGroupFromUserAllowedGroups removes one group binding from a specific user.
 func (r *userRepository) RemoveGroupFromUserAllowedGroups(ctx context.Context, userID int64, groupID int64) error {
 	client := clientFromContext(ctx, r.client)
 	_, err := client.UserAllowedGroup.Delete().
@@ -575,8 +602,8 @@ func (r *userRepository) loadAllowedGroups(ctx context.Context, userIDs []int64)
 	return out, nil
 }
 
-// syncUserAllowedGroupsWithClient 在 ent client/事务内同步用户允许分组：
-// 仅操作 user_allowed_groups 联接表，legacy users.allowed_groups 列已弃用。
+// syncUserAllowedGroupsWithClient syncs allowed groups inside the current ent client or transaction.
+// Only the user_allowed_groups join table is maintained here.
 func (r *userRepository) syncUserAllowedGroupsWithClient(ctx context.Context, client *dbent.Client, userID int64, groupIDs []int64) error {
 	if client == nil {
 		return nil
@@ -622,6 +649,9 @@ func applyUserEntityToService(dst *service.User, src *dbent.User) {
 	dst.CommissionRate = src.CommissionRate
 	dst.CommissionBalance = src.CommissionBalance
 	dst.TotalCommissionEarned = src.TotalCommissionEarned
+	dst.ChannelPartnerID = src.ChannelPartnerID
+	dst.AgentOwnerID = src.AgentOwnerID
+	dst.DistributorOwnerID = src.DistributorOwnerID
 	dst.IsKeyAccount = src.IsKeyAccount
 	dst.KeyAccountLevel = src.KeyAccountLevel
 	dst.KeyAccountDiscountRate = src.KeyAccountDiscountRate
@@ -643,7 +673,7 @@ func marshalExtraEmails(entries []service.NotifyEmailEntry) string {
 	return service.MarshalNotifyEmails(entries)
 }
 
-// UpdateTotpSecret 更新用户的 TOTP 加密密钥
+// UpdateTotpSecret updates the encrypted TOTP secret for a user.
 func (r *userRepository) UpdateTotpSecret(ctx context.Context, userID int64, encryptedSecret *string) error {
 	client := clientFromContext(ctx, r.client)
 	update := client.User.UpdateOneID(userID)
@@ -659,7 +689,7 @@ func (r *userRepository) UpdateTotpSecret(ctx context.Context, userID int64, enc
 	return nil
 }
 
-// EnableTotp 启用用户的 TOTP 双因素认证
+// EnableTotp enables TOTP for the given user.
 func (r *userRepository) EnableTotp(ctx context.Context, userID int64) error {
 	client := clientFromContext(ctx, r.client)
 	_, err := client.User.UpdateOneID(userID).
@@ -672,7 +702,7 @@ func (r *userRepository) EnableTotp(ctx context.Context, userID int64) error {
 	return nil
 }
 
-// DisableTotp 禁用用户的 TOTP 双因素认证
+// DisableTotp disables TOTP for the given user.
 func (r *userRepository) DisableTotp(ctx context.Context, userID int64) error {
 	client := clientFromContext(ctx, r.client)
 	_, err := client.User.UpdateOneID(userID).

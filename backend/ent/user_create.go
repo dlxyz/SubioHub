@@ -352,6 +352,48 @@ func (_c *UserCreate) SetNillableTotalCommissionEarned(v *float64) *UserCreate {
 	return _c
 }
 
+// SetChannelPartnerID sets the "channel_partner_id" field.
+func (_c *UserCreate) SetChannelPartnerID(v int64) *UserCreate {
+	_c.mutation.SetChannelPartnerID(v)
+	return _c
+}
+
+// SetNillableChannelPartnerID sets the "channel_partner_id" field if the given value is not nil.
+func (_c *UserCreate) SetNillableChannelPartnerID(v *int64) *UserCreate {
+	if v != nil {
+		_c.SetChannelPartnerID(*v)
+	}
+	return _c
+}
+
+// SetAgentOwnerID sets the "agent_owner_id" field.
+func (_c *UserCreate) SetAgentOwnerID(v int64) *UserCreate {
+	_c.mutation.SetAgentOwnerID(v)
+	return _c
+}
+
+// SetNillableAgentOwnerID sets the "agent_owner_id" field if the given value is not nil.
+func (_c *UserCreate) SetNillableAgentOwnerID(v *int64) *UserCreate {
+	if v != nil {
+		_c.SetAgentOwnerID(*v)
+	}
+	return _c
+}
+
+// SetDistributorOwnerID sets the "distributor_owner_id" field.
+func (_c *UserCreate) SetDistributorOwnerID(v int64) *UserCreate {
+	_c.mutation.SetDistributorOwnerID(v)
+	return _c
+}
+
+// SetNillableDistributorOwnerID sets the "distributor_owner_id" field if the given value is not nil.
+func (_c *UserCreate) SetNillableDistributorOwnerID(v *int64) *UserCreate {
+	if v != nil {
+		_c.SetDistributorOwnerID(*v)
+	}
+	return _c
+}
+
 // SetIsKeyAccount sets the "is_key_account" field.
 func (_c *UserCreate) SetIsKeyAccount(v bool) *UserCreate {
 	_c.mutation.SetIsKeyAccount(v)
@@ -440,6 +482,66 @@ func (_c *UserCreate) AddInvitees(v ...*User) *UserCreate {
 		ids[i] = v[i].ID
 	}
 	return _c.AddInviteeIDs(ids...)
+}
+
+// SetChannelPartner sets the "channel_partner" edge to the User entity.
+func (_c *UserCreate) SetChannelPartner(v *User) *UserCreate {
+	return _c.SetChannelPartnerID(v.ID)
+}
+
+// AddChannelMemberIDs adds the "channel_members" edge to the User entity by IDs.
+func (_c *UserCreate) AddChannelMemberIDs(ids ...int64) *UserCreate {
+	_c.mutation.AddChannelMemberIDs(ids...)
+	return _c
+}
+
+// AddChannelMembers adds the "channel_members" edges to the User entity.
+func (_c *UserCreate) AddChannelMembers(v ...*User) *UserCreate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddChannelMemberIDs(ids...)
+}
+
+// SetAgentOwner sets the "agent_owner" edge to the User entity.
+func (_c *UserCreate) SetAgentOwner(v *User) *UserCreate {
+	return _c.SetAgentOwnerID(v.ID)
+}
+
+// AddAgentMemberIDs adds the "agent_members" edge to the User entity by IDs.
+func (_c *UserCreate) AddAgentMemberIDs(ids ...int64) *UserCreate {
+	_c.mutation.AddAgentMemberIDs(ids...)
+	return _c
+}
+
+// AddAgentMembers adds the "agent_members" edges to the User entity.
+func (_c *UserCreate) AddAgentMembers(v ...*User) *UserCreate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddAgentMemberIDs(ids...)
+}
+
+// SetDistributorOwner sets the "distributor_owner" edge to the User entity.
+func (_c *UserCreate) SetDistributorOwner(v *User) *UserCreate {
+	return _c.SetDistributorOwnerID(v.ID)
+}
+
+// AddDistributorMemberIDs adds the "distributor_members" edge to the User entity by IDs.
+func (_c *UserCreate) AddDistributorMemberIDs(ids ...int64) *UserCreate {
+	_c.mutation.AddDistributorMemberIDs(ids...)
+	return _c
+}
+
+// AddDistributorMembers adds the "distributor_members" edges to the User entity.
+func (_c *UserCreate) AddDistributorMembers(v ...*User) *UserCreate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddDistributorMemberIDs(ids...)
 }
 
 // AddCommissionLogIDs adds the "commission_logs" edge to the CommissionLog entity by IDs.
@@ -1005,6 +1107,105 @@ func (_c *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 			Inverse: false,
 			Table:   user.InviteesTable,
 			Columns: []string{user.InviteesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.ChannelPartnerIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   user.ChannelPartnerTable,
+			Columns: []string{user.ChannelPartnerColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.ChannelPartnerID = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.ChannelMembersIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.ChannelMembersTable,
+			Columns: []string{user.ChannelMembersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.AgentOwnerIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   user.AgentOwnerTable,
+			Columns: []string{user.AgentOwnerColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.AgentOwnerID = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.AgentMembersIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.AgentMembersTable,
+			Columns: []string{user.AgentMembersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.DistributorOwnerIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   user.DistributorOwnerTable,
+			Columns: []string{user.DistributorOwnerColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.DistributorOwnerID = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.DistributorMembersIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.DistributorMembersTable,
+			Columns: []string{user.DistributorMembersColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt64),
@@ -1601,6 +1802,60 @@ func (u *UserUpsert) AddTotalCommissionEarned(v float64) *UserUpsert {
 	return u
 }
 
+// SetChannelPartnerID sets the "channel_partner_id" field.
+func (u *UserUpsert) SetChannelPartnerID(v int64) *UserUpsert {
+	u.Set(user.FieldChannelPartnerID, v)
+	return u
+}
+
+// UpdateChannelPartnerID sets the "channel_partner_id" field to the value that was provided on create.
+func (u *UserUpsert) UpdateChannelPartnerID() *UserUpsert {
+	u.SetExcluded(user.FieldChannelPartnerID)
+	return u
+}
+
+// ClearChannelPartnerID clears the value of the "channel_partner_id" field.
+func (u *UserUpsert) ClearChannelPartnerID() *UserUpsert {
+	u.SetNull(user.FieldChannelPartnerID)
+	return u
+}
+
+// SetAgentOwnerID sets the "agent_owner_id" field.
+func (u *UserUpsert) SetAgentOwnerID(v int64) *UserUpsert {
+	u.Set(user.FieldAgentOwnerID, v)
+	return u
+}
+
+// UpdateAgentOwnerID sets the "agent_owner_id" field to the value that was provided on create.
+func (u *UserUpsert) UpdateAgentOwnerID() *UserUpsert {
+	u.SetExcluded(user.FieldAgentOwnerID)
+	return u
+}
+
+// ClearAgentOwnerID clears the value of the "agent_owner_id" field.
+func (u *UserUpsert) ClearAgentOwnerID() *UserUpsert {
+	u.SetNull(user.FieldAgentOwnerID)
+	return u
+}
+
+// SetDistributorOwnerID sets the "distributor_owner_id" field.
+func (u *UserUpsert) SetDistributorOwnerID(v int64) *UserUpsert {
+	u.Set(user.FieldDistributorOwnerID, v)
+	return u
+}
+
+// UpdateDistributorOwnerID sets the "distributor_owner_id" field to the value that was provided on create.
+func (u *UserUpsert) UpdateDistributorOwnerID() *UserUpsert {
+	u.SetExcluded(user.FieldDistributorOwnerID)
+	return u
+}
+
+// ClearDistributorOwnerID clears the value of the "distributor_owner_id" field.
+func (u *UserUpsert) ClearDistributorOwnerID() *UserUpsert {
+	u.SetNull(user.FieldDistributorOwnerID)
+	return u
+}
+
 // SetIsKeyAccount sets the "is_key_account" field.
 func (u *UserUpsert) SetIsKeyAccount(v bool) *UserUpsert {
 	u.Set(user.FieldIsKeyAccount, v)
@@ -2128,6 +2383,69 @@ func (u *UserUpsertOne) AddTotalCommissionEarned(v float64) *UserUpsertOne {
 func (u *UserUpsertOne) UpdateTotalCommissionEarned() *UserUpsertOne {
 	return u.Update(func(s *UserUpsert) {
 		s.UpdateTotalCommissionEarned()
+	})
+}
+
+// SetChannelPartnerID sets the "channel_partner_id" field.
+func (u *UserUpsertOne) SetChannelPartnerID(v int64) *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.SetChannelPartnerID(v)
+	})
+}
+
+// UpdateChannelPartnerID sets the "channel_partner_id" field to the value that was provided on create.
+func (u *UserUpsertOne) UpdateChannelPartnerID() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateChannelPartnerID()
+	})
+}
+
+// ClearChannelPartnerID clears the value of the "channel_partner_id" field.
+func (u *UserUpsertOne) ClearChannelPartnerID() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.ClearChannelPartnerID()
+	})
+}
+
+// SetAgentOwnerID sets the "agent_owner_id" field.
+func (u *UserUpsertOne) SetAgentOwnerID(v int64) *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.SetAgentOwnerID(v)
+	})
+}
+
+// UpdateAgentOwnerID sets the "agent_owner_id" field to the value that was provided on create.
+func (u *UserUpsertOne) UpdateAgentOwnerID() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateAgentOwnerID()
+	})
+}
+
+// ClearAgentOwnerID clears the value of the "agent_owner_id" field.
+func (u *UserUpsertOne) ClearAgentOwnerID() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.ClearAgentOwnerID()
+	})
+}
+
+// SetDistributorOwnerID sets the "distributor_owner_id" field.
+func (u *UserUpsertOne) SetDistributorOwnerID(v int64) *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.SetDistributorOwnerID(v)
+	})
+}
+
+// UpdateDistributorOwnerID sets the "distributor_owner_id" field to the value that was provided on create.
+func (u *UserUpsertOne) UpdateDistributorOwnerID() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateDistributorOwnerID()
+	})
+}
+
+// ClearDistributorOwnerID clears the value of the "distributor_owner_id" field.
+func (u *UserUpsertOne) ClearDistributorOwnerID() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.ClearDistributorOwnerID()
 	})
 }
 
@@ -2836,6 +3154,69 @@ func (u *UserUpsertBulk) AddTotalCommissionEarned(v float64) *UserUpsertBulk {
 func (u *UserUpsertBulk) UpdateTotalCommissionEarned() *UserUpsertBulk {
 	return u.Update(func(s *UserUpsert) {
 		s.UpdateTotalCommissionEarned()
+	})
+}
+
+// SetChannelPartnerID sets the "channel_partner_id" field.
+func (u *UserUpsertBulk) SetChannelPartnerID(v int64) *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.SetChannelPartnerID(v)
+	})
+}
+
+// UpdateChannelPartnerID sets the "channel_partner_id" field to the value that was provided on create.
+func (u *UserUpsertBulk) UpdateChannelPartnerID() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateChannelPartnerID()
+	})
+}
+
+// ClearChannelPartnerID clears the value of the "channel_partner_id" field.
+func (u *UserUpsertBulk) ClearChannelPartnerID() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.ClearChannelPartnerID()
+	})
+}
+
+// SetAgentOwnerID sets the "agent_owner_id" field.
+func (u *UserUpsertBulk) SetAgentOwnerID(v int64) *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.SetAgentOwnerID(v)
+	})
+}
+
+// UpdateAgentOwnerID sets the "agent_owner_id" field to the value that was provided on create.
+func (u *UserUpsertBulk) UpdateAgentOwnerID() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateAgentOwnerID()
+	})
+}
+
+// ClearAgentOwnerID clears the value of the "agent_owner_id" field.
+func (u *UserUpsertBulk) ClearAgentOwnerID() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.ClearAgentOwnerID()
+	})
+}
+
+// SetDistributorOwnerID sets the "distributor_owner_id" field.
+func (u *UserUpsertBulk) SetDistributorOwnerID(v int64) *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.SetDistributorOwnerID(v)
+	})
+}
+
+// UpdateDistributorOwnerID sets the "distributor_owner_id" field to the value that was provided on create.
+func (u *UserUpsertBulk) UpdateDistributorOwnerID() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateDistributorOwnerID()
+	})
+}
+
+// ClearDistributorOwnerID clears the value of the "distributor_owner_id" field.
+func (u *UserUpsertBulk) ClearDistributorOwnerID() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.ClearDistributorOwnerID()
 	})
 }
 

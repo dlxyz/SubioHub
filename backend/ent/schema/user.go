@@ -33,8 +33,6 @@ func (User) Mixin() []ent.Mixin {
 
 func (User) Fields() []ent.Field {
 	return []ent.Field{
-		// 唯一约束通过部分索引实现（WHERE deleted_at IS NULL），支持软删除后重用
-		// 见迁移文件 016_soft_delete_partial_unique_indexes.sql
 		field.String("email").
 			MaxLen(255).
 			NotEmpty(),
@@ -52,17 +50,12 @@ func (User) Fields() []ent.Field {
 		field.String("status").
 			MaxLen(20).
 			Default(domain.StatusActive),
-
-		// Optional profile fields (added later; default '' in DB migration)
 		field.String("username").
 			MaxLen(100).
 			Default(""),
-		// wechat field migrated to user_attribute_values (see migration 019)
 		field.String("notes").
 			SchemaType(map[string]string{dialect.Postgres: "text"}).
 			Default(""),
-
-		// TOTP 双因素认证字段
 		field.String("totp_secret_encrypted").
 			SchemaType(map[string]string{dialect.Postgres: "text"}).
 			Optional().
@@ -72,12 +65,10 @@ func (User) Fields() []ent.Field {
 		field.Time("totp_enabled_at").
 			Optional().
 			Nillable(),
-
-		// 余额不足通知
 		field.Bool("balance_notify_enabled").
 			Default(true),
 		field.String("balance_notify_threshold_type").
-			Default("fixed"), // "fixed" | "percentage"
+			Default("fixed"),
 		field.Float("balance_notify_threshold").
 			SchemaType(map[string]string{dialect.Postgres: "decimal(20,8)"}).
 			Optional().
@@ -88,63 +79,80 @@ func (User) Fields() []ent.Field {
 		field.Float("total_recharged").
 			SchemaType(map[string]string{dialect.Postgres: "decimal(20,8)"}).
 			Default(0),
-
-		// ------------------ 分销与邀请返佣系统字段 ------------------
 		field.Int64("inviter_id").
 			Optional().
 			Nillable().
-			Comment("邀请人的 User ID"),
+			Comment("Direct inviter user ID"),
 		field.String("invite_code").
 			Optional().
 			MaxLen(32).
 			Unique().
-			Comment("用户专属邀请码"),
+			Comment("User invite code"),
 		field.Float("commission_rate").
 			SchemaType(map[string]string{dialect.Postgres: "decimal(5,4)"}).
 			Default(0.10).
-			Comment("专属返佣比例 (默认 0.10 即 10%)"),
+			Comment("User commission rate"),
 		field.Float("commission_balance").
 			SchemaType(map[string]string{dialect.Postgres: "decimal(20,8)"}).
 			Default(0).
-			Comment("当前可提现或划转的佣金余额"),
+			Comment("Available commission balance"),
 		field.Float("total_commission_earned").
 			SchemaType(map[string]string{dialect.Postgres: "decimal(20,8)"}).
 			Default(0).
-			Comment("历史累计赚取的总佣金"),
-
-		// ------------------ 大客户管理字段 ------------------
+			Comment("Total historical commission earned"),
+		field.Int64("channel_partner_id").
+			Optional().
+			Nillable().
+			Comment("Top-level marketing channel partner owner user ID"),
+		field.Int64("agent_owner_id").
+			Optional().
+			Nillable().
+			Comment("Owning agent user ID within the marketing hierarchy"),
+		field.Int64("distributor_owner_id").
+			Optional().
+			Nillable().
+			Comment("Owning distributor user ID within the marketing hierarchy"),
 		field.Bool("is_key_account").
 			Default(false).
-			Comment("是否为大客户"),
+			Comment("Whether the user is a key account"),
 		field.String("key_account_level").
 			MaxLen(20).
 			Default("standard").
-			Comment("大客户等级 standard / vip / enterprise"),
+			Comment("Key account level"),
 		field.Float("key_account_discount_rate").
 			SchemaType(map[string]string{dialect.Postgres: "decimal(5,4)"}).
 			Default(1).
-			Comment("大客户专属折扣系数，1 表示无折扣"),
+			Comment("Key account discount rate"),
 		field.Float("key_account_rebate_rate").
 			SchemaType(map[string]string{dialect.Postgres: "decimal(5,4)"}).
 			Default(0).
-			Comment("大客户专属返点比例"),
+			Comment("Key account rebate rate"),
 		field.String("key_account_manager_notes").
 			SchemaType(map[string]string{dialect.Postgres: "text"}).
 			Default("").
-			Comment("大客户运营备注"),
+			Comment("Key account manager notes"),
 	}
 }
 
 func (User) Edges() []ent.Edge {
 	return []ent.Edge{
-		// 自关联关系：邀请人与被邀请人
 		edge.To("invitees", User.Type).
 			From("inviter").
 			Unique().
 			Field("inviter_id"),
-
+		edge.To("channel_members", User.Type).
+			From("channel_partner").
+			Unique().
+			Field("channel_partner_id"),
+		edge.To("agent_members", User.Type).
+			From("agent_owner").
+			Unique().
+			Field("agent_owner_id"),
+		edge.To("distributor_members", User.Type).
+			From("distributor_owner").
+			Unique().
+			Field("distributor_owner_id"),
 		edge.To("commission_logs", CommissionLog.Type),
-
 		edge.To("api_keys", APIKey.Type),
 		edge.To("redeem_codes", RedeemCode.Type),
 		edge.To("subscriptions", UserSubscription.Type),
@@ -161,9 +169,11 @@ func (User) Edges() []ent.Edge {
 
 func (User) Indexes() []ent.Index {
 	return []ent.Index{
-		// email 字段已在 Fields() 中声明 Unique()，无需重复索引
 		index.Fields("status"),
 		index.Fields("deleted_at"),
+		index.Fields("channel_partner_id"),
+		index.Fields("agent_owner_id"),
+		index.Fields("distributor_owner_id"),
 		index.Fields("is_key_account"),
 		index.Fields("key_account_level"),
 	}

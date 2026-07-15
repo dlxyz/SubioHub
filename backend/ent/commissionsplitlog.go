@@ -25,39 +25,41 @@ type CommissionSplitLog struct {
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
-	// 关联订单 ID
+	// Related payment order ID
 	OrderID *int64 `json:"order_id,omitempty"`
-	// 消费用户 ID
+	// Consumer user ID
 	ConsumerUserID int64 `json:"consumer_user_id,omitempty"`
-	// 实际收益人用户 ID
+	// Beneficiary user ID
 	BeneficiaryUserID int64 `json:"beneficiary_user_id,omitempty"`
-	// 收益人角色：admin/agent/distributor/user
+	// Beneficiary role
 	BeneficiaryRole string `json:"beneficiary_role,omitempty"`
-	// 关系链中的代理用户 ID
+	// Channel partner user ID in the relation chain
+	ChannelPartnerUserID *int64 `json:"channel_partner_user_id,omitempty"`
+	// Agent user ID in the relation chain
 	AgentUserID *int64 `json:"agent_user_id,omitempty"`
-	// 关系链中的分销用户 ID
+	// Distributor user ID in the relation chain
 	DistributorUserID *int64 `json:"distributor_user_id,omitempty"`
-	// 分润层级，1=直接收益，2=上级补差
+	// Split level
 	Level int `json:"level,omitempty"`
-	// 分润计算模式：diff=补差法，additive=叠加法
+	// Split calculation mode
 	CalcMode string `json:"calc_mode,omitempty"`
-	// 分润基数
+	// Split base amount
 	BaseAmount float64 `json:"base_amount,omitempty"`
-	// 该层目标比例
+	// Configured target rate
 	TargetRate float64 `json:"target_rate,omitempty"`
-	// 下层已占比例，补差法时用于计算差额
+	// Already consumed child rate
 	ParentRate float64 `json:"parent_rate,omitempty"`
-	// 最终分润金额
+	// Final commission amount
 	CommissionAmount float64 `json:"commission_amount,omitempty"`
-	// 分润状态：pending / settled / transferred / reversed / cancelled
+	// Split status
 	Status string `json:"status,omitempty"`
-	// 命中的分润规则 ID
+	// Matched commission rule ID
 	RuleID *int64 `json:"rule_id,omitempty"`
-	// 结算时间
+	// Settled time
 	SettledAt *time.Time `json:"settled_at,omitempty"`
-	// 关系快照，避免后续关系调整影响历史分润
+	// Relation snapshot
 	RelationSnapshot map[string]interface{} `json:"relation_snapshot,omitempty"`
-	// 分润备注
+	// Split remark
 	Remark *string `json:"remark,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the CommissionSplitLogQuery when eager-loading is set.
@@ -73,6 +75,8 @@ type CommissionSplitLogEdges struct {
 	ConsumerUser *User `json:"consumer_user,omitempty"`
 	// BeneficiaryUser holds the value of the beneficiary_user edge.
 	BeneficiaryUser *User `json:"beneficiary_user,omitempty"`
+	// ChannelPartnerUser holds the value of the channel_partner_user edge.
+	ChannelPartnerUser *User `json:"channel_partner_user,omitempty"`
 	// AgentUser holds the value of the agent_user edge.
 	AgentUser *User `json:"agent_user,omitempty"`
 	// DistributorUser holds the value of the distributor_user edge.
@@ -81,7 +85,7 @@ type CommissionSplitLogEdges struct {
 	CommissionRule *CommissionRule `json:"commission_rule,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [6]bool
+	loadedTypes [7]bool
 }
 
 // PaymentOrderOrErr returns the PaymentOrder value or an error if the edge
@@ -117,12 +121,23 @@ func (e CommissionSplitLogEdges) BeneficiaryUserOrErr() (*User, error) {
 	return nil, &NotLoadedError{edge: "beneficiary_user"}
 }
 
+// ChannelPartnerUserOrErr returns the ChannelPartnerUser value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e CommissionSplitLogEdges) ChannelPartnerUserOrErr() (*User, error) {
+	if e.ChannelPartnerUser != nil {
+		return e.ChannelPartnerUser, nil
+	} else if e.loadedTypes[3] {
+		return nil, &NotFoundError{label: user.Label}
+	}
+	return nil, &NotLoadedError{edge: "channel_partner_user"}
+}
+
 // AgentUserOrErr returns the AgentUser value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
 func (e CommissionSplitLogEdges) AgentUserOrErr() (*User, error) {
 	if e.AgentUser != nil {
 		return e.AgentUser, nil
-	} else if e.loadedTypes[3] {
+	} else if e.loadedTypes[4] {
 		return nil, &NotFoundError{label: user.Label}
 	}
 	return nil, &NotLoadedError{edge: "agent_user"}
@@ -133,7 +148,7 @@ func (e CommissionSplitLogEdges) AgentUserOrErr() (*User, error) {
 func (e CommissionSplitLogEdges) DistributorUserOrErr() (*User, error) {
 	if e.DistributorUser != nil {
 		return e.DistributorUser, nil
-	} else if e.loadedTypes[4] {
+	} else if e.loadedTypes[5] {
 		return nil, &NotFoundError{label: user.Label}
 	}
 	return nil, &NotLoadedError{edge: "distributor_user"}
@@ -144,7 +159,7 @@ func (e CommissionSplitLogEdges) DistributorUserOrErr() (*User, error) {
 func (e CommissionSplitLogEdges) CommissionRuleOrErr() (*CommissionRule, error) {
 	if e.CommissionRule != nil {
 		return e.CommissionRule, nil
-	} else if e.loadedTypes[5] {
+	} else if e.loadedTypes[6] {
 		return nil, &NotFoundError{label: commissionrule.Label}
 	}
 	return nil, &NotLoadedError{edge: "commission_rule"}
@@ -159,7 +174,7 @@ func (*CommissionSplitLog) scanValues(columns []string) ([]any, error) {
 			values[i] = new([]byte)
 		case commissionsplitlog.FieldBaseAmount, commissionsplitlog.FieldTargetRate, commissionsplitlog.FieldParentRate, commissionsplitlog.FieldCommissionAmount:
 			values[i] = new(sql.NullFloat64)
-		case commissionsplitlog.FieldID, commissionsplitlog.FieldOrderID, commissionsplitlog.FieldConsumerUserID, commissionsplitlog.FieldBeneficiaryUserID, commissionsplitlog.FieldAgentUserID, commissionsplitlog.FieldDistributorUserID, commissionsplitlog.FieldLevel, commissionsplitlog.FieldRuleID:
+		case commissionsplitlog.FieldID, commissionsplitlog.FieldOrderID, commissionsplitlog.FieldConsumerUserID, commissionsplitlog.FieldBeneficiaryUserID, commissionsplitlog.FieldChannelPartnerUserID, commissionsplitlog.FieldAgentUserID, commissionsplitlog.FieldDistributorUserID, commissionsplitlog.FieldLevel, commissionsplitlog.FieldRuleID:
 			values[i] = new(sql.NullInt64)
 		case commissionsplitlog.FieldBeneficiaryRole, commissionsplitlog.FieldCalcMode, commissionsplitlog.FieldStatus, commissionsplitlog.FieldRemark:
 			values[i] = new(sql.NullString)
@@ -222,6 +237,13 @@ func (_m *CommissionSplitLog) assignValues(columns []string, values []any) error
 				return fmt.Errorf("unexpected type %T for field beneficiary_role", values[i])
 			} else if value.Valid {
 				_m.BeneficiaryRole = value.String
+			}
+		case commissionsplitlog.FieldChannelPartnerUserID:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field channel_partner_user_id", values[i])
+			} else if value.Valid {
+				_m.ChannelPartnerUserID = new(int64)
+				*_m.ChannelPartnerUserID = value.Int64
 			}
 		case commissionsplitlog.FieldAgentUserID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
@@ -336,6 +358,11 @@ func (_m *CommissionSplitLog) QueryBeneficiaryUser() *UserQuery {
 	return NewCommissionSplitLogClient(_m.config).QueryBeneficiaryUser(_m)
 }
 
+// QueryChannelPartnerUser queries the "channel_partner_user" edge of the CommissionSplitLog entity.
+func (_m *CommissionSplitLog) QueryChannelPartnerUser() *UserQuery {
+	return NewCommissionSplitLogClient(_m.config).QueryChannelPartnerUser(_m)
+}
+
 // QueryAgentUser queries the "agent_user" edge of the CommissionSplitLog entity.
 func (_m *CommissionSplitLog) QueryAgentUser() *UserQuery {
 	return NewCommissionSplitLogClient(_m.config).QueryAgentUser(_m)
@@ -393,6 +420,11 @@ func (_m *CommissionSplitLog) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("beneficiary_role=")
 	builder.WriteString(_m.BeneficiaryRole)
+	builder.WriteString(", ")
+	if v := _m.ChannelPartnerUserID; v != nil {
+		builder.WriteString("channel_partner_user_id=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
 	builder.WriteString(", ")
 	if v := _m.AgentUserID; v != nil {
 		builder.WriteString("agent_user_id=")

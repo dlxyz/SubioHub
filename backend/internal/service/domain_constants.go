@@ -14,10 +14,11 @@ const (
 
 // Role constants
 const (
-	RoleAdmin       = domain.RoleAdmin
-	RoleAgent       = domain.RoleAgent
-	RoleDistributor = domain.RoleDistributor
-	RoleUser        = domain.RoleUser
+	RoleAdmin          = domain.RoleAdmin
+	RoleChannelPartner = domain.RoleChannelPartner
+	RoleAgent          = domain.RoleAgent
+	RoleDistributor    = domain.RoleDistributor
+	RoleUser           = domain.RoleUser
 )
 
 // Platform constants

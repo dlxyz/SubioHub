@@ -1,9 +1,23 @@
-'use client';
+"use client";
 
-import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
-import Link from 'next/link';
-import { Percent, RefreshCcw, Search, ShieldCheck, UserPlus, UserX, Users } from 'lucide-react';
-import { listAdminUsers, updateAdminAffiliateUserRate, updateAdminUser, type AdminUser } from '@/lib/admin-api';
+import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import {
+  Building2,
+  Percent,
+  RefreshCcw,
+  Search,
+  ShieldCheck,
+  UserPlus,
+  UserX,
+  Users,
+} from "lucide-react";
+import {
+  listAdminUsers,
+  updateAdminAffiliateUserRate,
+  updateAdminUser,
+  type AdminUser,
+} from "@/lib/admin-api";
 
 const PAGE_SIZE = 12;
 
@@ -20,154 +34,277 @@ function formatPercent(value?: number) {
 
 export default function AdminAgentManagementPage() {
   const [users, setUsers] = useState<AdminUser[]>([]);
+  const [channelPartners, setChannelPartners] = useState<AdminUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [savingId, setSavingId] = useState<number | null>(null);
+  const [ownerSavingId, setOwnerSavingId] = useState<number | null>(null);
   const [switchingRoleId, setSwitchingRoleId] = useState<number | null>(null);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
-  const [search, setSearch] = useState('');
-  const [candidateSearch, setCandidateSearch] = useState('');
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [search, setSearch] = useState("");
+  const [candidateSearch, setCandidateSearch] = useState("");
   const [candidateLoading, setCandidateLoading] = useState(false);
   const [candidateUsers, setCandidateUsers] = useState<AdminUser[]>([]);
+  const [candidateOwnerDrafts, setCandidateOwnerDrafts] = useState<
+    Record<number, string>
+  >({});
   const [pagination, setPagination] = useState({
     total: 0,
     page: 1,
     pageSize: PAGE_SIZE,
   });
   const [rateDrafts, setRateDrafts] = useState<Record<number, string>>({});
+  const [ownerDrafts, setOwnerDrafts] = useState<Record<number, string>>({});
 
-  const loadUsers = useCallback(async (page = 1, keyword = search) => {
-    setLoading(true);
-    setError('');
-    try {
-      const result = await listAdminUsers({
-        page,
-        page_size: PAGE_SIZE,
-        role: 'agent',
-        search: keyword || undefined,
-      });
-      setUsers(result.items);
-      setPagination({
-        total: result.total,
-        page: result.page || page,
-        pageSize: result.pageSize || PAGE_SIZE,
-      });
-      setRateDrafts((prev) => {
-        const next = { ...prev };
-        result.items.forEach((user) => {
-          next[user.id] = ((user.commission_rate || 0) * 100).toFixed(2);
+  const loadUsers = useCallback(
+    async (page = 1, keyword = search) => {
+      setLoading(true);
+      setError("");
+      try {
+        const [result, channelPartnerResult] = await Promise.all([
+          listAdminUsers({
+            page,
+            page_size: PAGE_SIZE,
+            role: "agent",
+            search: keyword || undefined,
+          }),
+          listAdminUsers({
+            page: 1,
+            page_size: 200,
+            role: "channel_partner",
+          }),
+        ]);
+        setUsers(result.items);
+        setChannelPartners(channelPartnerResult.items);
+        setPagination({
+          total: result.total,
+          page: result.page || page,
+          pageSize: result.pageSize || PAGE_SIZE,
         });
-        return next;
-      });
-    } catch (loadError: unknown) {
-      setError(getErrorMessage(loadError, '加载代理用户列表失败'));
-    } finally {
-      setLoading(false);
-    }
-  }, [search]);
+        setRateDrafts((prev) => {
+          const next = { ...prev };
+          result.items.forEach((user) => {
+            next[user.id] = ((user.commission_rate || 0) * 100).toFixed(2);
+          });
+          return next;
+        });
+        setOwnerDrafts((prev) => {
+          const next = { ...prev };
+          result.items.forEach((user) => {
+            next[user.id] = user.channel_partner_id
+              ? String(user.channel_partner_id)
+              : "";
+          });
+          return next;
+        });
+      } catch (loadError: unknown) {
+        setError(getErrorMessage(loadError, "加载代理用户列表失败"));
+      } finally {
+        setLoading(false);
+      }
+    },
+    [search],
+  );
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
-      void loadUsers(1, '');
+      void loadUsers(1, "");
     }, 0);
     return () => window.clearTimeout(timer);
   }, [loadUsers]);
 
   const handleSearch = async (e: FormEvent) => {
     e.preventDefault();
-    setSuccess('');
+    setSuccess("");
     await loadUsers(1, search);
   };
 
   const handleRefresh = async () => {
-    setSuccess('');
+    setSuccess("");
     await loadUsers(pagination.page, search);
   };
 
-  const loadCandidateUsers = useCallback(async (keyword = candidateSearch) => {
-    if (!keyword.trim()) {
-      setCandidateUsers([]);
-      return;
-    }
-    setCandidateLoading(true);
-    setError('');
-    try {
-      const result = await listAdminUsers({
-        page: 1,
-        page_size: 8,
-        search: keyword.trim(),
-      });
-      setCandidateUsers(result.items.filter((user) => user.role !== 'admin'));
-    } catch (loadError: unknown) {
-      setError(getErrorMessage(loadError, '加载候选用户失败'));
-    } finally {
-      setCandidateLoading(false);
-    }
-  }, [candidateSearch]);
+  const loadCandidateUsers = useCallback(
+    async (keyword = candidateSearch) => {
+      if (!keyword.trim()) {
+        setCandidateUsers([]);
+        return;
+      }
+      setCandidateLoading(true);
+      setError("");
+      try {
+        const result = await listAdminUsers({
+          page: 1,
+          page_size: 8,
+          search: keyword.trim(),
+        });
+        setCandidateUsers(
+          result.items.filter(
+            (user) => user.role !== "admin" && user.role !== "channel_partner",
+          ),
+        );
+        setCandidateOwnerDrafts((prev) => {
+          const next = { ...prev };
+          result.items.forEach((user) => {
+            next[user.id] = user.channel_partner_id
+              ? String(user.channel_partner_id)
+              : "";
+          });
+          return next;
+        });
+      } catch (loadError: unknown) {
+        setError(getErrorMessage(loadError, "加载候选用户失败"));
+      } finally {
+        setCandidateLoading(false);
+      }
+    },
+    [candidateSearch],
+  );
 
   const handleSaveRate = async (user: AdminUser) => {
     const draft = Number(rateDrafts[user.id]);
     if (Number.isNaN(draft) || draft < 0 || draft > 100) {
-      setError('提成百分比例必须在 0 到 100 之间');
+      setError("提成百分比例必须在 0 到 100 之间");
       return;
     }
 
     setSavingId(user.id);
-    setError('');
-    setSuccess('');
+    setError("");
+    setSuccess("");
     try {
       await updateAdminAffiliateUserRate(user.id, draft / 100);
-      setSuccess(`代理用户 ${user.email} 的提成比例已更新为 ${draft.toFixed(2)}%`);
+      setSuccess(
+        `代理用户 ${user.email} 的提成比例已更新为 ${draft.toFixed(2)}%`,
+      );
       setUsers((prev) =>
-        prev.map((item) => (item.id === user.id ? { ...item, commission_rate: draft / 100 } : item))
+        prev.map((item) =>
+          item.id === user.id
+            ? { ...item, commission_rate: draft / 100 }
+            : item,
+        ),
       );
     } catch (saveError: unknown) {
-      setError(getErrorMessage(saveError, '更新提成比例失败'));
+      setError(getErrorMessage(saveError, "更新提成比例失败"));
     } finally {
       setSavingId(null);
     }
   };
 
+  const handleSaveOwner = async (user: AdminUser) => {
+    const rawValue = ownerDrafts[user.id] ?? "";
+    const channelPartnerID = rawValue ? Number(rawValue) : 0;
+    if (
+      rawValue &&
+      (!Number.isFinite(channelPartnerID) || channelPartnerID <= 0)
+    ) {
+      setError("请选择有效的渠道主");
+      return;
+    }
+
+    setOwnerSavingId(user.id);
+    setError("");
+    setSuccess("");
+    try {
+      await updateAdminUser(user.id, {
+        channel_partner_id: channelPartnerID,
+      });
+      const ownerName =
+        channelPartners.find((item) => item.id === channelPartnerID)?.email ||
+        `#${channelPartnerID}`;
+      setUsers((prev) =>
+        prev.map((item) =>
+          item.id === user.id
+            ? {
+                ...item,
+                channel_partner_id:
+                  channelPartnerID > 0 ? channelPartnerID : null,
+              }
+            : item,
+        ),
+      );
+      setSuccess(
+        channelPartnerID > 0
+          ? `已为 ${user.email} 绑定渠道主 ${ownerName}`
+          : `已清空 ${user.email} 的渠道主归属`,
+      );
+    } catch (saveError: unknown) {
+      setError(getErrorMessage(saveError, "更新渠道主归属失败"));
+    } finally {
+      setOwnerSavingId(null);
+    }
+  };
+
   const handleCandidateSearch = async (e: FormEvent) => {
     e.preventDefault();
-    setSuccess('');
+    setSuccess("");
     await loadCandidateUsers(candidateSearch);
   };
 
-  const handleSwitchRole = async (user: AdminUser, role: 'user' | 'agent' | 'distributor') => {
+  const handleSwitchRole = async (
+    user: AdminUser,
+    role: "user" | "agent" | "distributor",
+  ) => {
     setSwitchingRoleId(user.id);
-    setError('');
-    setSuccess('');
+    setError("");
+    setSuccess("");
     try {
-      const updated = await updateAdminUser(user.id, { role });
-      if ((updated.role || 'user') !== role) {
-        throw new Error('角色切换未生效，请稍后刷新后重试');
+      const candidateChannelPartnerID = Number(
+        candidateOwnerDrafts[user.id] || user.channel_partner_id || 0,
+      );
+      const payload: Record<string, unknown> = { role };
+
+      if (role === "agent") {
+        payload.channel_partner_id =
+          candidateChannelPartnerID > 0 ? candidateChannelPartnerID : 0;
+        payload.agent_owner_id = 0;
+        payload.distributor_owner_id = 0;
+      } else if (role === "user") {
+        payload.channel_partner_id = 0;
+        payload.agent_owner_id = 0;
+        payload.distributor_owner_id = 0;
+      }
+
+      const updated = await updateAdminUser(user.id, payload);
+      if ((updated.role || "user") !== role) {
+        throw new Error("角色切换未生效，请稍后刷新后重试");
       }
       setSuccess(
-        role === 'agent'
+        role === "agent"
           ? `已将 ${user.email} 设为代理`
-          : role === 'distributor'
+          : role === "distributor"
             ? `已将 ${user.email} 设为分销`
-            : `已取消 ${user.email} 的代理角色`
+            : `已取消 ${user.email} 的代理角色`,
       );
       await loadUsers(1, search);
       await loadCandidateUsers(candidateSearch);
     } catch (switchError: unknown) {
-      setError(getErrorMessage(switchError, '切换代理角色失败'));
+      setError(getErrorMessage(switchError, "切换代理角色失败"));
     } finally {
       setSwitchingRoleId(null);
     }
   };
 
-  const totalPages = Math.max(1, Math.ceil((pagination.total || 0) / (pagination.pageSize || PAGE_SIZE)));
+  const totalPages = Math.max(
+    1,
+    Math.ceil((pagination.total || 0) / (pagination.pageSize || PAGE_SIZE)),
+  );
   const summary = useMemo(() => {
-    const activeAgents = users.filter((user) => user.status !== 'disabled').length;
+    const activeAgents = users.filter(
+      (user) => user.status !== "disabled",
+    ).length;
+    const boundAgents = users.filter(
+      (user) => Number(user.channel_partner_id || 0) > 0,
+    ).length;
     const averageRate =
       users.length > 0
-        ? users.reduce((sum, user) => sum + Number(user.commission_rate || 0), 0) / users.length
+        ? users.reduce(
+            (sum, user) => sum + Number(user.commission_rate || 0),
+            0,
+          ) / users.length
         : 0;
     return {
       activeAgents,
+      boundAgents,
       averageRate,
     };
   }, [users]);
@@ -176,9 +313,12 @@ export default function AdminAgentManagementPage() {
     <div className="space-y-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">代理管理</h2>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+            代理人管理
+          </h2>
           <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-            这里只展示 `agent` 角色的用户列表，并可直接为代理用户设置提成百分比例。
+            这里只展示 `agent` 角色的用户列表，并展示所属渠道主
+            ID，便于和顶层渠道关系一起核对。
           </p>
         </div>
         <div className="flex gap-2">
@@ -201,21 +341,23 @@ export default function AdminAgentManagementPage() {
         <div
           className={`rounded-xl px-4 py-3 text-sm ${
             error
-              ? 'border border-red-200 bg-red-50 text-red-700 dark:border-red-900/60 dark:bg-red-950/40 dark:text-red-300'
-              : 'border border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/40 dark:text-emerald-300'
+              ? "border border-red-200 bg-red-50 text-red-700 dark:border-red-900/60 dark:bg-red-950/40 dark:text-red-300"
+              : "border border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/40 dark:text-emerald-300"
           }`}
         >
           {error || success}
         </div>
       )}
 
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-4">
         <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-[#1A1A1A]">
           <div className="flex items-start justify-between">
             <div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">代理用户总数</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                代理用户总数
+              </p>
               <p className="mt-3 text-3xl font-semibold text-gray-900 dark:text-white">
-                {loading ? '...' : pagination.total}
+                {loading ? "..." : pagination.total}
               </p>
             </div>
             <Users className="h-6 w-6 text-blue-500" />
@@ -225,9 +367,11 @@ export default function AdminAgentManagementPage() {
         <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-[#1A1A1A]">
           <div className="flex items-start justify-between">
             <div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">当前页活跃代理</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                当前页活跃代理
+              </p>
               <p className="mt-3 text-3xl font-semibold text-gray-900 dark:text-white">
-                {loading ? '...' : summary.activeAgents}
+                {loading ? "..." : summary.activeAgents}
               </p>
             </div>
             <ShieldCheck className="h-6 w-6 text-emerald-500" />
@@ -237,9 +381,25 @@ export default function AdminAgentManagementPage() {
         <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-[#1A1A1A]">
           <div className="flex items-start justify-between">
             <div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">当前页平均提成</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                已绑定渠道主
+              </p>
               <p className="mt-3 text-3xl font-semibold text-gray-900 dark:text-white">
-                {loading ? '...' : formatPercent(summary.averageRate)}
+                {loading ? "..." : summary.boundAgents}
+              </p>
+            </div>
+            <Building2 className="h-6 w-6 text-violet-500" />
+          </div>
+        </div>
+
+        <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-[#1A1A1A]">
+          <div className="flex items-start justify-between">
+            <div>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                当前页平均提成
+              </p>
+              <p className="mt-3 text-3xl font-semibold text-gray-900 dark:text-white">
+                {loading ? "..." : formatPercent(summary.averageRate)}
               </p>
             </div>
             <Percent className="h-6 w-6 text-amber-500" />
@@ -248,7 +408,10 @@ export default function AdminAgentManagementPage() {
       </div>
 
       <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-[#1A1A1A]">
-        <form className="flex flex-col gap-3 sm:flex-row" onSubmit={handleSearch}>
+        <form
+          className="flex flex-col gap-3 sm:flex-row"
+          onSubmit={handleSearch}
+        >
           <div className="relative flex-1">
             <Search className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
             <input
@@ -278,14 +441,19 @@ export default function AdminAgentManagementPage() {
       <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-[#1A1A1A]">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">快捷设置代理角色</h3>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+              快捷设置代理角色
+            </h3>
             <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-              搜索非管理员用户后可直接设为代理；已是代理的用户也可在这里直接取消代理。
+              搜索普通用户、代理或分销用户后可快速调整；渠道主请在“渠道主管理”中单独维护。
             </p>
           </div>
         </div>
 
-        <form className="mt-4 flex flex-col gap-3 sm:flex-row" onSubmit={handleCandidateSearch}>
+        <form
+          className="mt-4 flex flex-col gap-3 sm:flex-row"
+          onSubmit={handleCandidateSearch}
+        >
           <div className="relative flex-1">
             <Search className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
             <input
@@ -305,47 +473,79 @@ export default function AdminAgentManagementPage() {
 
         <div className="mt-4 space-y-3">
           {candidateLoading ? (
-            <div className="text-sm text-gray-500 dark:text-gray-400">正在搜索用户...</div>
+            <div className="text-sm text-gray-500 dark:text-gray-400">
+              正在搜索用户...
+            </div>
           ) : candidateSearch.trim() && candidateUsers.length === 0 ? (
-            <div className="text-sm text-gray-500 dark:text-gray-400">没有搜索到可操作的普通用户或代理用户</div>
+            <div className="text-sm text-gray-500 dark:text-gray-400">
+              没有搜索到可操作的普通用户、代理或分销用户
+            </div>
           ) : null}
 
           {candidateUsers.map((user) => {
-            const isAgent = user.role === 'agent';
-            const isDistributor = user.role === 'distributor';
+            const isAgent = user.role === "agent";
+            const isDistributor = user.role === "distributor";
             return (
               <div
                 key={user.id}
                 className="flex flex-col gap-3 rounded-2xl border border-gray-200 px-4 py-4 sm:flex-row sm:items-center sm:justify-between dark:border-gray-800"
               >
                 <div>
-                  <div className="font-medium text-gray-900 dark:text-white">{user.email}</div>
+                  <div className="font-medium text-gray-900 dark:text-white">
+                    {user.email}
+                  </div>
                   <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                    当前角色: {user.role || 'user'}，当前提成: {formatPercent(user.commission_rate)}
+                    当前角色: {user.role || "user"}，当前提成:{" "}
+                    {formatPercent(user.commission_rate)}
                   </div>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => void handleSwitchRole(user, isAgent ? 'user' : 'agent')}
-                  disabled={switchingRoleId === user.id}
-                  className={`inline-flex items-center justify-center rounded-xl px-4 py-2 text-sm font-medium text-white transition disabled:cursor-not-allowed disabled:opacity-70 ${
-                    isAgent ? 'bg-red-500 hover:bg-red-600' : 'bg-emerald-500 hover:bg-emerald-600'
-                  }`}
-                >
-                  {switchingRoleId === user.id ? (
-                    '处理中...'
-                  ) : isAgent ? (
-                    <>
-                      <UserX className="mr-2 h-4 w-4" />
-                      取消代理
-                    </>
-                  ) : (
-                    <>
-                      <UserPlus className="mr-2 h-4 w-4" />
-                      {isDistributor ? '转为代理' : '设为代理'}
-                    </>
-                  )}
-                </button>
+                <div className="flex flex-col gap-2 sm:min-w-[260px]">
+                  {!isAgent ? (
+                    <select
+                      value={candidateOwnerDrafts[user.id] ?? ""}
+                      onChange={(e) =>
+                        setCandidateOwnerDrafts((prev) => ({
+                          ...prev,
+                          [user.id]: e.target.value,
+                        }))
+                      }
+                      className="rounded-xl border border-gray-200 bg-transparent px-3 py-2 text-sm text-gray-900 outline-none transition focus:border-amber-400 dark:border-gray-700 dark:text-white"
+                    >
+                      <option value="">未绑定渠道主</option>
+                      {channelPartners.map((item) => (
+                        <option key={item.id} value={item.id}>
+                          {item.email}
+                        </option>
+                      ))}
+                    </select>
+                  ) : null}
+                  <button
+                    type="button"
+                    onClick={() =>
+                      void handleSwitchRole(user, isAgent ? "user" : "agent")
+                    }
+                    disabled={switchingRoleId === user.id}
+                    className={`inline-flex items-center justify-center rounded-xl px-4 py-2 text-sm font-medium text-white transition disabled:cursor-not-allowed disabled:opacity-70 ${
+                      isAgent
+                        ? "bg-red-500 hover:bg-red-600"
+                        : "bg-emerald-500 hover:bg-emerald-600"
+                    }`}
+                  >
+                    {switchingRoleId === user.id ? (
+                      "处理中..."
+                    ) : isAgent ? (
+                      <>
+                        <UserX className="mr-2 h-4 w-4" />
+                        取消代理
+                      </>
+                    ) : (
+                      <>
+                        <UserPlus className="mr-2 h-4 w-4" />
+                        {isDistributor ? "转为代理并绑定" : "设为代理并绑定"}
+                      </>
+                    )}
+                  </button>
+                </div>
               </div>
             );
           })}
@@ -360,6 +560,8 @@ export default function AdminAgentManagementPage() {
                 <th className="px-4 py-3 font-medium">ID</th>
                 <th className="px-4 py-3 font-medium">代理用户</th>
                 <th className="px-4 py-3 font-medium">状态</th>
+                <th className="px-4 py-3 font-medium">所属渠道主</th>
+                <th className="px-4 py-3 font-medium">修改归属</th>
                 <th className="px-4 py-3 font-medium">当前提成</th>
                 <th className="px-4 py-3 font-medium">设置提成百分比</th>
                 <th className="px-4 py-3 font-medium">操作</th>
@@ -368,36 +570,85 @@ export default function AdminAgentManagementPage() {
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={6} className="px-4 py-10 text-center text-gray-500 dark:text-gray-400">
+                  <td
+                    colSpan={8}
+                    className="px-4 py-10 text-center text-gray-500 dark:text-gray-400"
+                  >
                     正在加载代理用户列表...
                   </td>
                 </tr>
               ) : users.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-4 py-10 text-center text-gray-500 dark:text-gray-400">
+                  <td
+                    colSpan={8}
+                    className="px-4 py-10 text-center text-gray-500 dark:text-gray-400"
+                  >
                     暂无 agent 角色用户
                   </td>
                 </tr>
               ) : (
                 users.map((user) => (
-                  <tr key={user.id} className="border-t border-gray-100 dark:border-gray-800/70">
-                    <td className="px-4 py-4 text-gray-900 dark:text-white">{user.id}</td>
+                  <tr
+                    key={user.id}
+                    className="border-t border-gray-100 dark:border-gray-800/70"
+                  >
+                    <td className="px-4 py-4 text-gray-900 dark:text-white">
+                      {user.id}
+                    </td>
                     <td className="px-4 py-4">
-                      <div className="font-medium text-gray-900 dark:text-white">{user.email}</div>
+                      <div className="font-medium text-gray-900 dark:text-white">
+                        {user.email}
+                      </div>
                       <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                        {user.username || '未设置用户名'}
+                        {user.username || "未设置用户名"}
                       </div>
                     </td>
                     <td className="px-4 py-4">
                       <span
                         className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${
-                          user.status === 'disabled'
-                            ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'
-                            : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300'
+                          user.status === "disabled"
+                            ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300"
+                            : "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300"
                         }`}
                       >
-                        {user.status || 'active'}
+                        {user.status || "active"}
                       </span>
+                    </td>
+                    <td className="px-4 py-4 text-gray-500 dark:text-gray-400">
+                      {user.channel_partner_id
+                        ? channelPartners.find(
+                            (item) => item.id === user.channel_partner_id,
+                          )?.email || `#${user.channel_partner_id}`
+                        : "-"}
+                    </td>
+                    <td className="px-4 py-4">
+                      <div className="flex min-w-[220px] items-center gap-2">
+                        <select
+                          value={ownerDrafts[user.id] ?? ""}
+                          onChange={(e) =>
+                            setOwnerDrafts((prev) => ({
+                              ...prev,
+                              [user.id]: e.target.value,
+                            }))
+                          }
+                          className="w-full rounded-xl border border-gray-200 bg-transparent px-3 py-2 text-sm text-gray-900 outline-none transition focus:border-blue-400 dark:border-gray-700 dark:text-white"
+                        >
+                          <option value="">未绑定</option>
+                          {channelPartners.map((item) => (
+                            <option key={item.id} value={item.id}>
+                              {item.email}
+                            </option>
+                          ))}
+                        </select>
+                        <button
+                          type="button"
+                          onClick={() => void handleSaveOwner(user)}
+                          disabled={ownerSavingId === user.id}
+                          className="rounded-xl border border-violet-200 px-3 py-2 text-xs font-medium text-violet-600 transition hover:bg-violet-50 disabled:cursor-not-allowed disabled:opacity-70 dark:border-violet-900/40 dark:text-violet-300 dark:hover:bg-violet-950/30"
+                        >
+                          {ownerSavingId === user.id ? "保存中..." : "保存归属"}
+                        </button>
+                      </div>
                     </td>
                     <td className="px-4 py-4 font-medium text-gray-900 dark:text-white">
                       {formatPercent(user.commission_rate)}
@@ -405,7 +656,7 @@ export default function AdminAgentManagementPage() {
                     <td className="px-4 py-4">
                       <div className="flex max-w-[180px] items-center gap-2">
                         <input
-                          value={rateDrafts[user.id] ?? '0.00'}
+                          value={rateDrafts[user.id] ?? "0.00"}
                           onChange={(e) =>
                             setRateDrafts((prev) => ({
                               ...prev,
@@ -414,7 +665,9 @@ export default function AdminAgentManagementPage() {
                           }
                           className="w-full rounded-xl border border-gray-200 bg-transparent px-3 py-2 text-sm text-gray-900 outline-none transition focus:border-blue-400 dark:border-gray-700 dark:text-white"
                         />
-                        <span className="text-sm text-gray-500 dark:text-gray-400">%</span>
+                        <span className="text-sm text-gray-500 dark:text-gray-400">
+                          %
+                        </span>
                       </div>
                     </td>
                     <td className="px-4 py-4">
@@ -425,15 +678,17 @@ export default function AdminAgentManagementPage() {
                           disabled={savingId === user.id}
                           className="rounded-xl bg-amber-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-amber-600 disabled:cursor-not-allowed disabled:opacity-70"
                         >
-                          {savingId === user.id ? '保存中...' : '保存比例'}
+                          {savingId === user.id ? "保存中..." : "保存比例"}
                         </button>
                         <button
                           type="button"
-                          onClick={() => void handleSwitchRole(user, 'user')}
+                          onClick={() => void handleSwitchRole(user, "user")}
                           disabled={switchingRoleId === user.id}
                           className="rounded-xl bg-red-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-70"
                         >
-                          {switchingRoleId === user.id ? '处理中...' : '取消代理'}
+                          {switchingRoleId === user.id
+                            ? "处理中..."
+                            : "取消代理"}
                         </button>
                       </div>
                     </td>
@@ -446,12 +701,15 @@ export default function AdminAgentManagementPage() {
 
         <div className="flex items-center justify-between border-t border-gray-100 px-4 py-4 text-sm text-gray-500 dark:border-gray-800/70 dark:text-gray-400">
           <div>
-            第 {pagination.page} / {totalPages} 页，共 {pagination.total} 个代理用户
+            第 {pagination.page} / {totalPages} 页，共 {pagination.total}{" "}
+            个代理用户
           </div>
           <div className="flex gap-2">
             <button
               type="button"
-              onClick={() => void loadUsers(Math.max(1, pagination.page - 1), search)}
+              onClick={() =>
+                void loadUsers(Math.max(1, pagination.page - 1), search)
+              }
               disabled={pagination.page <= 1 || loading}
               className="rounded-xl border border-gray-200 px-3 py-2 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:hover:bg-gray-800"
             >
@@ -459,7 +717,12 @@ export default function AdminAgentManagementPage() {
             </button>
             <button
               type="button"
-              onClick={() => void loadUsers(Math.min(totalPages, pagination.page + 1), search)}
+              onClick={() =>
+                void loadUsers(
+                  Math.min(totalPages, pagination.page + 1),
+                  search,
+                )
+              }
               disabled={pagination.page >= totalPages || loading}
               className="rounded-xl border border-gray-200 px-3 py-2 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:hover:bg-gray-800"
             >

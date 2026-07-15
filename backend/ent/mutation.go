@@ -7842,33 +7842,35 @@ func (m *CommissionLogMutation) ResetEdge(name string) error {
 // CommissionRuleMutation represents an operation that mutates the CommissionRule nodes in the graph.
 type CommissionRuleMutation struct {
 	config
-	op                         Op
-	typ                        string
-	id                         *int64
-	created_at                 *time.Time
-	updated_at                 *time.Time
-	name                       *string
-	status                     *string
-	calc_mode                  *string
-	agent_target_rate          *float64
-	addagent_target_rate       *float64
-	distributor_target_rate    *float64
-	adddistributor_target_rate *float64
-	freeze_hours               *int
-	addfreeze_hours            *int
-	settlement_mode            *string
-	scope_type                 *string
-	scope_id                   *int64
-	addscope_id                *int64
-	priority                   *int
-	addpriority                *int
-	effective_at               *time.Time
-	expired_at                 *time.Time
-	config_json                *map[string]interface{}
-	clearedFields              map[string]struct{}
-	done                       bool
-	oldValue                   func(context.Context) (*CommissionRule, error)
-	predicates                 []predicate.CommissionRule
+	op                             Op
+	typ                            string
+	id                             *int64
+	created_at                     *time.Time
+	updated_at                     *time.Time
+	name                           *string
+	status                         *string
+	calc_mode                      *string
+	channel_partner_target_rate    *float64
+	addchannel_partner_target_rate *float64
+	agent_target_rate              *float64
+	addagent_target_rate           *float64
+	distributor_target_rate        *float64
+	adddistributor_target_rate     *float64
+	freeze_hours                   *int
+	addfreeze_hours                *int
+	settlement_mode                *string
+	scope_type                     *string
+	scope_id                       *int64
+	addscope_id                    *int64
+	priority                       *int
+	addpriority                    *int
+	effective_at                   *time.Time
+	expired_at                     *time.Time
+	config_json                    *map[string]interface{}
+	clearedFields                  map[string]struct{}
+	done                           bool
+	oldValue                       func(context.Context) (*CommissionRule, error)
+	predicates                     []predicate.CommissionRule
 }
 
 var _ ent.Mutation = (*CommissionRuleMutation)(nil)
@@ -8147,6 +8149,62 @@ func (m *CommissionRuleMutation) OldCalcMode(ctx context.Context) (v string, err
 // ResetCalcMode resets all changes to the "calc_mode" field.
 func (m *CommissionRuleMutation) ResetCalcMode() {
 	m.calc_mode = nil
+}
+
+// SetChannelPartnerTargetRate sets the "channel_partner_target_rate" field.
+func (m *CommissionRuleMutation) SetChannelPartnerTargetRate(f float64) {
+	m.channel_partner_target_rate = &f
+	m.addchannel_partner_target_rate = nil
+}
+
+// ChannelPartnerTargetRate returns the value of the "channel_partner_target_rate" field in the mutation.
+func (m *CommissionRuleMutation) ChannelPartnerTargetRate() (r float64, exists bool) {
+	v := m.channel_partner_target_rate
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldChannelPartnerTargetRate returns the old "channel_partner_target_rate" field's value of the CommissionRule entity.
+// If the CommissionRule object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CommissionRuleMutation) OldChannelPartnerTargetRate(ctx context.Context) (v float64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldChannelPartnerTargetRate is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldChannelPartnerTargetRate requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldChannelPartnerTargetRate: %w", err)
+	}
+	return oldValue.ChannelPartnerTargetRate, nil
+}
+
+// AddChannelPartnerTargetRate adds f to the "channel_partner_target_rate" field.
+func (m *CommissionRuleMutation) AddChannelPartnerTargetRate(f float64) {
+	if m.addchannel_partner_target_rate != nil {
+		*m.addchannel_partner_target_rate += f
+	} else {
+		m.addchannel_partner_target_rate = &f
+	}
+}
+
+// AddedChannelPartnerTargetRate returns the value that was added to the "channel_partner_target_rate" field in this mutation.
+func (m *CommissionRuleMutation) AddedChannelPartnerTargetRate() (r float64, exists bool) {
+	v := m.addchannel_partner_target_rate
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetChannelPartnerTargetRate resets all changes to the "channel_partner_target_rate" field.
+func (m *CommissionRuleMutation) ResetChannelPartnerTargetRate() {
+	m.channel_partner_target_rate = nil
+	m.addchannel_partner_target_rate = nil
 }
 
 // SetAgentTargetRate sets the "agent_target_rate" field.
@@ -8696,7 +8754,7 @@ func (m *CommissionRuleMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *CommissionRuleMutation) Fields() []string {
-	fields := make([]string, 0, 15)
+	fields := make([]string, 0, 16)
 	if m.created_at != nil {
 		fields = append(fields, commissionrule.FieldCreatedAt)
 	}
@@ -8711,6 +8769,9 @@ func (m *CommissionRuleMutation) Fields() []string {
 	}
 	if m.calc_mode != nil {
 		fields = append(fields, commissionrule.FieldCalcMode)
+	}
+	if m.channel_partner_target_rate != nil {
+		fields = append(fields, commissionrule.FieldChannelPartnerTargetRate)
 	}
 	if m.agent_target_rate != nil {
 		fields = append(fields, commissionrule.FieldAgentTargetRate)
@@ -8760,6 +8821,8 @@ func (m *CommissionRuleMutation) Field(name string) (ent.Value, bool) {
 		return m.Status()
 	case commissionrule.FieldCalcMode:
 		return m.CalcMode()
+	case commissionrule.FieldChannelPartnerTargetRate:
+		return m.ChannelPartnerTargetRate()
 	case commissionrule.FieldAgentTargetRate:
 		return m.AgentTargetRate()
 	case commissionrule.FieldDistributorTargetRate:
@@ -8799,6 +8862,8 @@ func (m *CommissionRuleMutation) OldField(ctx context.Context, name string) (ent
 		return m.OldStatus(ctx)
 	case commissionrule.FieldCalcMode:
 		return m.OldCalcMode(ctx)
+	case commissionrule.FieldChannelPartnerTargetRate:
+		return m.OldChannelPartnerTargetRate(ctx)
 	case commissionrule.FieldAgentTargetRate:
 		return m.OldAgentTargetRate(ctx)
 	case commissionrule.FieldDistributorTargetRate:
@@ -8862,6 +8927,13 @@ func (m *CommissionRuleMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetCalcMode(v)
+		return nil
+	case commissionrule.FieldChannelPartnerTargetRate:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetChannelPartnerTargetRate(v)
 		return nil
 	case commissionrule.FieldAgentTargetRate:
 		v, ok := value.(float64)
@@ -8941,6 +9013,9 @@ func (m *CommissionRuleMutation) SetField(name string, value ent.Value) error {
 // this mutation.
 func (m *CommissionRuleMutation) AddedFields() []string {
 	var fields []string
+	if m.addchannel_partner_target_rate != nil {
+		fields = append(fields, commissionrule.FieldChannelPartnerTargetRate)
+	}
 	if m.addagent_target_rate != nil {
 		fields = append(fields, commissionrule.FieldAgentTargetRate)
 	}
@@ -8964,6 +9039,8 @@ func (m *CommissionRuleMutation) AddedFields() []string {
 // was not set, or was not defined in the schema.
 func (m *CommissionRuleMutation) AddedField(name string) (ent.Value, bool) {
 	switch name {
+	case commissionrule.FieldChannelPartnerTargetRate:
+		return m.AddedChannelPartnerTargetRate()
 	case commissionrule.FieldAgentTargetRate:
 		return m.AddedAgentTargetRate()
 	case commissionrule.FieldDistributorTargetRate:
@@ -8983,6 +9060,13 @@ func (m *CommissionRuleMutation) AddedField(name string) (ent.Value, bool) {
 // type.
 func (m *CommissionRuleMutation) AddField(name string, value ent.Value) error {
 	switch name {
+	case commissionrule.FieldChannelPartnerTargetRate:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddChannelPartnerTargetRate(v)
+		return nil
 	case commissionrule.FieldAgentTargetRate:
 		v, ok := value.(float64)
 		if !ok {
@@ -9087,6 +9171,9 @@ func (m *CommissionRuleMutation) ResetField(name string) error {
 	case commissionrule.FieldCalcMode:
 		m.ResetCalcMode()
 		return nil
+	case commissionrule.FieldChannelPartnerTargetRate:
+		m.ResetChannelPartnerTargetRate()
+		return nil
 	case commissionrule.FieldAgentTargetRate:
 		m.ResetAgentTargetRate()
 		return nil
@@ -9172,43 +9259,45 @@ func (m *CommissionRuleMutation) ResetEdge(name string) error {
 // CommissionSplitLogMutation represents an operation that mutates the CommissionSplitLog nodes in the graph.
 type CommissionSplitLogMutation struct {
 	config
-	op                      Op
-	typ                     string
-	id                      *int64
-	created_at              *time.Time
-	updated_at              *time.Time
-	beneficiary_role        *string
-	level                   *int
-	addlevel                *int
-	calc_mode               *string
-	base_amount             *float64
-	addbase_amount          *float64
-	target_rate             *float64
-	addtarget_rate          *float64
-	parent_rate             *float64
-	addparent_rate          *float64
-	commission_amount       *float64
-	addcommission_amount    *float64
-	status                  *string
-	settled_at              *time.Time
-	relation_snapshot       *map[string]interface{}
-	remark                  *string
-	clearedFields           map[string]struct{}
-	payment_order           *int64
-	clearedpayment_order    bool
-	consumer_user           *int64
-	clearedconsumer_user    bool
-	beneficiary_user        *int64
-	clearedbeneficiary_user bool
-	agent_user              *int64
-	clearedagent_user       bool
-	distributor_user        *int64
-	cleareddistributor_user bool
-	commission_rule         *int64
-	clearedcommission_rule  bool
-	done                    bool
-	oldValue                func(context.Context) (*CommissionSplitLog, error)
-	predicates              []predicate.CommissionSplitLog
+	op                          Op
+	typ                         string
+	id                          *int64
+	created_at                  *time.Time
+	updated_at                  *time.Time
+	beneficiary_role            *string
+	level                       *int
+	addlevel                    *int
+	calc_mode                   *string
+	base_amount                 *float64
+	addbase_amount              *float64
+	target_rate                 *float64
+	addtarget_rate              *float64
+	parent_rate                 *float64
+	addparent_rate              *float64
+	commission_amount           *float64
+	addcommission_amount        *float64
+	status                      *string
+	settled_at                  *time.Time
+	relation_snapshot           *map[string]interface{}
+	remark                      *string
+	clearedFields               map[string]struct{}
+	payment_order               *int64
+	clearedpayment_order        bool
+	consumer_user               *int64
+	clearedconsumer_user        bool
+	beneficiary_user            *int64
+	clearedbeneficiary_user     bool
+	channel_partner_user        *int64
+	clearedchannel_partner_user bool
+	agent_user                  *int64
+	clearedagent_user           bool
+	distributor_user            *int64
+	cleareddistributor_user     bool
+	commission_rule             *int64
+	clearedcommission_rule      bool
+	done                        bool
+	oldValue                    func(context.Context) (*CommissionSplitLog, error)
+	predicates                  []predicate.CommissionSplitLog
 }
 
 var _ ent.Mutation = (*CommissionSplitLogMutation)(nil)
@@ -9536,6 +9625,55 @@ func (m *CommissionSplitLogMutation) OldBeneficiaryRole(ctx context.Context) (v 
 // ResetBeneficiaryRole resets all changes to the "beneficiary_role" field.
 func (m *CommissionSplitLogMutation) ResetBeneficiaryRole() {
 	m.beneficiary_role = nil
+}
+
+// SetChannelPartnerUserID sets the "channel_partner_user_id" field.
+func (m *CommissionSplitLogMutation) SetChannelPartnerUserID(i int64) {
+	m.channel_partner_user = &i
+}
+
+// ChannelPartnerUserID returns the value of the "channel_partner_user_id" field in the mutation.
+func (m *CommissionSplitLogMutation) ChannelPartnerUserID() (r int64, exists bool) {
+	v := m.channel_partner_user
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldChannelPartnerUserID returns the old "channel_partner_user_id" field's value of the CommissionSplitLog entity.
+// If the CommissionSplitLog object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CommissionSplitLogMutation) OldChannelPartnerUserID(ctx context.Context) (v *int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldChannelPartnerUserID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldChannelPartnerUserID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldChannelPartnerUserID: %w", err)
+	}
+	return oldValue.ChannelPartnerUserID, nil
+}
+
+// ClearChannelPartnerUserID clears the value of the "channel_partner_user_id" field.
+func (m *CommissionSplitLogMutation) ClearChannelPartnerUserID() {
+	m.channel_partner_user = nil
+	m.clearedFields[commissionsplitlog.FieldChannelPartnerUserID] = struct{}{}
+}
+
+// ChannelPartnerUserIDCleared returns if the "channel_partner_user_id" field was cleared in this mutation.
+func (m *CommissionSplitLogMutation) ChannelPartnerUserIDCleared() bool {
+	_, ok := m.clearedFields[commissionsplitlog.FieldChannelPartnerUserID]
+	return ok
+}
+
+// ResetChannelPartnerUserID resets all changes to the "channel_partner_user_id" field.
+func (m *CommissionSplitLogMutation) ResetChannelPartnerUserID() {
+	m.channel_partner_user = nil
+	delete(m.clearedFields, commissionsplitlog.FieldChannelPartnerUserID)
 }
 
 // SetAgentUserID sets the "agent_user_id" field.
@@ -10278,6 +10416,33 @@ func (m *CommissionSplitLogMutation) ResetBeneficiaryUser() {
 	m.clearedbeneficiary_user = false
 }
 
+// ClearChannelPartnerUser clears the "channel_partner_user" edge to the User entity.
+func (m *CommissionSplitLogMutation) ClearChannelPartnerUser() {
+	m.clearedchannel_partner_user = true
+	m.clearedFields[commissionsplitlog.FieldChannelPartnerUserID] = struct{}{}
+}
+
+// ChannelPartnerUserCleared reports if the "channel_partner_user" edge to the User entity was cleared.
+func (m *CommissionSplitLogMutation) ChannelPartnerUserCleared() bool {
+	return m.ChannelPartnerUserIDCleared() || m.clearedchannel_partner_user
+}
+
+// ChannelPartnerUserIDs returns the "channel_partner_user" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ChannelPartnerUserID instead. It exists only for internal usage by the builders.
+func (m *CommissionSplitLogMutation) ChannelPartnerUserIDs() (ids []int64) {
+	if id := m.channel_partner_user; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetChannelPartnerUser resets all changes to the "channel_partner_user" edge.
+func (m *CommissionSplitLogMutation) ResetChannelPartnerUser() {
+	m.channel_partner_user = nil
+	m.clearedchannel_partner_user = false
+}
+
 // ClearAgentUser clears the "agent_user" edge to the User entity.
 func (m *CommissionSplitLogMutation) ClearAgentUser() {
 	m.clearedagent_user = true
@@ -10406,7 +10571,7 @@ func (m *CommissionSplitLogMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *CommissionSplitLogMutation) Fields() []string {
-	fields := make([]string, 0, 19)
+	fields := make([]string, 0, 20)
 	if m.created_at != nil {
 		fields = append(fields, commissionsplitlog.FieldCreatedAt)
 	}
@@ -10424,6 +10589,9 @@ func (m *CommissionSplitLogMutation) Fields() []string {
 	}
 	if m.beneficiary_role != nil {
 		fields = append(fields, commissionsplitlog.FieldBeneficiaryRole)
+	}
+	if m.channel_partner_user != nil {
+		fields = append(fields, commissionsplitlog.FieldChannelPartnerUserID)
 	}
 	if m.agent_user != nil {
 		fields = append(fields, commissionsplitlog.FieldAgentUserID)
@@ -10484,6 +10652,8 @@ func (m *CommissionSplitLogMutation) Field(name string) (ent.Value, bool) {
 		return m.BeneficiaryUserID()
 	case commissionsplitlog.FieldBeneficiaryRole:
 		return m.BeneficiaryRole()
+	case commissionsplitlog.FieldChannelPartnerUserID:
+		return m.ChannelPartnerUserID()
 	case commissionsplitlog.FieldAgentUserID:
 		return m.AgentUserID()
 	case commissionsplitlog.FieldDistributorUserID:
@@ -10531,6 +10701,8 @@ func (m *CommissionSplitLogMutation) OldField(ctx context.Context, name string) 
 		return m.OldBeneficiaryUserID(ctx)
 	case commissionsplitlog.FieldBeneficiaryRole:
 		return m.OldBeneficiaryRole(ctx)
+	case commissionsplitlog.FieldChannelPartnerUserID:
+		return m.OldChannelPartnerUserID(ctx)
 	case commissionsplitlog.FieldAgentUserID:
 		return m.OldAgentUserID(ctx)
 	case commissionsplitlog.FieldDistributorUserID:
@@ -10607,6 +10779,13 @@ func (m *CommissionSplitLogMutation) SetField(name string, value ent.Value) erro
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetBeneficiaryRole(v)
+		return nil
+	case commissionsplitlog.FieldChannelPartnerUserID:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetChannelPartnerUserID(v)
 		return nil
 	case commissionsplitlog.FieldAgentUserID:
 		v, ok := value.(int64)
@@ -10795,6 +10974,9 @@ func (m *CommissionSplitLogMutation) ClearedFields() []string {
 	if m.FieldCleared(commissionsplitlog.FieldOrderID) {
 		fields = append(fields, commissionsplitlog.FieldOrderID)
 	}
+	if m.FieldCleared(commissionsplitlog.FieldChannelPartnerUserID) {
+		fields = append(fields, commissionsplitlog.FieldChannelPartnerUserID)
+	}
 	if m.FieldCleared(commissionsplitlog.FieldAgentUserID) {
 		fields = append(fields, commissionsplitlog.FieldAgentUserID)
 	}
@@ -10829,6 +11011,9 @@ func (m *CommissionSplitLogMutation) ClearField(name string) error {
 	switch name {
 	case commissionsplitlog.FieldOrderID:
 		m.ClearOrderID()
+		return nil
+	case commissionsplitlog.FieldChannelPartnerUserID:
+		m.ClearChannelPartnerUserID()
 		return nil
 	case commissionsplitlog.FieldAgentUserID:
 		m.ClearAgentUserID()
@@ -10873,6 +11058,9 @@ func (m *CommissionSplitLogMutation) ResetField(name string) error {
 		return nil
 	case commissionsplitlog.FieldBeneficiaryRole:
 		m.ResetBeneficiaryRole()
+		return nil
+	case commissionsplitlog.FieldChannelPartnerUserID:
+		m.ResetChannelPartnerUserID()
 		return nil
 	case commissionsplitlog.FieldAgentUserID:
 		m.ResetAgentUserID()
@@ -10919,7 +11107,7 @@ func (m *CommissionSplitLogMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *CommissionSplitLogMutation) AddedEdges() []string {
-	edges := make([]string, 0, 6)
+	edges := make([]string, 0, 7)
 	if m.payment_order != nil {
 		edges = append(edges, commissionsplitlog.EdgePaymentOrder)
 	}
@@ -10928,6 +11116,9 @@ func (m *CommissionSplitLogMutation) AddedEdges() []string {
 	}
 	if m.beneficiary_user != nil {
 		edges = append(edges, commissionsplitlog.EdgeBeneficiaryUser)
+	}
+	if m.channel_partner_user != nil {
+		edges = append(edges, commissionsplitlog.EdgeChannelPartnerUser)
 	}
 	if m.agent_user != nil {
 		edges = append(edges, commissionsplitlog.EdgeAgentUser)
@@ -10957,6 +11148,10 @@ func (m *CommissionSplitLogMutation) AddedIDs(name string) []ent.Value {
 		if id := m.beneficiary_user; id != nil {
 			return []ent.Value{*id}
 		}
+	case commissionsplitlog.EdgeChannelPartnerUser:
+		if id := m.channel_partner_user; id != nil {
+			return []ent.Value{*id}
+		}
 	case commissionsplitlog.EdgeAgentUser:
 		if id := m.agent_user; id != nil {
 			return []ent.Value{*id}
@@ -10975,7 +11170,7 @@ func (m *CommissionSplitLogMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *CommissionSplitLogMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 6)
+	edges := make([]string, 0, 7)
 	return edges
 }
 
@@ -10987,7 +11182,7 @@ func (m *CommissionSplitLogMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *CommissionSplitLogMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 6)
+	edges := make([]string, 0, 7)
 	if m.clearedpayment_order {
 		edges = append(edges, commissionsplitlog.EdgePaymentOrder)
 	}
@@ -10996,6 +11191,9 @@ func (m *CommissionSplitLogMutation) ClearedEdges() []string {
 	}
 	if m.clearedbeneficiary_user {
 		edges = append(edges, commissionsplitlog.EdgeBeneficiaryUser)
+	}
+	if m.clearedchannel_partner_user {
+		edges = append(edges, commissionsplitlog.EdgeChannelPartnerUser)
 	}
 	if m.clearedagent_user {
 		edges = append(edges, commissionsplitlog.EdgeAgentUser)
@@ -11019,6 +11217,8 @@ func (m *CommissionSplitLogMutation) EdgeCleared(name string) bool {
 		return m.clearedconsumer_user
 	case commissionsplitlog.EdgeBeneficiaryUser:
 		return m.clearedbeneficiary_user
+	case commissionsplitlog.EdgeChannelPartnerUser:
+		return m.clearedchannel_partner_user
 	case commissionsplitlog.EdgeAgentUser:
 		return m.clearedagent_user
 	case commissionsplitlog.EdgeDistributorUser:
@@ -11041,6 +11241,9 @@ func (m *CommissionSplitLogMutation) ClearEdge(name string) error {
 		return nil
 	case commissionsplitlog.EdgeBeneficiaryUser:
 		m.ClearBeneficiaryUser()
+		return nil
+	case commissionsplitlog.EdgeChannelPartnerUser:
+		m.ClearChannelPartnerUser()
 		return nil
 	case commissionsplitlog.EdgeAgentUser:
 		m.ClearAgentUser()
@@ -11067,6 +11270,9 @@ func (m *CommissionSplitLogMutation) ResetEdge(name string) error {
 		return nil
 	case commissionsplitlog.EdgeBeneficiaryUser:
 		m.ResetBeneficiaryUser()
+		return nil
+	case commissionsplitlog.EdgeChannelPartnerUser:
+		m.ResetChannelPartnerUser()
 		return nil
 	case commissionsplitlog.EdgeAgentUser:
 		m.ResetAgentUser()
@@ -24771,28 +24977,30 @@ func (m *PromoCodeUsageMutation) ResetEdge(name string) error {
 // PromotionRelationMutation represents an operation that mutates the PromotionRelation nodes in the graph.
 type PromotionRelationMutation struct {
 	config
-	op                        Op
-	typ                       string
-	id                        *int64
-	created_at                *time.Time
-	updated_at                *time.Time
-	direct_parent_role        *string
-	binding_source            *string
-	is_locked                 *bool
-	bound_at                  *time.Time
-	notes                     *string
-	clearedFields             map[string]struct{}
-	user                      *int64
-	cleareduser               bool
-	agent_user                *int64
-	clearedagent_user         bool
-	distributor_user          *int64
-	cleareddistributor_user   bool
-	direct_parent_user        *int64
-	cleareddirect_parent_user bool
-	done                      bool
-	oldValue                  func(context.Context) (*PromotionRelation, error)
-	predicates                []predicate.PromotionRelation
+	op                          Op
+	typ                         string
+	id                          *int64
+	created_at                  *time.Time
+	updated_at                  *time.Time
+	direct_parent_role          *string
+	binding_source              *string
+	is_locked                   *bool
+	bound_at                    *time.Time
+	notes                       *string
+	clearedFields               map[string]struct{}
+	user                        *int64
+	cleareduser                 bool
+	channel_partner_user        *int64
+	clearedchannel_partner_user bool
+	agent_user                  *int64
+	clearedagent_user           bool
+	distributor_user            *int64
+	cleareddistributor_user     bool
+	direct_parent_user          *int64
+	cleareddirect_parent_user   bool
+	done                        bool
+	oldValue                    func(context.Context) (*PromotionRelation, error)
+	predicates                  []predicate.PromotionRelation
 }
 
 var _ ent.Mutation = (*PromotionRelationMutation)(nil)
@@ -24999,6 +25207,55 @@ func (m *PromotionRelationMutation) OldUserID(ctx context.Context) (v int64, err
 // ResetUserID resets all changes to the "user_id" field.
 func (m *PromotionRelationMutation) ResetUserID() {
 	m.user = nil
+}
+
+// SetChannelPartnerUserID sets the "channel_partner_user_id" field.
+func (m *PromotionRelationMutation) SetChannelPartnerUserID(i int64) {
+	m.channel_partner_user = &i
+}
+
+// ChannelPartnerUserID returns the value of the "channel_partner_user_id" field in the mutation.
+func (m *PromotionRelationMutation) ChannelPartnerUserID() (r int64, exists bool) {
+	v := m.channel_partner_user
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldChannelPartnerUserID returns the old "channel_partner_user_id" field's value of the PromotionRelation entity.
+// If the PromotionRelation object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PromotionRelationMutation) OldChannelPartnerUserID(ctx context.Context) (v *int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldChannelPartnerUserID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldChannelPartnerUserID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldChannelPartnerUserID: %w", err)
+	}
+	return oldValue.ChannelPartnerUserID, nil
+}
+
+// ClearChannelPartnerUserID clears the value of the "channel_partner_user_id" field.
+func (m *PromotionRelationMutation) ClearChannelPartnerUserID() {
+	m.channel_partner_user = nil
+	m.clearedFields[promotionrelation.FieldChannelPartnerUserID] = struct{}{}
+}
+
+// ChannelPartnerUserIDCleared returns if the "channel_partner_user_id" field was cleared in this mutation.
+func (m *PromotionRelationMutation) ChannelPartnerUserIDCleared() bool {
+	_, ok := m.clearedFields[promotionrelation.FieldChannelPartnerUserID]
+	return ok
+}
+
+// ResetChannelPartnerUserID resets all changes to the "channel_partner_user_id" field.
+func (m *PromotionRelationMutation) ResetChannelPartnerUserID() {
+	m.channel_partner_user = nil
+	delete(m.clearedFields, promotionrelation.FieldChannelPartnerUserID)
 }
 
 // SetAgentUserID sets the "agent_user_id" field.
@@ -25368,6 +25625,33 @@ func (m *PromotionRelationMutation) ResetUser() {
 	m.cleareduser = false
 }
 
+// ClearChannelPartnerUser clears the "channel_partner_user" edge to the User entity.
+func (m *PromotionRelationMutation) ClearChannelPartnerUser() {
+	m.clearedchannel_partner_user = true
+	m.clearedFields[promotionrelation.FieldChannelPartnerUserID] = struct{}{}
+}
+
+// ChannelPartnerUserCleared reports if the "channel_partner_user" edge to the User entity was cleared.
+func (m *PromotionRelationMutation) ChannelPartnerUserCleared() bool {
+	return m.ChannelPartnerUserIDCleared() || m.clearedchannel_partner_user
+}
+
+// ChannelPartnerUserIDs returns the "channel_partner_user" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ChannelPartnerUserID instead. It exists only for internal usage by the builders.
+func (m *PromotionRelationMutation) ChannelPartnerUserIDs() (ids []int64) {
+	if id := m.channel_partner_user; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetChannelPartnerUser resets all changes to the "channel_partner_user" edge.
+func (m *PromotionRelationMutation) ResetChannelPartnerUser() {
+	m.channel_partner_user = nil
+	m.clearedchannel_partner_user = false
+}
+
 // ClearAgentUser clears the "agent_user" edge to the User entity.
 func (m *PromotionRelationMutation) ClearAgentUser() {
 	m.clearedagent_user = true
@@ -25483,7 +25767,7 @@ func (m *PromotionRelationMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *PromotionRelationMutation) Fields() []string {
-	fields := make([]string, 0, 11)
+	fields := make([]string, 0, 12)
 	if m.created_at != nil {
 		fields = append(fields, promotionrelation.FieldCreatedAt)
 	}
@@ -25492,6 +25776,9 @@ func (m *PromotionRelationMutation) Fields() []string {
 	}
 	if m.user != nil {
 		fields = append(fields, promotionrelation.FieldUserID)
+	}
+	if m.channel_partner_user != nil {
+		fields = append(fields, promotionrelation.FieldChannelPartnerUserID)
 	}
 	if m.agent_user != nil {
 		fields = append(fields, promotionrelation.FieldAgentUserID)
@@ -25531,6 +25818,8 @@ func (m *PromotionRelationMutation) Field(name string) (ent.Value, bool) {
 		return m.UpdatedAt()
 	case promotionrelation.FieldUserID:
 		return m.UserID()
+	case promotionrelation.FieldChannelPartnerUserID:
+		return m.ChannelPartnerUserID()
 	case promotionrelation.FieldAgentUserID:
 		return m.AgentUserID()
 	case promotionrelation.FieldDistributorUserID:
@@ -25562,6 +25851,8 @@ func (m *PromotionRelationMutation) OldField(ctx context.Context, name string) (
 		return m.OldUpdatedAt(ctx)
 	case promotionrelation.FieldUserID:
 		return m.OldUserID(ctx)
+	case promotionrelation.FieldChannelPartnerUserID:
+		return m.OldChannelPartnerUserID(ctx)
 	case promotionrelation.FieldAgentUserID:
 		return m.OldAgentUserID(ctx)
 	case promotionrelation.FieldDistributorUserID:
@@ -25607,6 +25898,13 @@ func (m *PromotionRelationMutation) SetField(name string, value ent.Value) error
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetUserID(v)
+		return nil
+	case promotionrelation.FieldChannelPartnerUserID:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetChannelPartnerUserID(v)
 		return nil
 	case promotionrelation.FieldAgentUserID:
 		v, ok := value.(int64)
@@ -25697,6 +25995,9 @@ func (m *PromotionRelationMutation) AddField(name string, value ent.Value) error
 // mutation.
 func (m *PromotionRelationMutation) ClearedFields() []string {
 	var fields []string
+	if m.FieldCleared(promotionrelation.FieldChannelPartnerUserID) {
+		fields = append(fields, promotionrelation.FieldChannelPartnerUserID)
+	}
 	if m.FieldCleared(promotionrelation.FieldAgentUserID) {
 		fields = append(fields, promotionrelation.FieldAgentUserID)
 	}
@@ -25723,6 +26024,9 @@ func (m *PromotionRelationMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *PromotionRelationMutation) ClearField(name string) error {
 	switch name {
+	case promotionrelation.FieldChannelPartnerUserID:
+		m.ClearChannelPartnerUserID()
+		return nil
 	case promotionrelation.FieldAgentUserID:
 		m.ClearAgentUserID()
 		return nil
@@ -25751,6 +26055,9 @@ func (m *PromotionRelationMutation) ResetField(name string) error {
 		return nil
 	case promotionrelation.FieldUserID:
 		m.ResetUserID()
+		return nil
+	case promotionrelation.FieldChannelPartnerUserID:
+		m.ResetChannelPartnerUserID()
 		return nil
 	case promotionrelation.FieldAgentUserID:
 		m.ResetAgentUserID()
@@ -25782,9 +26089,12 @@ func (m *PromotionRelationMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *PromotionRelationMutation) AddedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 5)
 	if m.user != nil {
 		edges = append(edges, promotionrelation.EdgeUser)
+	}
+	if m.channel_partner_user != nil {
+		edges = append(edges, promotionrelation.EdgeChannelPartnerUser)
 	}
 	if m.agent_user != nil {
 		edges = append(edges, promotionrelation.EdgeAgentUser)
@@ -25806,6 +26116,10 @@ func (m *PromotionRelationMutation) AddedIDs(name string) []ent.Value {
 		if id := m.user; id != nil {
 			return []ent.Value{*id}
 		}
+	case promotionrelation.EdgeChannelPartnerUser:
+		if id := m.channel_partner_user; id != nil {
+			return []ent.Value{*id}
+		}
 	case promotionrelation.EdgeAgentUser:
 		if id := m.agent_user; id != nil {
 			return []ent.Value{*id}
@@ -25824,7 +26138,7 @@ func (m *PromotionRelationMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *PromotionRelationMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 5)
 	return edges
 }
 
@@ -25836,9 +26150,12 @@ func (m *PromotionRelationMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *PromotionRelationMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 5)
 	if m.cleareduser {
 		edges = append(edges, promotionrelation.EdgeUser)
+	}
+	if m.clearedchannel_partner_user {
+		edges = append(edges, promotionrelation.EdgeChannelPartnerUser)
 	}
 	if m.clearedagent_user {
 		edges = append(edges, promotionrelation.EdgeAgentUser)
@@ -25858,6 +26175,8 @@ func (m *PromotionRelationMutation) EdgeCleared(name string) bool {
 	switch name {
 	case promotionrelation.EdgeUser:
 		return m.cleareduser
+	case promotionrelation.EdgeChannelPartnerUser:
+		return m.clearedchannel_partner_user
 	case promotionrelation.EdgeAgentUser:
 		return m.clearedagent_user
 	case promotionrelation.EdgeDistributorUser:
@@ -25874,6 +26193,9 @@ func (m *PromotionRelationMutation) ClearEdge(name string) error {
 	switch name {
 	case promotionrelation.EdgeUser:
 		m.ClearUser()
+		return nil
+	case promotionrelation.EdgeChannelPartnerUser:
+		m.ClearChannelPartnerUser()
 		return nil
 	case promotionrelation.EdgeAgentUser:
 		m.ClearAgentUser()
@@ -25894,6 +26216,9 @@ func (m *PromotionRelationMutation) ResetEdge(name string) error {
 	switch name {
 	case promotionrelation.EdgeUser:
 		m.ResetUser()
+		return nil
+	case promotionrelation.EdgeChannelPartnerUser:
+		m.ResetChannelPartnerUser()
 		return nil
 	case promotionrelation.EdgeAgentUser:
 		m.ResetAgentUser()
@@ -35986,6 +36311,21 @@ type UserMutation struct {
 	invitees                      map[int64]struct{}
 	removedinvitees               map[int64]struct{}
 	clearedinvitees               bool
+	channel_partner               *int64
+	clearedchannel_partner        bool
+	channel_members               map[int64]struct{}
+	removedchannel_members        map[int64]struct{}
+	clearedchannel_members        bool
+	agent_owner                   *int64
+	clearedagent_owner            bool
+	agent_members                 map[int64]struct{}
+	removedagent_members          map[int64]struct{}
+	clearedagent_members          bool
+	distributor_owner             *int64
+	cleareddistributor_owner      bool
+	distributor_members           map[int64]struct{}
+	removeddistributor_members    map[int64]struct{}
+	cleareddistributor_members    bool
 	commission_logs               map[int64]struct{}
 	removedcommission_logs        map[int64]struct{}
 	clearedcommission_logs        bool
@@ -37205,6 +37545,153 @@ func (m *UserMutation) ResetTotalCommissionEarned() {
 	m.addtotal_commission_earned = nil
 }
 
+// SetChannelPartnerID sets the "channel_partner_id" field.
+func (m *UserMutation) SetChannelPartnerID(i int64) {
+	m.channel_partner = &i
+}
+
+// ChannelPartnerID returns the value of the "channel_partner_id" field in the mutation.
+func (m *UserMutation) ChannelPartnerID() (r int64, exists bool) {
+	v := m.channel_partner
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldChannelPartnerID returns the old "channel_partner_id" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldChannelPartnerID(ctx context.Context) (v *int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldChannelPartnerID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldChannelPartnerID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldChannelPartnerID: %w", err)
+	}
+	return oldValue.ChannelPartnerID, nil
+}
+
+// ClearChannelPartnerID clears the value of the "channel_partner_id" field.
+func (m *UserMutation) ClearChannelPartnerID() {
+	m.channel_partner = nil
+	m.clearedFields[user.FieldChannelPartnerID] = struct{}{}
+}
+
+// ChannelPartnerIDCleared returns if the "channel_partner_id" field was cleared in this mutation.
+func (m *UserMutation) ChannelPartnerIDCleared() bool {
+	_, ok := m.clearedFields[user.FieldChannelPartnerID]
+	return ok
+}
+
+// ResetChannelPartnerID resets all changes to the "channel_partner_id" field.
+func (m *UserMutation) ResetChannelPartnerID() {
+	m.channel_partner = nil
+	delete(m.clearedFields, user.FieldChannelPartnerID)
+}
+
+// SetAgentOwnerID sets the "agent_owner_id" field.
+func (m *UserMutation) SetAgentOwnerID(i int64) {
+	m.agent_owner = &i
+}
+
+// AgentOwnerID returns the value of the "agent_owner_id" field in the mutation.
+func (m *UserMutation) AgentOwnerID() (r int64, exists bool) {
+	v := m.agent_owner
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAgentOwnerID returns the old "agent_owner_id" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldAgentOwnerID(ctx context.Context) (v *int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAgentOwnerID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAgentOwnerID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAgentOwnerID: %w", err)
+	}
+	return oldValue.AgentOwnerID, nil
+}
+
+// ClearAgentOwnerID clears the value of the "agent_owner_id" field.
+func (m *UserMutation) ClearAgentOwnerID() {
+	m.agent_owner = nil
+	m.clearedFields[user.FieldAgentOwnerID] = struct{}{}
+}
+
+// AgentOwnerIDCleared returns if the "agent_owner_id" field was cleared in this mutation.
+func (m *UserMutation) AgentOwnerIDCleared() bool {
+	_, ok := m.clearedFields[user.FieldAgentOwnerID]
+	return ok
+}
+
+// ResetAgentOwnerID resets all changes to the "agent_owner_id" field.
+func (m *UserMutation) ResetAgentOwnerID() {
+	m.agent_owner = nil
+	delete(m.clearedFields, user.FieldAgentOwnerID)
+}
+
+// SetDistributorOwnerID sets the "distributor_owner_id" field.
+func (m *UserMutation) SetDistributorOwnerID(i int64) {
+	m.distributor_owner = &i
+}
+
+// DistributorOwnerID returns the value of the "distributor_owner_id" field in the mutation.
+func (m *UserMutation) DistributorOwnerID() (r int64, exists bool) {
+	v := m.distributor_owner
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDistributorOwnerID returns the old "distributor_owner_id" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldDistributorOwnerID(ctx context.Context) (v *int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDistributorOwnerID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDistributorOwnerID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDistributorOwnerID: %w", err)
+	}
+	return oldValue.DistributorOwnerID, nil
+}
+
+// ClearDistributorOwnerID clears the value of the "distributor_owner_id" field.
+func (m *UserMutation) ClearDistributorOwnerID() {
+	m.distributor_owner = nil
+	m.clearedFields[user.FieldDistributorOwnerID] = struct{}{}
+}
+
+// DistributorOwnerIDCleared returns if the "distributor_owner_id" field was cleared in this mutation.
+func (m *UserMutation) DistributorOwnerIDCleared() bool {
+	_, ok := m.clearedFields[user.FieldDistributorOwnerID]
+	return ok
+}
+
+// ResetDistributorOwnerID resets all changes to the "distributor_owner_id" field.
+func (m *UserMutation) ResetDistributorOwnerID() {
+	m.distributor_owner = nil
+	delete(m.clearedFields, user.FieldDistributorOwnerID)
+}
+
 // SetIsKeyAccount sets the "is_key_account" field.
 func (m *UserMutation) SetIsKeyAccount(b bool) {
 	m.is_key_account = &b
@@ -37504,6 +37991,249 @@ func (m *UserMutation) ResetInvitees() {
 	m.invitees = nil
 	m.clearedinvitees = false
 	m.removedinvitees = nil
+}
+
+// ClearChannelPartner clears the "channel_partner" edge to the User entity.
+func (m *UserMutation) ClearChannelPartner() {
+	m.clearedchannel_partner = true
+	m.clearedFields[user.FieldChannelPartnerID] = struct{}{}
+}
+
+// ChannelPartnerCleared reports if the "channel_partner" edge to the User entity was cleared.
+func (m *UserMutation) ChannelPartnerCleared() bool {
+	return m.ChannelPartnerIDCleared() || m.clearedchannel_partner
+}
+
+// ChannelPartnerIDs returns the "channel_partner" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ChannelPartnerID instead. It exists only for internal usage by the builders.
+func (m *UserMutation) ChannelPartnerIDs() (ids []int64) {
+	if id := m.channel_partner; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetChannelPartner resets all changes to the "channel_partner" edge.
+func (m *UserMutation) ResetChannelPartner() {
+	m.channel_partner = nil
+	m.clearedchannel_partner = false
+}
+
+// AddChannelMemberIDs adds the "channel_members" edge to the User entity by ids.
+func (m *UserMutation) AddChannelMemberIDs(ids ...int64) {
+	if m.channel_members == nil {
+		m.channel_members = make(map[int64]struct{})
+	}
+	for i := range ids {
+		m.channel_members[ids[i]] = struct{}{}
+	}
+}
+
+// ClearChannelMembers clears the "channel_members" edge to the User entity.
+func (m *UserMutation) ClearChannelMembers() {
+	m.clearedchannel_members = true
+}
+
+// ChannelMembersCleared reports if the "channel_members" edge to the User entity was cleared.
+func (m *UserMutation) ChannelMembersCleared() bool {
+	return m.clearedchannel_members
+}
+
+// RemoveChannelMemberIDs removes the "channel_members" edge to the User entity by IDs.
+func (m *UserMutation) RemoveChannelMemberIDs(ids ...int64) {
+	if m.removedchannel_members == nil {
+		m.removedchannel_members = make(map[int64]struct{})
+	}
+	for i := range ids {
+		delete(m.channel_members, ids[i])
+		m.removedchannel_members[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedChannelMembers returns the removed IDs of the "channel_members" edge to the User entity.
+func (m *UserMutation) RemovedChannelMembersIDs() (ids []int64) {
+	for id := range m.removedchannel_members {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ChannelMembersIDs returns the "channel_members" edge IDs in the mutation.
+func (m *UserMutation) ChannelMembersIDs() (ids []int64) {
+	for id := range m.channel_members {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetChannelMembers resets all changes to the "channel_members" edge.
+func (m *UserMutation) ResetChannelMembers() {
+	m.channel_members = nil
+	m.clearedchannel_members = false
+	m.removedchannel_members = nil
+}
+
+// ClearAgentOwner clears the "agent_owner" edge to the User entity.
+func (m *UserMutation) ClearAgentOwner() {
+	m.clearedagent_owner = true
+	m.clearedFields[user.FieldAgentOwnerID] = struct{}{}
+}
+
+// AgentOwnerCleared reports if the "agent_owner" edge to the User entity was cleared.
+func (m *UserMutation) AgentOwnerCleared() bool {
+	return m.AgentOwnerIDCleared() || m.clearedagent_owner
+}
+
+// AgentOwnerIDs returns the "agent_owner" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// AgentOwnerID instead. It exists only for internal usage by the builders.
+func (m *UserMutation) AgentOwnerIDs() (ids []int64) {
+	if id := m.agent_owner; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetAgentOwner resets all changes to the "agent_owner" edge.
+func (m *UserMutation) ResetAgentOwner() {
+	m.agent_owner = nil
+	m.clearedagent_owner = false
+}
+
+// AddAgentMemberIDs adds the "agent_members" edge to the User entity by ids.
+func (m *UserMutation) AddAgentMemberIDs(ids ...int64) {
+	if m.agent_members == nil {
+		m.agent_members = make(map[int64]struct{})
+	}
+	for i := range ids {
+		m.agent_members[ids[i]] = struct{}{}
+	}
+}
+
+// ClearAgentMembers clears the "agent_members" edge to the User entity.
+func (m *UserMutation) ClearAgentMembers() {
+	m.clearedagent_members = true
+}
+
+// AgentMembersCleared reports if the "agent_members" edge to the User entity was cleared.
+func (m *UserMutation) AgentMembersCleared() bool {
+	return m.clearedagent_members
+}
+
+// RemoveAgentMemberIDs removes the "agent_members" edge to the User entity by IDs.
+func (m *UserMutation) RemoveAgentMemberIDs(ids ...int64) {
+	if m.removedagent_members == nil {
+		m.removedagent_members = make(map[int64]struct{})
+	}
+	for i := range ids {
+		delete(m.agent_members, ids[i])
+		m.removedagent_members[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedAgentMembers returns the removed IDs of the "agent_members" edge to the User entity.
+func (m *UserMutation) RemovedAgentMembersIDs() (ids []int64) {
+	for id := range m.removedagent_members {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// AgentMembersIDs returns the "agent_members" edge IDs in the mutation.
+func (m *UserMutation) AgentMembersIDs() (ids []int64) {
+	for id := range m.agent_members {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetAgentMembers resets all changes to the "agent_members" edge.
+func (m *UserMutation) ResetAgentMembers() {
+	m.agent_members = nil
+	m.clearedagent_members = false
+	m.removedagent_members = nil
+}
+
+// ClearDistributorOwner clears the "distributor_owner" edge to the User entity.
+func (m *UserMutation) ClearDistributorOwner() {
+	m.cleareddistributor_owner = true
+	m.clearedFields[user.FieldDistributorOwnerID] = struct{}{}
+}
+
+// DistributorOwnerCleared reports if the "distributor_owner" edge to the User entity was cleared.
+func (m *UserMutation) DistributorOwnerCleared() bool {
+	return m.DistributorOwnerIDCleared() || m.cleareddistributor_owner
+}
+
+// DistributorOwnerIDs returns the "distributor_owner" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// DistributorOwnerID instead. It exists only for internal usage by the builders.
+func (m *UserMutation) DistributorOwnerIDs() (ids []int64) {
+	if id := m.distributor_owner; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetDistributorOwner resets all changes to the "distributor_owner" edge.
+func (m *UserMutation) ResetDistributorOwner() {
+	m.distributor_owner = nil
+	m.cleareddistributor_owner = false
+}
+
+// AddDistributorMemberIDs adds the "distributor_members" edge to the User entity by ids.
+func (m *UserMutation) AddDistributorMemberIDs(ids ...int64) {
+	if m.distributor_members == nil {
+		m.distributor_members = make(map[int64]struct{})
+	}
+	for i := range ids {
+		m.distributor_members[ids[i]] = struct{}{}
+	}
+}
+
+// ClearDistributorMembers clears the "distributor_members" edge to the User entity.
+func (m *UserMutation) ClearDistributorMembers() {
+	m.cleareddistributor_members = true
+}
+
+// DistributorMembersCleared reports if the "distributor_members" edge to the User entity was cleared.
+func (m *UserMutation) DistributorMembersCleared() bool {
+	return m.cleareddistributor_members
+}
+
+// RemoveDistributorMemberIDs removes the "distributor_members" edge to the User entity by IDs.
+func (m *UserMutation) RemoveDistributorMemberIDs(ids ...int64) {
+	if m.removeddistributor_members == nil {
+		m.removeddistributor_members = make(map[int64]struct{})
+	}
+	for i := range ids {
+		delete(m.distributor_members, ids[i])
+		m.removeddistributor_members[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedDistributorMembers returns the removed IDs of the "distributor_members" edge to the User entity.
+func (m *UserMutation) RemovedDistributorMembersIDs() (ids []int64) {
+	for id := range m.removeddistributor_members {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// DistributorMembersIDs returns the "distributor_members" edge IDs in the mutation.
+func (m *UserMutation) DistributorMembersIDs() (ids []int64) {
+	for id := range m.distributor_members {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetDistributorMembers resets all changes to the "distributor_members" edge.
+func (m *UserMutation) ResetDistributorMembers() {
+	m.distributor_members = nil
+	m.cleareddistributor_members = false
+	m.removeddistributor_members = nil
 }
 
 // AddCommissionLogIDs adds the "commission_logs" edge to the CommissionLog entity by ids.
@@ -38134,7 +38864,7 @@ func (m *UserMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *UserMutation) Fields() []string {
-	fields := make([]string, 0, 29)
+	fields := make([]string, 0, 32)
 	if m.created_at != nil {
 		fields = append(fields, user.FieldCreatedAt)
 	}
@@ -38207,6 +38937,15 @@ func (m *UserMutation) Fields() []string {
 	if m.total_commission_earned != nil {
 		fields = append(fields, user.FieldTotalCommissionEarned)
 	}
+	if m.channel_partner != nil {
+		fields = append(fields, user.FieldChannelPartnerID)
+	}
+	if m.agent_owner != nil {
+		fields = append(fields, user.FieldAgentOwnerID)
+	}
+	if m.distributor_owner != nil {
+		fields = append(fields, user.FieldDistributorOwnerID)
+	}
 	if m.is_key_account != nil {
 		fields = append(fields, user.FieldIsKeyAccount)
 	}
@@ -38278,6 +39017,12 @@ func (m *UserMutation) Field(name string) (ent.Value, bool) {
 		return m.CommissionBalance()
 	case user.FieldTotalCommissionEarned:
 		return m.TotalCommissionEarned()
+	case user.FieldChannelPartnerID:
+		return m.ChannelPartnerID()
+	case user.FieldAgentOwnerID:
+		return m.AgentOwnerID()
+	case user.FieldDistributorOwnerID:
+		return m.DistributorOwnerID()
 	case user.FieldIsKeyAccount:
 		return m.IsKeyAccount()
 	case user.FieldKeyAccountLevel:
@@ -38345,6 +39090,12 @@ func (m *UserMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldCommissionBalance(ctx)
 	case user.FieldTotalCommissionEarned:
 		return m.OldTotalCommissionEarned(ctx)
+	case user.FieldChannelPartnerID:
+		return m.OldChannelPartnerID(ctx)
+	case user.FieldAgentOwnerID:
+		return m.OldAgentOwnerID(ctx)
+	case user.FieldDistributorOwnerID:
+		return m.OldDistributorOwnerID(ctx)
 	case user.FieldIsKeyAccount:
 		return m.OldIsKeyAccount(ctx)
 	case user.FieldKeyAccountLevel:
@@ -38531,6 +39282,27 @@ func (m *UserMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetTotalCommissionEarned(v)
+		return nil
+	case user.FieldChannelPartnerID:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetChannelPartnerID(v)
+		return nil
+	case user.FieldAgentOwnerID:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAgentOwnerID(v)
+		return nil
+	case user.FieldDistributorOwnerID:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDistributorOwnerID(v)
 		return nil
 	case user.FieldIsKeyAccount:
 		v, ok := value.(bool)
@@ -38726,6 +39498,15 @@ func (m *UserMutation) ClearedFields() []string {
 	if m.FieldCleared(user.FieldInviteCode) {
 		fields = append(fields, user.FieldInviteCode)
 	}
+	if m.FieldCleared(user.FieldChannelPartnerID) {
+		fields = append(fields, user.FieldChannelPartnerID)
+	}
+	if m.FieldCleared(user.FieldAgentOwnerID) {
+		fields = append(fields, user.FieldAgentOwnerID)
+	}
+	if m.FieldCleared(user.FieldDistributorOwnerID) {
+		fields = append(fields, user.FieldDistributorOwnerID)
+	}
 	return fields
 }
 
@@ -38757,6 +39538,15 @@ func (m *UserMutation) ClearField(name string) error {
 		return nil
 	case user.FieldInviteCode:
 		m.ClearInviteCode()
+		return nil
+	case user.FieldChannelPartnerID:
+		m.ClearChannelPartnerID()
+		return nil
+	case user.FieldAgentOwnerID:
+		m.ClearAgentOwnerID()
+		return nil
+	case user.FieldDistributorOwnerID:
+		m.ClearDistributorOwnerID()
 		return nil
 	}
 	return fmt.Errorf("unknown User nullable field %s", name)
@@ -38838,6 +39628,15 @@ func (m *UserMutation) ResetField(name string) error {
 	case user.FieldTotalCommissionEarned:
 		m.ResetTotalCommissionEarned()
 		return nil
+	case user.FieldChannelPartnerID:
+		m.ResetChannelPartnerID()
+		return nil
+	case user.FieldAgentOwnerID:
+		m.ResetAgentOwnerID()
+		return nil
+	case user.FieldDistributorOwnerID:
+		m.ResetDistributorOwnerID()
+		return nil
 	case user.FieldIsKeyAccount:
 		m.ResetIsKeyAccount()
 		return nil
@@ -38859,12 +39658,30 @@ func (m *UserMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *UserMutation) AddedEdges() []string {
-	edges := make([]string, 0, 13)
+	edges := make([]string, 0, 19)
 	if m.inviter != nil {
 		edges = append(edges, user.EdgeInviter)
 	}
 	if m.invitees != nil {
 		edges = append(edges, user.EdgeInvitees)
+	}
+	if m.channel_partner != nil {
+		edges = append(edges, user.EdgeChannelPartner)
+	}
+	if m.channel_members != nil {
+		edges = append(edges, user.EdgeChannelMembers)
+	}
+	if m.agent_owner != nil {
+		edges = append(edges, user.EdgeAgentOwner)
+	}
+	if m.agent_members != nil {
+		edges = append(edges, user.EdgeAgentMembers)
+	}
+	if m.distributor_owner != nil {
+		edges = append(edges, user.EdgeDistributorOwner)
+	}
+	if m.distributor_members != nil {
+		edges = append(edges, user.EdgeDistributorMembers)
 	}
 	if m.commission_logs != nil {
 		edges = append(edges, user.EdgeCommissionLogs)
@@ -38913,6 +39730,36 @@ func (m *UserMutation) AddedIDs(name string) []ent.Value {
 	case user.EdgeInvitees:
 		ids := make([]ent.Value, 0, len(m.invitees))
 		for id := range m.invitees {
+			ids = append(ids, id)
+		}
+		return ids
+	case user.EdgeChannelPartner:
+		if id := m.channel_partner; id != nil {
+			return []ent.Value{*id}
+		}
+	case user.EdgeChannelMembers:
+		ids := make([]ent.Value, 0, len(m.channel_members))
+		for id := range m.channel_members {
+			ids = append(ids, id)
+		}
+		return ids
+	case user.EdgeAgentOwner:
+		if id := m.agent_owner; id != nil {
+			return []ent.Value{*id}
+		}
+	case user.EdgeAgentMembers:
+		ids := make([]ent.Value, 0, len(m.agent_members))
+		for id := range m.agent_members {
+			ids = append(ids, id)
+		}
+		return ids
+	case user.EdgeDistributorOwner:
+		if id := m.distributor_owner; id != nil {
+			return []ent.Value{*id}
+		}
+	case user.EdgeDistributorMembers:
+		ids := make([]ent.Value, 0, len(m.distributor_members))
+		for id := range m.distributor_members {
 			ids = append(ids, id)
 		}
 		return ids
@@ -38988,9 +39835,18 @@ func (m *UserMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *UserMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 13)
+	edges := make([]string, 0, 19)
 	if m.removedinvitees != nil {
 		edges = append(edges, user.EdgeInvitees)
+	}
+	if m.removedchannel_members != nil {
+		edges = append(edges, user.EdgeChannelMembers)
+	}
+	if m.removedagent_members != nil {
+		edges = append(edges, user.EdgeAgentMembers)
+	}
+	if m.removeddistributor_members != nil {
+		edges = append(edges, user.EdgeDistributorMembers)
 	}
 	if m.removedcommission_logs != nil {
 		edges = append(edges, user.EdgeCommissionLogs)
@@ -39035,6 +39891,24 @@ func (m *UserMutation) RemovedIDs(name string) []ent.Value {
 	case user.EdgeInvitees:
 		ids := make([]ent.Value, 0, len(m.removedinvitees))
 		for id := range m.removedinvitees {
+			ids = append(ids, id)
+		}
+		return ids
+	case user.EdgeChannelMembers:
+		ids := make([]ent.Value, 0, len(m.removedchannel_members))
+		for id := range m.removedchannel_members {
+			ids = append(ids, id)
+		}
+		return ids
+	case user.EdgeAgentMembers:
+		ids := make([]ent.Value, 0, len(m.removedagent_members))
+		for id := range m.removedagent_members {
+			ids = append(ids, id)
+		}
+		return ids
+	case user.EdgeDistributorMembers:
+		ids := make([]ent.Value, 0, len(m.removeddistributor_members))
+		for id := range m.removeddistributor_members {
 			ids = append(ids, id)
 		}
 		return ids
@@ -39110,12 +39984,30 @@ func (m *UserMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *UserMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 13)
+	edges := make([]string, 0, 19)
 	if m.clearedinviter {
 		edges = append(edges, user.EdgeInviter)
 	}
 	if m.clearedinvitees {
 		edges = append(edges, user.EdgeInvitees)
+	}
+	if m.clearedchannel_partner {
+		edges = append(edges, user.EdgeChannelPartner)
+	}
+	if m.clearedchannel_members {
+		edges = append(edges, user.EdgeChannelMembers)
+	}
+	if m.clearedagent_owner {
+		edges = append(edges, user.EdgeAgentOwner)
+	}
+	if m.clearedagent_members {
+		edges = append(edges, user.EdgeAgentMembers)
+	}
+	if m.cleareddistributor_owner {
+		edges = append(edges, user.EdgeDistributorOwner)
+	}
+	if m.cleareddistributor_members {
+		edges = append(edges, user.EdgeDistributorMembers)
 	}
 	if m.clearedcommission_logs {
 		edges = append(edges, user.EdgeCommissionLogs)
@@ -39161,6 +40053,18 @@ func (m *UserMutation) EdgeCleared(name string) bool {
 		return m.clearedinviter
 	case user.EdgeInvitees:
 		return m.clearedinvitees
+	case user.EdgeChannelPartner:
+		return m.clearedchannel_partner
+	case user.EdgeChannelMembers:
+		return m.clearedchannel_members
+	case user.EdgeAgentOwner:
+		return m.clearedagent_owner
+	case user.EdgeAgentMembers:
+		return m.clearedagent_members
+	case user.EdgeDistributorOwner:
+		return m.cleareddistributor_owner
+	case user.EdgeDistributorMembers:
+		return m.cleareddistributor_members
 	case user.EdgeCommissionLogs:
 		return m.clearedcommission_logs
 	case user.EdgeAPIKeys:
@@ -39194,6 +40098,15 @@ func (m *UserMutation) ClearEdge(name string) error {
 	case user.EdgeInviter:
 		m.ClearInviter()
 		return nil
+	case user.EdgeChannelPartner:
+		m.ClearChannelPartner()
+		return nil
+	case user.EdgeAgentOwner:
+		m.ClearAgentOwner()
+		return nil
+	case user.EdgeDistributorOwner:
+		m.ClearDistributorOwner()
+		return nil
 	}
 	return fmt.Errorf("unknown User unique edge %s", name)
 }
@@ -39207,6 +40120,24 @@ func (m *UserMutation) ResetEdge(name string) error {
 		return nil
 	case user.EdgeInvitees:
 		m.ResetInvitees()
+		return nil
+	case user.EdgeChannelPartner:
+		m.ResetChannelPartner()
+		return nil
+	case user.EdgeChannelMembers:
+		m.ResetChannelMembers()
+		return nil
+	case user.EdgeAgentOwner:
+		m.ResetAgentOwner()
+		return nil
+	case user.EdgeAgentMembers:
+		m.ResetAgentMembers()
+		return nil
+	case user.EdgeDistributorOwner:
+		m.ResetDistributorOwner()
+		return nil
+	case user.EdgeDistributorMembers:
+		m.ResetDistributorMembers()
 		return nil
 	case user.EdgeCommissionLogs:
 		m.ResetCommissionLogs()

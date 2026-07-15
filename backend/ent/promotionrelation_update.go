@@ -49,6 +49,26 @@ func (_u *PromotionRelationUpdate) SetNillableUserID(v *int64) *PromotionRelatio
 	return _u
 }
 
+// SetChannelPartnerUserID sets the "channel_partner_user_id" field.
+func (_u *PromotionRelationUpdate) SetChannelPartnerUserID(v int64) *PromotionRelationUpdate {
+	_u.mutation.SetChannelPartnerUserID(v)
+	return _u
+}
+
+// SetNillableChannelPartnerUserID sets the "channel_partner_user_id" field if the given value is not nil.
+func (_u *PromotionRelationUpdate) SetNillableChannelPartnerUserID(v *int64) *PromotionRelationUpdate {
+	if v != nil {
+		_u.SetChannelPartnerUserID(*v)
+	}
+	return _u
+}
+
+// ClearChannelPartnerUserID clears the value of the "channel_partner_user_id" field.
+func (_u *PromotionRelationUpdate) ClearChannelPartnerUserID() *PromotionRelationUpdate {
+	_u.mutation.ClearChannelPartnerUserID()
+	return _u
+}
+
 // SetAgentUserID sets the "agent_user_id" field.
 func (_u *PromotionRelationUpdate) SetAgentUserID(v int64) *PromotionRelationUpdate {
 	_u.mutation.SetAgentUserID(v)
@@ -190,6 +210,11 @@ func (_u *PromotionRelationUpdate) SetUser(v *User) *PromotionRelationUpdate {
 	return _u.SetUserID(v.ID)
 }
 
+// SetChannelPartnerUser sets the "channel_partner_user" edge to the User entity.
+func (_u *PromotionRelationUpdate) SetChannelPartnerUser(v *User) *PromotionRelationUpdate {
+	return _u.SetChannelPartnerUserID(v.ID)
+}
+
 // SetAgentUser sets the "agent_user" edge to the User entity.
 func (_u *PromotionRelationUpdate) SetAgentUser(v *User) *PromotionRelationUpdate {
 	return _u.SetAgentUserID(v.ID)
@@ -213,6 +238,12 @@ func (_u *PromotionRelationUpdate) Mutation() *PromotionRelationMutation {
 // ClearUser clears the "user" edge to the User entity.
 func (_u *PromotionRelationUpdate) ClearUser() *PromotionRelationUpdate {
 	_u.mutation.ClearUser()
+	return _u
+}
+
+// ClearChannelPartnerUser clears the "channel_partner_user" edge to the User entity.
+func (_u *PromotionRelationUpdate) ClearChannelPartnerUser() *PromotionRelationUpdate {
+	_u.mutation.ClearChannelPartnerUser()
 	return _u
 }
 
@@ -350,6 +381,35 @@ func (_u *PromotionRelationUpdate) sqlSave(ctx context.Context) (_node int, err 
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if _u.mutation.ChannelPartnerUserCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   promotionrelation.ChannelPartnerUserTable,
+			Columns: []string{promotionrelation.ChannelPartnerUserColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.ChannelPartnerUserIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   promotionrelation.ChannelPartnerUserTable,
+			Columns: []string{promotionrelation.ChannelPartnerUserColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if _u.mutation.AgentUserCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -474,6 +534,26 @@ func (_u *PromotionRelationUpdateOne) SetNillableUserID(v *int64) *PromotionRela
 	if v != nil {
 		_u.SetUserID(*v)
 	}
+	return _u
+}
+
+// SetChannelPartnerUserID sets the "channel_partner_user_id" field.
+func (_u *PromotionRelationUpdateOne) SetChannelPartnerUserID(v int64) *PromotionRelationUpdateOne {
+	_u.mutation.SetChannelPartnerUserID(v)
+	return _u
+}
+
+// SetNillableChannelPartnerUserID sets the "channel_partner_user_id" field if the given value is not nil.
+func (_u *PromotionRelationUpdateOne) SetNillableChannelPartnerUserID(v *int64) *PromotionRelationUpdateOne {
+	if v != nil {
+		_u.SetChannelPartnerUserID(*v)
+	}
+	return _u
+}
+
+// ClearChannelPartnerUserID clears the value of the "channel_partner_user_id" field.
+func (_u *PromotionRelationUpdateOne) ClearChannelPartnerUserID() *PromotionRelationUpdateOne {
+	_u.mutation.ClearChannelPartnerUserID()
 	return _u
 }
 
@@ -618,6 +698,11 @@ func (_u *PromotionRelationUpdateOne) SetUser(v *User) *PromotionRelationUpdateO
 	return _u.SetUserID(v.ID)
 }
 
+// SetChannelPartnerUser sets the "channel_partner_user" edge to the User entity.
+func (_u *PromotionRelationUpdateOne) SetChannelPartnerUser(v *User) *PromotionRelationUpdateOne {
+	return _u.SetChannelPartnerUserID(v.ID)
+}
+
 // SetAgentUser sets the "agent_user" edge to the User entity.
 func (_u *PromotionRelationUpdateOne) SetAgentUser(v *User) *PromotionRelationUpdateOne {
 	return _u.SetAgentUserID(v.ID)
@@ -641,6 +726,12 @@ func (_u *PromotionRelationUpdateOne) Mutation() *PromotionRelationMutation {
 // ClearUser clears the "user" edge to the User entity.
 func (_u *PromotionRelationUpdateOne) ClearUser() *PromotionRelationUpdateOne {
 	_u.mutation.ClearUser()
+	return _u
+}
+
+// ClearChannelPartnerUser clears the "channel_partner_user" edge to the User entity.
+func (_u *PromotionRelationUpdateOne) ClearChannelPartnerUser() *PromotionRelationUpdateOne {
+	_u.mutation.ClearChannelPartnerUser()
 	return _u
 }
 
@@ -798,6 +889,35 @@ func (_u *PromotionRelationUpdateOne) sqlSave(ctx context.Context) (_node *Promo
 			Inverse: false,
 			Table:   promotionrelation.UserTable,
 			Columns: []string{promotionrelation.UserColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.ChannelPartnerUserCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   promotionrelation.ChannelPartnerUserTable,
+			Columns: []string{promotionrelation.ChannelPartnerUserColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.ChannelPartnerUserIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   promotionrelation.ChannelPartnerUserTable,
+			Columns: []string{promotionrelation.ChannelPartnerUserColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt64),

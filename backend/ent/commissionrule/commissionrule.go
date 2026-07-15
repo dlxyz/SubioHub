@@ -23,6 +23,8 @@ const (
 	FieldStatus = "status"
 	// FieldCalcMode holds the string denoting the calc_mode field in the database.
 	FieldCalcMode = "calc_mode"
+	// FieldChannelPartnerTargetRate holds the string denoting the channel_partner_target_rate field in the database.
+	FieldChannelPartnerTargetRate = "channel_partner_target_rate"
 	// FieldAgentTargetRate holds the string denoting the agent_target_rate field in the database.
 	FieldAgentTargetRate = "agent_target_rate"
 	// FieldDistributorTargetRate holds the string denoting the distributor_target_rate field in the database.
@@ -55,6 +57,7 @@ var Columns = []string{
 	FieldName,
 	FieldStatus,
 	FieldCalcMode,
+	FieldChannelPartnerTargetRate,
 	FieldAgentTargetRate,
 	FieldDistributorTargetRate,
 	FieldFreezeHours,
@@ -94,6 +97,8 @@ var (
 	DefaultCalcMode string
 	// CalcModeValidator is a validator for the "calc_mode" field. It is called by the builders before save.
 	CalcModeValidator func(string) error
+	// DefaultChannelPartnerTargetRate holds the default value on creation for the "channel_partner_target_rate" field.
+	DefaultChannelPartnerTargetRate float64
 	// DefaultAgentTargetRate holds the default value on creation for the "agent_target_rate" field.
 	DefaultAgentTargetRate float64
 	// DefaultDistributorTargetRate holds the default value on creation for the "distributor_target_rate" field.
@@ -143,6 +148,11 @@ func ByStatus(opts ...sql.OrderTermOption) OrderOption {
 // ByCalcMode orders the results by the calc_mode field.
 func ByCalcMode(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldCalcMode, opts...).ToFunc()
+}
+
+// ByChannelPartnerTargetRate orders the results by the channel_partner_target_rate field.
+func ByChannelPartnerTargetRate(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldChannelPartnerTargetRate, opts...).ToFunc()
 }
 
 // ByAgentTargetRate orders the results by the agent_target_rate field.

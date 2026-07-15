@@ -43,6 +43,9 @@ type User struct {
 	CommissionRate         float64
 	CommissionBalance      float64
 	TotalCommissionEarned  float64
+	ChannelPartnerID       *int64
+	AgentOwnerID           *int64
+	DistributorOwnerID     *int64
 	IsKeyAccount           bool
 	KeyAccountLevel        string
 	KeyAccountDiscountRate float64
@@ -59,6 +62,10 @@ func (u *User) IsAdmin() bool {
 
 func (u *User) IsAgent() bool {
 	return u.Role == RoleAgent
+}
+
+func (u *User) IsChannelPartner() bool {
+	return u.Role == RoleChannelPartner
 }
 
 func (u *User) IsDistributor() bool {

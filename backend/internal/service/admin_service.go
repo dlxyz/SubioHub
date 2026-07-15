@@ -54,7 +54,7 @@ type AdminService interface {
 	// API Key management (admin)
 	AdminUpdateAPIKeyGroupID(ctx context.Context, keyID int64, groupID *int64) (*AdminUpdateAPIKeyGroupIDResult, error)
 
-	// ReplaceUserGroup 替换用户的专属分组：授予新分组权限、迁移 Key、移除旧分组权限
+	// ReplaceUserGroup replaces a user's exclusive group assignment and moves related API keys.
 	ReplaceUserGroup(ctx context.Context, userID, oldGroupID, newGroupID int64) (*ReplaceUserGroupResult, error)
 
 	// Account management
@@ -67,13 +67,13 @@ type AdminService interface {
 	RefreshAccountCredentials(ctx context.Context, id int64) (*Account, error)
 	ClearAccountError(ctx context.Context, id int64) (*Account, error)
 	SetAccountError(ctx context.Context, id int64, errorMsg string) error
-	// EnsureOpenAIPrivacy 检查 OpenAI OAuth 账号 privacy_mode，未设置则尝试关闭训练数据共享并持久化。
+	// EnsureOpenAIPrivacy ensures privacy_mode is configured for OpenAI OAuth accounts.
 	EnsureOpenAIPrivacy(ctx context.Context, account *Account) string
-	// EnsureAntigravityPrivacy 检查 Antigravity OAuth 账号 privacy_mode，未设置则调用 setUserSettings 并持久化。
+	// EnsureAntigravityPrivacy ensures privacy_mode is configured for Antigravity OAuth accounts.
 	EnsureAntigravityPrivacy(ctx context.Context, account *Account) string
-	// ForceOpenAIPrivacy 强制重新设置 OpenAI OAuth 账号隐私，无论当前状态。
+	// ForceOpenAIPrivacy forces OpenAI privacy settings to be applied again.
 	ForceOpenAIPrivacy(ctx context.Context, account *Account) string
-	// ForceAntigravityPrivacy 强制重新设置 Antigravity OAuth 账号隐私，无论当前状态。
+	// ForceAntigravityPrivacy forces Antigravity privacy settings to be applied again.
 	ForceAntigravityPrivacy(ctx context.Context, account *Account) string
 	SetAccountSchedulable(ctx context.Context, id int64, schedulable bool) (*Account, error)
 	BulkUpdateAccounts(ctx context.Context, input *BulkUpdateAccountsInput) (*BulkUpdateAccountsResult, error)
@@ -122,18 +122,19 @@ type UpdateUserInput struct {
 	Role                   *string
 	Username               *string
 	Notes                  *string
-	Balance                *float64 // 使用指针区分"未提供"和"设置为0"
-	Concurrency            *int     // 使用指针区分"未提供"和"设置为0"
+	Balance                *float64
+	Concurrency            *int
 	Status                 string
-	AllowedGroups          *[]int64 // 使用指针区分"未提供"和"设置为空数组"
+	AllowedGroups          *[]int64
 	IsKeyAccount           *bool
 	KeyAccountLevel        *string
 	KeyAccountDiscountRate *float64
 	KeyAccountRebateRate   *float64
 	KeyAccountManagerNotes *string
-	// GroupRates 用户专属分组倍率配置
-	// map[groupID]*rate，nil 表示删除该分组的专属倍率
-	GroupRates map[int64]*float64
+	ChannelPartnerID       **int64
+	AgentOwnerID           **int64
+	DistributorOwnerID     **int64
+	GroupRates             map[int64]*float64
 }
 
 type KeyAccountSyncOptions struct {
@@ -180,24 +181,24 @@ type CreateGroupInput struct {
 	RateMultiplier   float64
 	IsExclusive      bool
 	SubscriptionType string   // standard/subscription
-	DailyLimitUSD    *float64 // 日限额 (USD)
-	WeeklyLimitUSD   *float64 // 周限额 (USD)
-	MonthlyLimitUSD  *float64 // 月限额 (USD)
-	// 图片生成计费配置（仅 antigravity 平台使用）
+	DailyLimitUSD    *float64 // Daily limit in USD.
+	WeeklyLimitUSD   *float64 // Weekly limit in USD.
+	MonthlyLimitUSD  *float64 // Monthly limit in USD.
+	// Image billing config for Antigravity groups only.
 	ImagePrice1K    *float64
 	ImagePrice2K    *float64
 	ImagePrice4K    *float64
-	ClaudeCodeOnly  bool   // 仅允许 Claude Code 客户端
-	FallbackGroupID *int64 // 降级分组 ID
-	// 无效请求兜底分组 ID（仅 anthropic 平台使用）
+	ClaudeCodeOnly  bool   // Allow Claude Code clients only.
+	FallbackGroupID *int64 // Fallback group ID.
+	// Fallback group for invalid requests on Anthropic groups.
 	FallbackGroupIDOnInvalidRequest *int64
-	// 模型路由配置（仅 anthropic 平台使用）
+	// Model routing config for Anthropic groups only.
 	ModelRouting        map[string][]int64
-	ModelRoutingEnabled bool // 是否启用模型路由
+	ModelRoutingEnabled bool // Whether model routing is enabled.
 	MCPXMLInject        *bool
-	// 支持的模型系列（仅 antigravity 平台使用）
+	// Supported model scopes for Antigravity groups.
 	SupportedModelScopes []string
-	// OpenAI Messages 调度配置（仅 openai 平台使用）
+	// OpenAI Messages dispatch config for OpenAI groups only.
 	AllowMessagesDispatch       bool
 	DefaultMappedModel          string
 	RequireOAuthOnly            bool
@@ -216,24 +217,24 @@ type UpdateGroupInput struct {
 	IsExclusive      *bool
 	Status           string
 	SubscriptionType string   // standard/subscription
-	DailyLimitUSD    *float64 // 日限额 (USD)
-	WeeklyLimitUSD   *float64 // 周限额 (USD)
-	MonthlyLimitUSD  *float64 // 月限额 (USD)
-	// 图片生成计费配置（仅 antigravity 平台使用）
+	DailyLimitUSD    *float64 // Daily limit in USD.
+	WeeklyLimitUSD   *float64 // Weekly limit in USD.
+	MonthlyLimitUSD  *float64 // Monthly limit in USD.
+	// Image billing config for Antigravity groups only.
 	ImagePrice1K    *float64
 	ImagePrice2K    *float64
 	ImagePrice4K    *float64
-	ClaudeCodeOnly  *bool  // 仅允许 Claude Code 客户端
-	FallbackGroupID *int64 // 降级分组 ID
-	// 无效请求兜底分组 ID（仅 anthropic 平台使用）
+	ClaudeCodeOnly  *bool  // Allow Claude Code clients only.
+	FallbackGroupID *int64 // Fallback group ID.
+	// Fallback group for invalid requests on Anthropic groups.
 	FallbackGroupIDOnInvalidRequest *int64
-	// 模型路由配置（仅 anthropic 平台使用）
+	// Model routing config for Anthropic groups only.
 	ModelRouting        map[string][]int64
-	ModelRoutingEnabled *bool // 是否启用模型路由
+	ModelRoutingEnabled *bool // Whether model routing is enabled.
 	MCPXMLInject        *bool
-	// 支持的模型系列（仅 antigravity 平台使用）
+	// Supported model scopes for Antigravity groups.
 	SupportedModelScopes *[]string
-	// OpenAI Messages 调度配置（仅 openai 平台使用）
+	// OpenAI Messages dispatch config for OpenAI groups only.
 	AllowMessagesDispatch       *bool
 	DefaultMappedModel          *string
 	RequireOAuthOnly            *bool
@@ -253,7 +254,7 @@ type CreateAccountInput struct {
 	ProxyID            *int64
 	Concurrency        int
 	Priority           int
-	RateMultiplier     *float64 // 账号计费倍率（>=0，允许 0）
+	RateMultiplier     *float64
 	LoadFactor         *int
 	GroupIDs           []int64
 	ExpiresAt          *int64
@@ -272,9 +273,9 @@ type UpdateAccountInput struct {
 	Credentials           map[string]any
 	Extra                 map[string]any
 	ProxyID               *int64
-	Concurrency           *int     // 使用指针区分"未提供"和"设置为0"
-	Priority              *int     // 使用指针区分"未提供"和"设置为0"
-	RateMultiplier        *float64 // 账号计费倍率（>=0，允许 0）
+	Concurrency           *int
+	Priority              *int
+	RateMultiplier        *float64
 	LoadFactor            *int
 	Status                string
 	GroupIDs              *[]int64
@@ -290,7 +291,7 @@ type BulkUpdateAccountsInput struct {
 	ProxyID        *int64
 	Concurrency    *int
 	Priority       *int
-	RateMultiplier *float64 // 账号计费倍率（>=0，允许 0）
+	RateMultiplier *float64
 	LoadFactor     *int
 	Status         string
 	Schedulable    *bool
@@ -317,9 +318,9 @@ type AdminUpdateAPIKeyGroupIDResult struct {
 	GrantedGroupName       string // the group name that was auto-granted
 }
 
-// ReplaceUserGroupResult 分组替换操作的结果
+// ReplaceUserGroupResult captures the result of replacing a user's exclusive group.
 type ReplaceUserGroupResult struct {
-	MigratedKeys int64 // 迁移的 Key 数量
+	MigratedKeys int64 // Number of migrated API keys.
 }
 
 // BulkUpdateAccountsResult is the aggregated response for bulk updates.
@@ -355,7 +356,7 @@ type GenerateRedeemCodesInput struct {
 	Type         string
 	Value        float64
 	GroupID      *int64 // 订阅类型专用：关联的分组ID
-	ValidityDays int    // 订阅类型专用：有效天数
+	ValidityDays int    // Subscription validity days.
 }
 
 type ProxyBatchDeleteResult struct {
@@ -661,7 +662,7 @@ func (s *adminServiceImpl) UpdateUser(ctx context.Context, id int64, input *Upda
 	if input.Role != nil {
 		nextRole := strings.TrimSpace(*input.Role)
 		switch nextRole {
-		case RoleUser, RoleAgent, RoleDistributor:
+		case RoleUser, RoleChannelPartner, RoleAgent, RoleDistributor:
 			if user.Role == RoleAdmin {
 				return nil, errors.New("cannot change admin role")
 			}
@@ -702,6 +703,15 @@ func (s *adminServiceImpl) UpdateUser(ctx context.Context, id int64, input *Upda
 	}
 	if input.KeyAccountManagerNotes != nil {
 		user.KeyAccountManagerNotes = *input.KeyAccountManagerNotes
+	}
+	if input.ChannelPartnerID != nil {
+		user.ChannelPartnerID = *input.ChannelPartnerID
+	}
+	if input.AgentOwnerID != nil {
+		user.AgentOwnerID = *input.AgentOwnerID
+	}
+	if input.DistributorOwnerID != nil {
+		user.DistributorOwnerID = *input.DistributorOwnerID
 	}
 
 	if input.AllowedGroups != nil {
@@ -1212,7 +1222,7 @@ func (s *adminServiceImpl) CreateGroup(ctx context.Context, input *CreateGroupIn
 		subscriptionType = SubscriptionTypeStandard
 	}
 
-	// 限额字段：nil/负数 表示"无限制"，0 表示"不允许用量"，正数表示具体限额
+	// Limit fields: nil/negative means unlimited, zero means blocked, positive values are explicit limits.
 	dailyLimit := normalizeLimit(input.DailyLimitUSD)
 	weeklyLimit := normalizeLimit(input.WeeklyLimitUSD)
 	monthlyLimit := normalizeLimit(input.MonthlyLimitUSD)
@@ -1239,16 +1249,16 @@ func (s *adminServiceImpl) CreateGroup(ctx context.Context, input *CreateGroupIn
 		}
 	}
 
-	// MCPXMLInject：默认为 true，仅当显式传入 false 时关闭
+	// MCPXMLInject defaults to true and only turns off when explicitly set to false.
 	mcpXMLInject := true
 	if input.MCPXMLInject != nil {
 		mcpXMLInject = *input.MCPXMLInject
 	}
 
-	// 如果指定了复制账号的源分组，先获取账号 ID 列表
+	// 如果指定了复制账号的源分组，先获取账�?ID 列表
 	var accountIDsToCopy []int64
 	if len(input.CopyAccountsFromGroupIDs) > 0 {
-		// 去重源分组 IDs
+		// De-duplicate source group IDs.
 		seen := make(map[int64]struct{})
 		uniqueSourceGroupIDs := make([]int64, 0, len(input.CopyAccountsFromGroupIDs))
 		for _, srcGroupID := range input.CopyAccountsFromGroupIDs {
@@ -1258,7 +1268,7 @@ func (s *adminServiceImpl) CreateGroup(ctx context.Context, input *CreateGroupIn
 			}
 		}
 
-		// 校验源分组的平台是否与新分组一致
+		// Validate that source groups use the same platform as the new group.
 		for _, srcGroupID := range uniqueSourceGroupIDs {
 			srcGroup, err := s.groupRepo.GetByIDLite(ctx, srcGroupID)
 			if err != nil {
@@ -1269,7 +1279,7 @@ func (s *adminServiceImpl) CreateGroup(ctx context.Context, input *CreateGroupIn
 			}
 		}
 
-		// 获取所有源分组的账号（去重）
+		// Load all accounts from the source groups.
 		var err error
 		accountIDsToCopy, err = s.groupRepo.GetAccountIDsByGroupIDs(ctx, uniqueSourceGroupIDs)
 		if err != nil {
@@ -1309,7 +1319,7 @@ func (s *adminServiceImpl) CreateGroup(ctx context.Context, input *CreateGroupIn
 		return nil, err
 	}
 
-	// require_oauth_only: 过滤掉 apikey 类型账号
+	// require_oauth_only: filter out API key accounts.
 	if group.RequireOAuthOnly && (group.Platform == PlatformOpenAI || group.Platform == PlatformAntigravity || group.Platform == PlatformAnthropic || group.Platform == PlatformGemini) && len(accountIDsToCopy) > 0 {
 		accounts, err := s.accountRepo.GetByIDs(ctx, accountIDsToCopy)
 		if err != nil {
@@ -1330,7 +1340,7 @@ func (s *adminServiceImpl) CreateGroup(ctx context.Context, input *CreateGroupIn
 		accountIDsToCopy = filtered
 	}
 
-	// 如果有需要复制的账号，绑定到新分组
+	// Bind copied accounts to the new group if any were collected.
 	if len(accountIDsToCopy) > 0 {
 		if err := s.groupRepo.BindAccountsToGroup(ctx, group.ID, accountIDsToCopy); err != nil {
 			return nil, fmt.Errorf("failed to bind accounts to new group: %w", err)
@@ -1349,7 +1359,7 @@ func normalizeLimit(limit *float64) *float64 {
 	return limit
 }
 
-// normalizePrice 将负数转换为 nil（表示使用默认价格），0 保留（表示免费）
+// normalizePrice turns negative values into nil, while zero still means free.
 func normalizePrice(price *float64) *float64 {
 	if price == nil || *price < 0 {
 		return nil
@@ -1368,9 +1378,7 @@ func normalizeGroupRoutingProfile(profile string) string {
 	}
 }
 
-// validateFallbackGroup 校验降级分组的有效性
-// currentGroupID: 当前分组 ID（新建时为 0）
-// fallbackGroupID: 降级分组 ID
+// validateFallbackGroup validates the configured fallback group chain.
 func (s *adminServiceImpl) validateFallbackGroup(ctx context.Context, currentGroupID, fallbackGroupID int64) error {
 	// 不能将自己设置为降级分组
 	if currentGroupID > 0 && currentGroupID == fallbackGroupID {
@@ -1388,13 +1396,13 @@ func (s *adminServiceImpl) validateFallbackGroup(ctx context.Context, currentGro
 			return fmt.Errorf("fallback group cycle detected")
 		}
 
-		// 检查降级分组是否存在
+		// Ensure the fallback group exists.
 		fallbackGroup, err := s.groupRepo.GetByIDLite(ctx, nextID)
 		if err != nil {
 			return fmt.Errorf("fallback group not found: %w", err)
 		}
 
-		// 降级分组不能启用 claude_code_only，否则会造成死循环
+		// The first fallback group cannot enable claude_code_only, otherwise it may dead-loop.
 		if nextID == fallbackGroupID && fallbackGroup.ClaudeCodeOnly {
 			return fmt.Errorf("fallback group cannot have claude_code_only enabled")
 		}
@@ -1406,10 +1414,7 @@ func (s *adminServiceImpl) validateFallbackGroup(ctx context.Context, currentGro
 	}
 }
 
-// validateFallbackGroupOnInvalidRequest 校验无效请求兜底分组的有效性
-// currentGroupID: 当前分组 ID（新建时为 0）
-// platform/subscriptionType: 当前分组的有效平台/订阅类型
-// fallbackGroupID: 兜底分组 ID
+// validateFallbackGroupOnInvalidRequest validates the fallback group used for invalid requests.
 func (s *adminServiceImpl) validateFallbackGroupOnInvalidRequest(ctx context.Context, currentGroupID int64, platform, subscriptionType string, fallbackGroupID int64) error {
 	if platform != PlatformAnthropic && platform != PlatformAntigravity {
 		return fmt.Errorf("invalid request fallback only supported for anthropic or antigravity groups")
@@ -1469,12 +1474,11 @@ func (s *adminServiceImpl) UpdateGroup(ctx context.Context, id int64, input *Upd
 	if input.SubscriptionType != "" {
 		group.SubscriptionType = input.SubscriptionType
 	}
-	// 限额字段：nil/负数 表示"无限制"，0 表示"不允许用量"，正数表示具体限额
-	// 前端始终发送这三个字段，无需 nil 守卫
+	// 限额字段：nil/负数 表示"无限�?�? 表示"不允许用�?，正数表示具体限�?	// 前端始终发送这三个字段，无需 nil 守卫
 	group.DailyLimitUSD = normalizeLimit(input.DailyLimitUSD)
 	group.WeeklyLimitUSD = normalizeLimit(input.WeeklyLimitUSD)
 	group.MonthlyLimitUSD = normalizeLimit(input.MonthlyLimitUSD)
-	// 图片生成计费配置：负数表示清除（使用默认价格）
+	// Image billing config: negative values clear the override and fall back to defaults.
 	if input.ImagePrice1K != nil {
 		group.ImagePrice1K = normalizePrice(input.ImagePrice1K)
 	}
@@ -1485,7 +1489,7 @@ func (s *adminServiceImpl) UpdateGroup(ctx context.Context, id int64, input *Upd
 		group.ImagePrice4K = normalizePrice(input.ImagePrice4K)
 	}
 
-	// Claude Code 客户端限制
+	// Claude Code client restriction.
 	if input.ClaudeCodeOnly != nil {
 		group.ClaudeCodeOnly = *input.ClaudeCodeOnly
 	}
@@ -1497,7 +1501,7 @@ func (s *adminServiceImpl) UpdateGroup(ctx context.Context, id int64, input *Upd
 			}
 			group.FallbackGroupID = input.FallbackGroupID
 		} else {
-			// 传入 0 或负数表示清除降级分组
+			// Zero or negative values clear the fallback group.
 			group.FallbackGroupID = nil
 		}
 	}
@@ -1527,7 +1531,7 @@ func (s *adminServiceImpl) UpdateGroup(ctx context.Context, id int64, input *Upd
 		group.MCPXMLInject = *input.MCPXMLInject
 	}
 
-	// 支持的模型系列（仅 antigravity 平台使用）
+	// Supported model scopes for Antigravity groups.
 	if input.SupportedModelScopes != nil {
 		group.SupportedModelScopes = *input.SupportedModelScopes
 	}
@@ -1554,13 +1558,13 @@ func (s *adminServiceImpl) UpdateGroup(ctx context.Context, id int64, input *Upd
 		return nil, err
 	}
 
-	// 如果指定了复制账号的源分组，同步绑定（替换当前分组的账号）
+	// If source groups are provided, replace current account bindings with the copied set.
 	if len(input.CopyAccountsFromGroupIDs) > 0 {
-		// 去重源分组 IDs
+		// De-duplicate source group IDs.
 		seen := make(map[int64]struct{})
 		uniqueSourceGroupIDs := make([]int64, 0, len(input.CopyAccountsFromGroupIDs))
 		for _, srcGroupID := range input.CopyAccountsFromGroupIDs {
-			// 校验：源分组不能是自身
+			// The source group cannot be the same as the target group itself.
 			if srcGroupID == id {
 				return nil, fmt.Errorf("cannot copy accounts from self")
 			}
@@ -1571,7 +1575,7 @@ func (s *adminServiceImpl) UpdateGroup(ctx context.Context, id int64, input *Upd
 			}
 		}
 
-		// 校验源分组的平台是否与当前分组一致
+		// Validate that source groups use the same platform as the target group.
 		for _, srcGroupID := range uniqueSourceGroupIDs {
 			srcGroup, err := s.groupRepo.GetByIDLite(ctx, srcGroupID)
 			if err != nil {
@@ -1582,18 +1586,18 @@ func (s *adminServiceImpl) UpdateGroup(ctx context.Context, id int64, input *Upd
 			}
 		}
 
-		// 获取所有源分组的账号（去重）
+		// Load all account IDs from the source groups.
 		accountIDsToCopy, err := s.groupRepo.GetAccountIDsByGroupIDs(ctx, uniqueSourceGroupIDs)
 		if err != nil {
 			return nil, fmt.Errorf("failed to get accounts from source groups: %w", err)
 		}
 
-		// 先清空当前分组的所有账号绑定
+		// Clear existing account bindings before rebinding the copied set.
 		if _, err := s.groupRepo.DeleteAccountGroupsByGroupID(ctx, id); err != nil {
 			return nil, fmt.Errorf("failed to clear existing account bindings: %w", err)
 		}
 
-		// require_oauth_only: 过滤掉 apikey 类型账号
+		// require_oauth_only: filter out API key accounts.
 		if group.RequireOAuthOnly && (group.Platform == PlatformOpenAI || group.Platform == PlatformAntigravity || group.Platform == PlatformAnthropic || group.Platform == PlatformGemini) && len(accountIDsToCopy) > 0 {
 			accounts, err := s.accountRepo.GetByIDs(ctx, accountIDsToCopy)
 			if err != nil {
@@ -1614,7 +1618,7 @@ func (s *adminServiceImpl) UpdateGroup(ctx context.Context, id int64, input *Upd
 			accountIDsToCopy = filtered
 		}
 
-		// 再绑定源分组的账号
+		// Bind the copied accounts after filtering.
 		if len(accountIDsToCopy) > 0 {
 			if err := s.groupRepo.BindAccountsToGroup(ctx, id, accountIDsToCopy); err != nil {
 				return nil, fmt.Errorf("failed to bind accounts to group: %w", err)
@@ -1699,8 +1703,8 @@ func (s *adminServiceImpl) UpdateGroupSortOrders(ctx context.Context, updates []
 	return s.groupRepo.UpdateSortOrders(ctx, updates)
 }
 
-// AdminUpdateAPIKeyGroupID 管理员修改 API Key 分组绑定
-// groupID: nil=不修改, 指向0=解绑, 指向正整数=绑定到目标分组
+// AdminUpdateAPIKeyGroupID updates the group bound to an API key.
+// groupID: nil keeps current binding, 0 unbinds, positive values bind to that group.
 func (s *adminServiceImpl) AdminUpdateAPIKeyGroupID(ctx context.Context, keyID int64, groupID *int64) (*AdminUpdateAPIKeyGroupIDResult, error) {
 	apiKey, err := s.apiKeyRepo.GetByID(ctx, keyID)
 	if err != nil {
@@ -1719,7 +1723,7 @@ func (s *adminServiceImpl) AdminUpdateAPIKeyGroupID(ctx context.Context, keyID i
 	result := &AdminUpdateAPIKeyGroupIDResult{}
 
 	if *groupID == 0 {
-		// 0 表示解绑分组（不修改 user_allowed_groups，避免影响用户其他 Key）
+		// 0 means unbind the group without changing user_allowed_groups.
 		apiKey.GroupID = nil
 		apiKey.Group = nil
 	} else {
@@ -1748,7 +1752,7 @@ func (s *adminServiceImpl) AdminUpdateAPIKeyGroupID(ctx context.Context, keyID i
 		apiKey.GroupID = &gid
 		apiKey.Group = group
 
-		// 专属标准分组：使用事务保证「添加分组权限」与「更新 API Key」的原子性
+		// For exclusive standard groups, keep the group grant and API key update atomic.
 		if group.IsExclusive && !group.IsSubscriptionType() {
 			opCtx := ctx
 			var tx *dbent.Tx
@@ -1790,7 +1794,7 @@ func (s *adminServiceImpl) AdminUpdateAPIKeyGroupID(ctx context.Context, keyID i
 		}
 	}
 
-	// 非专属分组 / 解绑：无需事务，单步更新即可
+	// For non-exclusive groups or unbinds, a single update is enough.
 	if err := s.apiKeyRepo.Update(ctx, apiKey); err != nil {
 		return nil, fmt.Errorf("update api key: %w", err)
 	}
@@ -1804,7 +1808,7 @@ func (s *adminServiceImpl) AdminUpdateAPIKeyGroupID(ctx context.Context, keyID i
 	return result, nil
 }
 
-// ReplaceUserGroup 替换用户的专属分组
+// ReplaceUserGroup swaps a user's exclusive group assignment.
 func (s *adminServiceImpl) ReplaceUserGroup(ctx context.Context, userID, oldGroupID, newGroupID int64) (*ReplaceUserGroupResult, error) {
 	if oldGroupID == newGroupID {
 		return nil, infraerrors.BadRequest("SAME_GROUP", "old and new group must be different")
@@ -1825,7 +1829,7 @@ func (s *adminServiceImpl) ReplaceUserGroup(ctx context.Context, userID, oldGrou
 		return nil, infraerrors.BadRequest("GROUP_IS_SUBSCRIPTION", "subscription groups are not supported for replacement")
 	}
 
-	// 事务保证原子性
+	// Use a transaction so the replacement stays atomic.
 	if s.entClient == nil {
 		return nil, fmt.Errorf("entClient is nil, cannot perform group replacement")
 	}
@@ -1836,7 +1840,7 @@ func (s *adminServiceImpl) ReplaceUserGroup(ctx context.Context, userID, oldGrou
 	defer func() { _ = tx.Rollback() }()
 	opCtx := dbent.NewTxContext(ctx, tx)
 
-	// 1. 授予新分组权限
+	// 1. Grant access to the new group.
 	if err := s.userRepo.AddGroupToAllowedGroups(opCtx, userID, newGroupID); err != nil {
 		return nil, fmt.Errorf("add new group to allowed groups: %w", err)
 	}
@@ -1847,7 +1851,7 @@ func (s *adminServiceImpl) ReplaceUserGroup(ctx context.Context, userID, oldGrou
 		return nil, fmt.Errorf("migrate api keys: %w", err)
 	}
 
-	// 3. 移除旧分组权限
+	// 3. Remove access to the old group.
 	if err := s.userRepo.RemoveGroupFromUserAllowedGroups(opCtx, userID, oldGroupID); err != nil {
 		return nil, fmt.Errorf("remove old group from allowed groups: %w", err)
 	}
@@ -1856,7 +1860,7 @@ func (s *adminServiceImpl) ReplaceUserGroup(ctx context.Context, userID, oldGrou
 		return nil, fmt.Errorf("commit transaction: %w", err)
 	}
 
-	// 失效该用户所有 Key 的认证缓存
+	// Invalidate auth cache entries for all keys owned by the user.
 	if s.authCacheInvalidator != nil {
 		keys, keyErr := s.apiKeyRepo.ListKeysByUserID(ctx, userID)
 		if keyErr == nil {
@@ -1899,7 +1903,7 @@ func (s *adminServiceImpl) GetAccountsByIDs(ctx context.Context, ids []int64) ([
 func (s *adminServiceImpl) CreateAccount(ctx context.Context, input *CreateAccountInput) (*Account, error) {
 	// 绑定分组
 	groupIDs := input.GroupIDs
-	// 如果没有指定分组,自动绑定对应平台的默认分组
+	// If no group is specified, bind the platform default group automatically.
 	if len(groupIDs) == 0 && !input.SkipDefaultGroupBind {
 		defaultGroupName := input.Platform + "-default"
 		groups, err := s.groupRepo.ListActiveByPlatform(ctx, input.Platform)
@@ -1972,8 +1976,8 @@ func (s *adminServiceImpl) CreateAccount(ctx context.Context, input *CreateAccou
 		}
 	}
 
-	// OAuth 账号：创建后异步设置隐私。
-	// 使用 Ensure（幂等）而非 Force：新建账号 Extra 为空时效果相同，但更安全。
+	// For OAuth accounts, apply privacy settings asynchronously after creation.
+	// Use Ensure instead of Force here because new accounts are safe to initialize idempotently.
 	if account.Type == AccountTypeOAuth {
 		switch account.Platform {
 		case PlatformOpenAI:
@@ -2019,8 +2023,8 @@ func (s *adminServiceImpl) UpdateAccount(ctx context.Context, id int64, input *U
 	if len(input.Credentials) > 0 {
 		account.Credentials = input.Credentials
 	}
-	// Extra 使用 map：需要区分“未提供(nil)”与“显式清空({})”。
-	// 关闭配额限制时前端会删除 quota_* 键并提交 extra:{}，此时也必须落库。
+	// Extra uses a map so we can distinguish "not provided" from "explicitly cleared".
+	// When quota limits are disabled, the frontend may submit extra:{} and we still need to persist it.
 	if input.Extra != nil {
 		// 保留配额用量字段，防止编辑账号时意外重置
 		for _, key := range []string{"quota_used", "quota_daily_used", "quota_daily_start", "quota_weekly_used", "quota_weekly_start"} {
@@ -2030,36 +2034,36 @@ func (s *adminServiceImpl) UpdateAccount(ctx context.Context, id int64, input *U
 		}
 		account.Extra = input.Extra
 		if account.Platform == PlatformAntigravity && wasOveragesEnabled && !account.IsOveragesEnabled() {
-			delete(account.Extra, "antigravity_credits_overages") // 清理旧版 overages 运行态
-			// 清除 AICredits 限流 key
+			delete(account.Extra, "antigravity_credits_overages") // Clean up legacy overages runtime state.
+			// Clear the AICredits rate-limit key.
 			if rawLimits, ok := account.Extra[modelRateLimitsKey].(map[string]any); ok {
 				delete(rawLimits, creditsExhaustedKey)
 			}
 		}
 		if account.Platform == PlatformAntigravity && !wasOveragesEnabled && account.IsOveragesEnabled() {
 			delete(account.Extra, modelRateLimitsKey)
-			delete(account.Extra, "antigravity_credits_overages") // 清理旧版 overages 运行态
+			delete(account.Extra, "antigravity_credits_overages") // Clean up legacy overages runtime state.
 		}
-		// 校验并预计算固定时间重置的下次重置时间
+		// Validate and pre-compute the next fixed reset time.
 		if err := ValidateQuotaResetConfig(account.Extra); err != nil {
 			return nil, err
 		}
 		ComputeQuotaResetAt(account.Extra)
 	}
 	if input.ProxyID != nil {
-		// 0 表示清除代理（前端发送 0 而不是 null 来表达清除意图）
+		// 0 means clear the proxy binding.
 		if *input.ProxyID == 0 {
 			account.ProxyID = nil
 		} else {
 			account.ProxyID = input.ProxyID
 		}
-		account.Proxy = nil // 清除关联对象，防止 GORM Save 时根据 Proxy.ID 覆盖 ProxyID
+		account.Proxy = nil // Clear the relation object to avoid overriding ProxyID during save.
 	}
-	// 只在指针非 nil 时更新 Concurrency（支持设置为 0）
+	// Only update Concurrency when the pointer is provided, so zero stays meaningful.
 	if input.Concurrency != nil {
 		account.Concurrency = *input.Concurrency
 	}
-	// 只在指针非 nil 时更新 Priority（支持设置为 0）
+	// Only update Priority when the pointer is provided, so zero stays meaningful.
 	if input.Priority != nil {
 		account.Priority = *input.Priority
 	}
@@ -2071,7 +2075,7 @@ func (s *adminServiceImpl) UpdateAccount(ctx context.Context, id int64, input *U
 	}
 	if input.LoadFactor != nil {
 		if *input.LoadFactor <= 0 {
-			account.LoadFactor = nil // 0 或负数表示清除
+			account.LoadFactor = nil // Zero or a negative value clears the load factor.
 		} else if *input.LoadFactor > 10000 {
 			return nil, errors.New("load_factor must be <= 10000")
 		} else {
@@ -2093,7 +2097,7 @@ func (s *adminServiceImpl) UpdateAccount(ctx context.Context, id int64, input *U
 		account.AutoPauseOnExpired = *input.AutoPauseOnExpired
 	}
 
-	// 先验证分组是否存在（在任何写操作之前）
+	// Validate group IDs before applying any writes.
 	if input.GroupIDs != nil {
 		if err := s.validateGroupIDsExist(ctx, *input.GroupIDs); err != nil {
 			return nil, err
@@ -2118,7 +2122,7 @@ func (s *adminServiceImpl) UpdateAccount(ctx context.Context, id int64, input *U
 		}
 	}
 
-	// 重新查询以确保返回完整数据（包括正确的 Proxy 关联对象）
+	// Re-query so the response includes the latest relation state.
 	updated, err := s.accountRepo.GetByID(ctx, id)
 	if err != nil {
 		return nil, err
@@ -2146,7 +2150,7 @@ func (s *adminServiceImpl) BulkUpdateAccounts(ctx context.Context, input *BulkUp
 
 	needMixedChannelCheck := input.GroupIDs != nil && !input.SkipMixedChannelCheck
 
-	// 预加载账号平台信息（混合渠道检查需要）。
+	// Preload account platform info for mixed-channel validation.
 	platformByID := map[int64]string{}
 	if needMixedChannelCheck {
 		accounts, err := s.accountRepo.GetByIDs(ctx, input.AccountIDs)
@@ -2160,7 +2164,7 @@ func (s *adminServiceImpl) BulkUpdateAccounts(ctx context.Context, input *BulkUp
 		}
 	}
 
-	// 预检查混合渠道风险：在任何写操作之前，若发现风险立即返回错误。
+	// Check mixed-channel risk before any writes are applied.
 	if needMixedChannelCheck {
 		for _, accountID := range input.AccountIDs {
 			platform := platformByID[accountID]
@@ -2201,7 +2205,7 @@ func (s *adminServiceImpl) BulkUpdateAccounts(ctx context.Context, input *BulkUp
 	}
 	if input.LoadFactor != nil {
 		if *input.LoadFactor <= 0 {
-			repoUpdates.LoadFactor = nil // 0 或负数表示清除
+			repoUpdates.LoadFactor = nil // Zero or a negative value clears the load factor.
 		} else if *input.LoadFactor > 10000 {
 			return nil, errors.New("load_factor must be <= 10000")
 		} else {
@@ -2456,7 +2460,7 @@ func (s *adminServiceImpl) GetRedeemCode(ctx context.Context, id int64) (*Redeem
 }
 
 func (s *adminServiceImpl) GenerateRedeemCodes(ctx context.Context, input *GenerateRedeemCodesInput) ([]RedeemCode, error) {
-	// 如果是订阅类型，验证必须有 GroupID
+	// Subscription redeem codes must specify a group.
 	if input.Type == RedeemTypeSubscription {
 		if input.GroupID == nil {
 			return nil, errors.New("group_id is required for subscription type")
@@ -2488,7 +2492,7 @@ func (s *adminServiceImpl) GenerateRedeemCodes(ctx context.Context, input *Gener
 			code.GroupID = input.GroupID
 			code.ValidityDays = input.ValidityDays
 			if code.ValidityDays <= 0 {
-				code.ValidityDays = 30 // 默认30天
+				code.ValidityDays = 30 // Default to 30 days.
 			}
 		}
 		if err := s.redeemCodeRepo.Create(ctx, &code); err != nil {
@@ -2588,7 +2592,7 @@ func (s *adminServiceImpl) CheckProxyQuality(ctx context.Context, id int64) (*Pr
 		result.Items = append(result.Items, ProxyQualityCheckItem{
 			Target:  "base_connectivity",
 			Status:  "fail",
-			Message: "代理探测服务未配置",
+			Message: "proxy prober is not configured",
 		})
 		result.FailedCount++
 		finalizeProxyQualityResult(result)
@@ -2618,7 +2622,7 @@ func (s *adminServiceImpl) CheckProxyQuality(ctx context.Context, id int64) (*Pr
 		Target:    "base_connectivity",
 		Status:    "pass",
 		LatencyMs: latencyMs,
-		Message:   "代理出口连通正常",
+		Message:   "proxy connectivity is healthy",
 	})
 	result.PassedCount++
 
@@ -2695,7 +2699,7 @@ func runProxyQualityTarget(ctx context.Context, client *http.Client, target prox
 		body = body[:proxyQualityMaxBodyBytes]
 	}
 
-	// Cloudflare challenge 检测
+	// Check for a Cloudflare challenge response.
 	if httputil.IsCloudflareChallengeResponse(resp.StatusCode, resp.Header, body) {
 		item.Status = "challenge"
 		item.CFRay = httputil.ExtractCloudflareRayID(resp.Header, body)
@@ -2709,14 +2713,14 @@ func runProxyQualityTarget(ctx context.Context, client *http.Client, target prox
 			item.Message = fmt.Sprintf("HTTP %d", resp.StatusCode)
 		} else {
 			item.Status = "warn"
-			item.Message = fmt.Sprintf("HTTP %d（目标可达，但鉴权或方法受限）", resp.StatusCode)
+			item.Message = fmt.Sprintf("HTTP %d (reachable, but auth or method is restricted)", resp.StatusCode)
 		}
 		return item
 	}
 
 	if resp.StatusCode == http.StatusTooManyRequests {
 		item.Status = "warn"
-		item.Message = "目标返回 429，可能存在频控"
+		item.Message = "target returned 429, which may indicate rate limiting"
 		return item
 	}
 
@@ -2736,7 +2740,7 @@ func finalizeProxyQualityResult(result *ProxyQualityCheckResult) {
 	result.Score = score
 	result.Grade = proxyQualityGrade(score)
 	result.Summary = fmt.Sprintf(
-		"通过 %d 项，告警 %d 项，失败 %d 项，挑战 %d 项",
+		"passed %d, warned %d, failed %d, challenged %d",
 		result.PassedCount,
 		result.WarnCount,
 		result.FailedCount,
@@ -2861,17 +2865,16 @@ func (s *adminServiceImpl) probeProxyLatency(ctx context.Context, proxy *Proxy) 
 	})
 }
 
-// checkMixedChannelRisk 检查分组中是否存在混合渠道（Antigravity + Anthropic）
-// 如果存在混合，返回错误提示用户确认
+// checkMixedChannelRisk checks whether the target groups mix Antigravity and Anthropic accounts.
 func (s *adminServiceImpl) checkMixedChannelRisk(ctx context.Context, currentAccountID int64, currentAccountPlatform string, groupIDs []int64) error {
-	// 判断当前账号的渠道类型（基于 platform 字段，而不是 type 字段）
+	// Determine the current account platform based on the platform field rather than account type.
 	currentPlatform := getAccountPlatform(currentAccountPlatform)
 	if currentPlatform == "" {
-		// 不是 Antigravity 或 Anthropic，无需检查
+		// Only Antigravity and Anthropic accounts participate in this check.
 		return nil
 	}
 
-	// 检查每个分组中的其他账号
+	// Inspect other accounts already bound to each group.
 	for _, groupID := range groupIDs {
 		accounts, err := s.accountRepo.ListByGroup(ctx, groupID)
 		if err != nil {
@@ -2886,10 +2889,10 @@ func (s *adminServiceImpl) checkMixedChannelRisk(ctx context.Context, currentAcc
 
 			otherPlatform := getAccountPlatform(account.Platform)
 			if otherPlatform == "" {
-				continue // 不是 Antigravity 或 Anthropic，跳过
+				continue // Ignore other platforms.
 			}
 
-			// 检测混合渠道
+			// Detect mixed-channel bindings inside the same group.
 			if currentPlatform != otherPlatform {
 				group, _ := s.groupRepo.GetByID(ctx, groupID)
 				groupName := fmt.Sprintf("Group %d", groupID)
@@ -3014,7 +3017,7 @@ func (s *adminServiceImpl) saveProxyLatency(ctx context.Context, proxyID int64, 
 	}
 }
 
-// getAccountPlatform 根据账号 platform 判断混合渠道检查用的平台标识
+// getAccountPlatform normalizes the platform name for mixed-channel checks.
 func getAccountPlatform(accountPlatform string) string {
 	switch strings.ToLower(strings.TrimSpace(accountPlatform)) {
 	case PlatformAntigravity:
@@ -3043,8 +3046,7 @@ func (s *adminServiceImpl) ResetAccountQuota(ctx context.Context, id int64) erro
 	return s.accountRepo.ResetQuotaUsed(ctx, id)
 }
 
-// EnsureOpenAIPrivacy 检查 OpenAI OAuth 账号是否已设置 privacy_mode，
-// 未设置则调用 disableOpenAITraining 并持久化到 Extra，返回设置的 mode 值。
+// EnsureOpenAIPrivacy ensures privacy_mode is configured for OpenAI OAuth accounts.
 func (s *adminServiceImpl) EnsureOpenAIPrivacy(ctx context.Context, account *Account) string {
 	if account.Platform != PlatformOpenAI || account.Type != AccountTypeOAuth {
 		return ""
@@ -3077,7 +3079,7 @@ func (s *adminServiceImpl) EnsureOpenAIPrivacy(ctx context.Context, account *Acc
 	return mode
 }
 
-// ForceOpenAIPrivacy 强制重新设置 OpenAI OAuth 账号隐私，无论当前状态。
+// ForceOpenAIPrivacy reapplies OpenAI privacy settings even if they were already set.
 func (s *adminServiceImpl) ForceOpenAIPrivacy(ctx context.Context, account *Account) string {
 	if account.Platform != PlatformOpenAI || account.Type != AccountTypeOAuth {
 		return ""
@@ -3114,9 +3116,7 @@ func (s *adminServiceImpl) ForceOpenAIPrivacy(ctx context.Context, account *Acco
 	return mode
 }
 
-// EnsureAntigravityPrivacy 检查 Antigravity OAuth 账号隐私状态。
-// 仅当 privacy_mode 已成功设置（"privacy_set"）时跳过；
-// 未设置或之前失败（"privacy_set_failed"）均会重试。
+// EnsureAntigravityPrivacy ensures privacy_mode is configured for Antigravity OAuth accounts.
 func (s *adminServiceImpl) EnsureAntigravityPrivacy(ctx context.Context, account *Account) string {
 	if account.Platform != PlatformAntigravity || account.Type != AccountTypeOAuth {
 		return ""
@@ -3154,7 +3154,7 @@ func (s *adminServiceImpl) EnsureAntigravityPrivacy(ctx context.Context, account
 	return mode
 }
 
-// ForceAntigravityPrivacy 强制重新设置 Antigravity OAuth 账号隐私，无论当前状态。
+// ForceAntigravityPrivacy reapplies Antigravity privacy settings even if they were already set.
 func (s *adminServiceImpl) ForceAntigravityPrivacy(ctx context.Context, account *Account) string {
 	if account.Platform != PlatformAntigravity || account.Type != AccountTypeOAuth {
 		return ""

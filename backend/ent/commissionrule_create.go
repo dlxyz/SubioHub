@@ -84,6 +84,20 @@ func (_c *CommissionRuleCreate) SetNillableCalcMode(v *string) *CommissionRuleCr
 	return _c
 }
 
+// SetChannelPartnerTargetRate sets the "channel_partner_target_rate" field.
+func (_c *CommissionRuleCreate) SetChannelPartnerTargetRate(v float64) *CommissionRuleCreate {
+	_c.mutation.SetChannelPartnerTargetRate(v)
+	return _c
+}
+
+// SetNillableChannelPartnerTargetRate sets the "channel_partner_target_rate" field if the given value is not nil.
+func (_c *CommissionRuleCreate) SetNillableChannelPartnerTargetRate(v *float64) *CommissionRuleCreate {
+	if v != nil {
+		_c.SetChannelPartnerTargetRate(*v)
+	}
+	return _c
+}
+
 // SetAgentTargetRate sets the "agent_target_rate" field.
 func (_c *CommissionRuleCreate) SetAgentTargetRate(v float64) *CommissionRuleCreate {
 	_c.mutation.SetAgentTargetRate(v)
@@ -267,6 +281,10 @@ func (_c *CommissionRuleCreate) defaults() {
 		v := commissionrule.DefaultCalcMode
 		_c.mutation.SetCalcMode(v)
 	}
+	if _, ok := _c.mutation.ChannelPartnerTargetRate(); !ok {
+		v := commissionrule.DefaultChannelPartnerTargetRate
+		_c.mutation.SetChannelPartnerTargetRate(v)
+	}
 	if _, ok := _c.mutation.AgentTargetRate(); !ok {
 		v := commissionrule.DefaultAgentTargetRate
 		_c.mutation.SetAgentTargetRate(v)
@@ -324,6 +342,9 @@ func (_c *CommissionRuleCreate) check() error {
 		if err := commissionrule.CalcModeValidator(v); err != nil {
 			return &ValidationError{Name: "calc_mode", err: fmt.Errorf(`ent: validator failed for field "CommissionRule.calc_mode": %w`, err)}
 		}
+	}
+	if _, ok := _c.mutation.ChannelPartnerTargetRate(); !ok {
+		return &ValidationError{Name: "channel_partner_target_rate", err: errors.New(`ent: missing required field "CommissionRule.channel_partner_target_rate"`)}
 	}
 	if _, ok := _c.mutation.AgentTargetRate(); !ok {
 		return &ValidationError{Name: "agent_target_rate", err: errors.New(`ent: missing required field "CommissionRule.agent_target_rate"`)}
@@ -399,6 +420,10 @@ func (_c *CommissionRuleCreate) createSpec() (*CommissionRule, *sqlgraph.CreateS
 	if value, ok := _c.mutation.CalcMode(); ok {
 		_spec.SetField(commissionrule.FieldCalcMode, field.TypeString, value)
 		_node.CalcMode = value
+	}
+	if value, ok := _c.mutation.ChannelPartnerTargetRate(); ok {
+		_spec.SetField(commissionrule.FieldChannelPartnerTargetRate, field.TypeFloat64, value)
+		_node.ChannelPartnerTargetRate = value
 	}
 	if value, ok := _c.mutation.AgentTargetRate(); ok {
 		_spec.SetField(commissionrule.FieldAgentTargetRate, field.TypeFloat64, value)
@@ -537,6 +562,24 @@ func (u *CommissionRuleUpsert) SetCalcMode(v string) *CommissionRuleUpsert {
 // UpdateCalcMode sets the "calc_mode" field to the value that was provided on create.
 func (u *CommissionRuleUpsert) UpdateCalcMode() *CommissionRuleUpsert {
 	u.SetExcluded(commissionrule.FieldCalcMode)
+	return u
+}
+
+// SetChannelPartnerTargetRate sets the "channel_partner_target_rate" field.
+func (u *CommissionRuleUpsert) SetChannelPartnerTargetRate(v float64) *CommissionRuleUpsert {
+	u.Set(commissionrule.FieldChannelPartnerTargetRate, v)
+	return u
+}
+
+// UpdateChannelPartnerTargetRate sets the "channel_partner_target_rate" field to the value that was provided on create.
+func (u *CommissionRuleUpsert) UpdateChannelPartnerTargetRate() *CommissionRuleUpsert {
+	u.SetExcluded(commissionrule.FieldChannelPartnerTargetRate)
+	return u
+}
+
+// AddChannelPartnerTargetRate adds v to the "channel_partner_target_rate" field.
+func (u *CommissionRuleUpsert) AddChannelPartnerTargetRate(v float64) *CommissionRuleUpsert {
+	u.Add(commissionrule.FieldChannelPartnerTargetRate, v)
 	return u
 }
 
@@ -812,6 +855,27 @@ func (u *CommissionRuleUpsertOne) SetCalcMode(v string) *CommissionRuleUpsertOne
 func (u *CommissionRuleUpsertOne) UpdateCalcMode() *CommissionRuleUpsertOne {
 	return u.Update(func(s *CommissionRuleUpsert) {
 		s.UpdateCalcMode()
+	})
+}
+
+// SetChannelPartnerTargetRate sets the "channel_partner_target_rate" field.
+func (u *CommissionRuleUpsertOne) SetChannelPartnerTargetRate(v float64) *CommissionRuleUpsertOne {
+	return u.Update(func(s *CommissionRuleUpsert) {
+		s.SetChannelPartnerTargetRate(v)
+	})
+}
+
+// AddChannelPartnerTargetRate adds v to the "channel_partner_target_rate" field.
+func (u *CommissionRuleUpsertOne) AddChannelPartnerTargetRate(v float64) *CommissionRuleUpsertOne {
+	return u.Update(func(s *CommissionRuleUpsert) {
+		s.AddChannelPartnerTargetRate(v)
+	})
+}
+
+// UpdateChannelPartnerTargetRate sets the "channel_partner_target_rate" field to the value that was provided on create.
+func (u *CommissionRuleUpsertOne) UpdateChannelPartnerTargetRate() *CommissionRuleUpsertOne {
+	return u.Update(func(s *CommissionRuleUpsert) {
+		s.UpdateChannelPartnerTargetRate()
 	})
 }
 
@@ -1282,6 +1346,27 @@ func (u *CommissionRuleUpsertBulk) SetCalcMode(v string) *CommissionRuleUpsertBu
 func (u *CommissionRuleUpsertBulk) UpdateCalcMode() *CommissionRuleUpsertBulk {
 	return u.Update(func(s *CommissionRuleUpsert) {
 		s.UpdateCalcMode()
+	})
+}
+
+// SetChannelPartnerTargetRate sets the "channel_partner_target_rate" field.
+func (u *CommissionRuleUpsertBulk) SetChannelPartnerTargetRate(v float64) *CommissionRuleUpsertBulk {
+	return u.Update(func(s *CommissionRuleUpsert) {
+		s.SetChannelPartnerTargetRate(v)
+	})
+}
+
+// AddChannelPartnerTargetRate adds v to the "channel_partner_target_rate" field.
+func (u *CommissionRuleUpsertBulk) AddChannelPartnerTargetRate(v float64) *CommissionRuleUpsertBulk {
+	return u.Update(func(s *CommissionRuleUpsert) {
+		s.AddChannelPartnerTargetRate(v)
+	})
+}
+
+// UpdateChannelPartnerTargetRate sets the "channel_partner_target_rate" field to the value that was provided on create.
+func (u *CommissionRuleUpsertBulk) UpdateChannelPartnerTargetRate() *CommissionRuleUpsertBulk {
+	return u.Update(func(s *CommissionRuleUpsert) {
+		s.UpdateChannelPartnerTargetRate()
 	})
 }
 

@@ -70,6 +70,11 @@ func UserID(v int64) predicate.PromotionRelation {
 	return predicate.PromotionRelation(sql.FieldEQ(FieldUserID, v))
 }
 
+// ChannelPartnerUserID applies equality check predicate on the "channel_partner_user_id" field. It's identical to ChannelPartnerUserIDEQ.
+func ChannelPartnerUserID(v int64) predicate.PromotionRelation {
+	return predicate.PromotionRelation(sql.FieldEQ(FieldChannelPartnerUserID, v))
+}
+
 // AgentUserID applies equality check predicate on the "agent_user_id" field. It's identical to AgentUserIDEQ.
 func AgentUserID(v int64) predicate.PromotionRelation {
 	return predicate.PromotionRelation(sql.FieldEQ(FieldAgentUserID, v))
@@ -208,6 +213,36 @@ func UserIDIn(vs ...int64) predicate.PromotionRelation {
 // UserIDNotIn applies the NotIn predicate on the "user_id" field.
 func UserIDNotIn(vs ...int64) predicate.PromotionRelation {
 	return predicate.PromotionRelation(sql.FieldNotIn(FieldUserID, vs...))
+}
+
+// ChannelPartnerUserIDEQ applies the EQ predicate on the "channel_partner_user_id" field.
+func ChannelPartnerUserIDEQ(v int64) predicate.PromotionRelation {
+	return predicate.PromotionRelation(sql.FieldEQ(FieldChannelPartnerUserID, v))
+}
+
+// ChannelPartnerUserIDNEQ applies the NEQ predicate on the "channel_partner_user_id" field.
+func ChannelPartnerUserIDNEQ(v int64) predicate.PromotionRelation {
+	return predicate.PromotionRelation(sql.FieldNEQ(FieldChannelPartnerUserID, v))
+}
+
+// ChannelPartnerUserIDIn applies the In predicate on the "channel_partner_user_id" field.
+func ChannelPartnerUserIDIn(vs ...int64) predicate.PromotionRelation {
+	return predicate.PromotionRelation(sql.FieldIn(FieldChannelPartnerUserID, vs...))
+}
+
+// ChannelPartnerUserIDNotIn applies the NotIn predicate on the "channel_partner_user_id" field.
+func ChannelPartnerUserIDNotIn(vs ...int64) predicate.PromotionRelation {
+	return predicate.PromotionRelation(sql.FieldNotIn(FieldChannelPartnerUserID, vs...))
+}
+
+// ChannelPartnerUserIDIsNil applies the IsNil predicate on the "channel_partner_user_id" field.
+func ChannelPartnerUserIDIsNil() predicate.PromotionRelation {
+	return predicate.PromotionRelation(sql.FieldIsNull(FieldChannelPartnerUserID))
+}
+
+// ChannelPartnerUserIDNotNil applies the NotNil predicate on the "channel_partner_user_id" field.
+func ChannelPartnerUserIDNotNil() predicate.PromotionRelation {
+	return predicate.PromotionRelation(sql.FieldNotNull(FieldChannelPartnerUserID))
 }
 
 // AgentUserIDEQ applies the EQ predicate on the "agent_user_id" field.
@@ -570,6 +605,29 @@ func HasUser() predicate.PromotionRelation {
 func HasUserWith(preds ...predicate.User) predicate.PromotionRelation {
 	return predicate.PromotionRelation(func(s *sql.Selector) {
 		step := newUserStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasChannelPartnerUser applies the HasEdge predicate on the "channel_partner_user" edge.
+func HasChannelPartnerUser() predicate.PromotionRelation {
+	return predicate.PromotionRelation(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, ChannelPartnerUserTable, ChannelPartnerUserColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasChannelPartnerUserWith applies the HasEdge predicate on the "channel_partner_user" edge with a given conditions (other predicates).
+func HasChannelPartnerUserWith(preds ...predicate.User) predicate.PromotionRelation {
+	return predicate.PromotionRelation(func(s *sql.Selector) {
+		step := newChannelPartnerUserStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

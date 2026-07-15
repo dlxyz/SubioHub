@@ -20,15 +20,16 @@ import (
 // PromotionRelationQuery is the builder for querying PromotionRelation entities.
 type PromotionRelationQuery struct {
 	config
-	ctx                  *QueryContext
-	order                []promotionrelation.OrderOption
-	inters               []Interceptor
-	predicates           []predicate.PromotionRelation
-	withUser             *UserQuery
-	withAgentUser        *UserQuery
-	withDistributorUser  *UserQuery
-	withDirectParentUser *UserQuery
-	modifiers            []func(*sql.Selector)
+	ctx                    *QueryContext
+	order                  []promotionrelation.OrderOption
+	inters                 []Interceptor
+	predicates             []predicate.PromotionRelation
+	withUser               *UserQuery
+	withChannelPartnerUser *UserQuery
+	withAgentUser          *UserQuery
+	withDistributorUser    *UserQuery
+	withDirectParentUser   *UserQuery
+	modifiers              []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -80,6 +81,28 @@ func (_q *PromotionRelationQuery) QueryUser() *UserQuery {
 			sqlgraph.From(promotionrelation.Table, promotionrelation.FieldID, selector),
 			sqlgraph.To(user.Table, user.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, promotionrelation.UserTable, promotionrelation.UserColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryChannelPartnerUser chains the current query on the "channel_partner_user" edge.
+func (_q *PromotionRelationQuery) QueryChannelPartnerUser() *UserQuery {
+	query := (&UserClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(promotionrelation.Table, promotionrelation.FieldID, selector),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, promotionrelation.ChannelPartnerUserTable, promotionrelation.ChannelPartnerUserColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -340,15 +363,16 @@ func (_q *PromotionRelationQuery) Clone() *PromotionRelationQuery {
 		return nil
 	}
 	return &PromotionRelationQuery{
-		config:               _q.config,
-		ctx:                  _q.ctx.Clone(),
-		order:                append([]promotionrelation.OrderOption{}, _q.order...),
-		inters:               append([]Interceptor{}, _q.inters...),
-		predicates:           append([]predicate.PromotionRelation{}, _q.predicates...),
-		withUser:             _q.withUser.Clone(),
-		withAgentUser:        _q.withAgentUser.Clone(),
-		withDistributorUser:  _q.withDistributorUser.Clone(),
-		withDirectParentUser: _q.withDirectParentUser.Clone(),
+		config:                 _q.config,
+		ctx:                    _q.ctx.Clone(),
+		order:                  append([]promotionrelation.OrderOption{}, _q.order...),
+		inters:                 append([]Interceptor{}, _q.inters...),
+		predicates:             append([]predicate.PromotionRelation{}, _q.predicates...),
+		withUser:               _q.withUser.Clone(),
+		withChannelPartnerUser: _q.withChannelPartnerUser.Clone(),
+		withAgentUser:          _q.withAgentUser.Clone(),
+		withDistributorUser:    _q.withDistributorUser.Clone(),
+		withDirectParentUser:   _q.withDirectParentUser.Clone(),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
 		path: _q.path,
@@ -363,6 +387,17 @@ func (_q *PromotionRelationQuery) WithUser(opts ...func(*UserQuery)) *PromotionR
 		opt(query)
 	}
 	_q.withUser = query
+	return _q
+}
+
+// WithChannelPartnerUser tells the query-builder to eager-load the nodes that are connected to
+// the "channel_partner_user" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *PromotionRelationQuery) WithChannelPartnerUser(opts ...func(*UserQuery)) *PromotionRelationQuery {
+	query := (&UserClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withChannelPartnerUser = query
 	return _q
 }
 
@@ -477,8 +512,9 @@ func (_q *PromotionRelationQuery) sqlAll(ctx context.Context, hooks ...queryHook
 	var (
 		nodes       = []*PromotionRelation{}
 		_spec       = _q.querySpec()
-		loadedTypes = [4]bool{
+		loadedTypes = [5]bool{
 			_q.withUser != nil,
+			_q.withChannelPartnerUser != nil,
 			_q.withAgentUser != nil,
 			_q.withDistributorUser != nil,
 			_q.withDirectParentUser != nil,
@@ -508,6 +544,12 @@ func (_q *PromotionRelationQuery) sqlAll(ctx context.Context, hooks ...queryHook
 	if query := _q.withUser; query != nil {
 		if err := _q.loadUser(ctx, query, nodes, nil,
 			func(n *PromotionRelation, e *User) { n.Edges.User = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withChannelPartnerUser; query != nil {
+		if err := _q.loadChannelPartnerUser(ctx, query, nodes, nil,
+			func(n *PromotionRelation, e *User) { n.Edges.ChannelPartnerUser = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -554,6 +596,38 @@ func (_q *PromotionRelationQuery) loadUser(ctx context.Context, query *UserQuery
 		nodes, ok := nodeids[n.ID]
 		if !ok {
 			return fmt.Errorf(`unexpected foreign-key "user_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
+func (_q *PromotionRelationQuery) loadChannelPartnerUser(ctx context.Context, query *UserQuery, nodes []*PromotionRelation, init func(*PromotionRelation), assign func(*PromotionRelation, *User)) error {
+	ids := make([]int64, 0, len(nodes))
+	nodeids := make(map[int64][]*PromotionRelation)
+	for i := range nodes {
+		if nodes[i].ChannelPartnerUserID == nil {
+			continue
+		}
+		fk := *nodes[i].ChannelPartnerUserID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(user.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "channel_partner_user_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -688,6 +762,9 @@ func (_q *PromotionRelationQuery) querySpec() *sqlgraph.QuerySpec {
 		}
 		if _q.withUser != nil {
 			_spec.Node.AddColumnOnce(promotionrelation.FieldUserID)
+		}
+		if _q.withChannelPartnerUser != nil {
+			_spec.Node.AddColumnOnce(promotionrelation.FieldChannelPartnerUserID)
 		}
 		if _q.withAgentUser != nil {
 			_spec.Node.AddColumnOnce(promotionrelation.FieldAgentUserID)

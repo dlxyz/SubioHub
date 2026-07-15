@@ -22,31 +22,33 @@ type CommissionRule struct {
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
-	// 规则名称
+	// Rule name
 	Name string `json:"name,omitempty"`
-	// 规则状态
+	// Rule status
 	Status string `json:"status,omitempty"`
-	// 分润计算模式：diff=补差法，additive=叠加法
+	// Split calculation mode
 	CalcMode string `json:"calc_mode,omitempty"`
-	// 代理层目标比例
+	// Target rate for channel partners
+	ChannelPartnerTargetRate float64 `json:"channel_partner_target_rate,omitempty"`
+	// Target rate for agents
 	AgentTargetRate float64 `json:"agent_target_rate,omitempty"`
-	// 分销层目标比例
+	// Target rate for distributors
 	DistributorTargetRate float64 `json:"distributor_target_rate,omitempty"`
-	// 冻结小时数，默认 7 天
+	// Settlement freeze window in hours
 	FreezeHours int `json:"freeze_hours,omitempty"`
-	// 结算模式：manual / auto
+	// Settlement mode
 	SettlementMode string `json:"settlement_mode,omitempty"`
-	// 作用域：global / agent / distributor
+	// Scope type: global / channel_partner / agent / distributor
 	ScopeType string `json:"scope_type,omitempty"`
-	// 作用域对象 ID
+	// Scope object ID
 	ScopeID *int64 `json:"scope_id,omitempty"`
-	// 优先级，数值越大越优先
+	// Rule priority
 	Priority int `json:"priority,omitempty"`
-	// 生效时间
+	// Effective time
 	EffectiveAt *time.Time `json:"effective_at,omitempty"`
-	// 失效时间
+	// Expired time
 	ExpiredAt *time.Time `json:"expired_at,omitempty"`
-	// 扩展规则配置
+	// Extended rule config
 	ConfigJSON   map[string]interface{} `json:"config_json,omitempty"`
 	selectValues sql.SelectValues
 }
@@ -58,7 +60,7 @@ func (*CommissionRule) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case commissionrule.FieldConfigJSON:
 			values[i] = new([]byte)
-		case commissionrule.FieldAgentTargetRate, commissionrule.FieldDistributorTargetRate:
+		case commissionrule.FieldChannelPartnerTargetRate, commissionrule.FieldAgentTargetRate, commissionrule.FieldDistributorTargetRate:
 			values[i] = new(sql.NullFloat64)
 		case commissionrule.FieldID, commissionrule.FieldFreezeHours, commissionrule.FieldScopeID, commissionrule.FieldPriority:
 			values[i] = new(sql.NullInt64)
@@ -116,6 +118,12 @@ func (_m *CommissionRule) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field calc_mode", values[i])
 			} else if value.Valid {
 				_m.CalcMode = value.String
+			}
+		case commissionrule.FieldChannelPartnerTargetRate:
+			if value, ok := values[i].(*sql.NullFloat64); !ok {
+				return fmt.Errorf("unexpected type %T for field channel_partner_target_rate", values[i])
+			} else if value.Valid {
+				_m.ChannelPartnerTargetRate = value.Float64
 			}
 		case commissionrule.FieldAgentTargetRate:
 			if value, ok := values[i].(*sql.NullFloat64); !ok {
@@ -232,6 +240,9 @@ func (_m *CommissionRule) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("calc_mode=")
 	builder.WriteString(_m.CalcMode)
+	builder.WriteString(", ")
+	builder.WriteString("channel_partner_target_rate=")
+	builder.WriteString(fmt.Sprintf("%v", _m.ChannelPartnerTargetRate))
 	builder.WriteString(", ")
 	builder.WriteString("agent_target_rate=")
 	builder.WriteString(fmt.Sprintf("%v", _m.AgentTargetRate))

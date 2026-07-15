@@ -1753,6 +1753,22 @@ func (c *CommissionSplitLogClient) QueryBeneficiaryUser(_m *CommissionSplitLog) 
 	return query
 }
 
+// QueryChannelPartnerUser queries the channel_partner_user edge of a CommissionSplitLog.
+func (c *CommissionSplitLogClient) QueryChannelPartnerUser(_m *CommissionSplitLog) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(commissionsplitlog.Table, commissionsplitlog.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, commissionsplitlog.ChannelPartnerUserTable, commissionsplitlog.ChannelPartnerUserColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // QueryAgentUser queries the agent_user edge of a CommissionSplitLog.
 func (c *CommissionSplitLogClient) QueryAgentUser(_m *CommissionSplitLog) *UserQuery {
 	query := (&UserClient{config: c.config}).Query()
@@ -3522,6 +3538,22 @@ func (c *PromotionRelationClient) QueryUser(_m *PromotionRelation) *UserQuery {
 	return query
 }
 
+// QueryChannelPartnerUser queries the channel_partner_user edge of a PromotionRelation.
+func (c *PromotionRelationClient) QueryChannelPartnerUser(_m *PromotionRelation) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(promotionrelation.Table, promotionrelation.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, promotionrelation.ChannelPartnerUserTable, promotionrelation.ChannelPartnerUserColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // QueryAgentUser queries the agent_user edge of a PromotionRelation.
 func (c *PromotionRelationClient) QueryAgentUser(_m *PromotionRelation) *UserQuery {
 	query := (&UserClient{config: c.config}).Query()
@@ -4922,6 +4954,102 @@ func (c *UserClient) QueryInvitees(_m *User) *UserQuery {
 			sqlgraph.From(user.Table, user.FieldID, id),
 			sqlgraph.To(user.Table, user.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, user.InviteesTable, user.InviteesColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryChannelPartner queries the channel_partner edge of a User.
+func (c *UserClient) QueryChannelPartner(_m *User) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, user.ChannelPartnerTable, user.ChannelPartnerColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryChannelMembers queries the channel_members edge of a User.
+func (c *UserClient) QueryChannelMembers(_m *User) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.ChannelMembersTable, user.ChannelMembersColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryAgentOwner queries the agent_owner edge of a User.
+func (c *UserClient) QueryAgentOwner(_m *User) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, user.AgentOwnerTable, user.AgentOwnerColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryAgentMembers queries the agent_members edge of a User.
+func (c *UserClient) QueryAgentMembers(_m *User) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.AgentMembersTable, user.AgentMembersColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryDistributorOwner queries the distributor_owner edge of a User.
+func (c *UserClient) QueryDistributorOwner(_m *User) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, user.DistributorOwnerTable, user.DistributorOwnerColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryDistributorMembers queries the distributor_members edge of a User.
+func (c *UserClient) QueryDistributorMembers(_m *User) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.DistributorMembersTable, user.DistributorMembersColumn),
 		)
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil

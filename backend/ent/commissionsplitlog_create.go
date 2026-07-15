@@ -93,6 +93,20 @@ func (_c *CommissionSplitLogCreate) SetNillableBeneficiaryRole(v *string) *Commi
 	return _c
 }
 
+// SetChannelPartnerUserID sets the "channel_partner_user_id" field.
+func (_c *CommissionSplitLogCreate) SetChannelPartnerUserID(v int64) *CommissionSplitLogCreate {
+	_c.mutation.SetChannelPartnerUserID(v)
+	return _c
+}
+
+// SetNillableChannelPartnerUserID sets the "channel_partner_user_id" field if the given value is not nil.
+func (_c *CommissionSplitLogCreate) SetNillableChannelPartnerUserID(v *int64) *CommissionSplitLogCreate {
+	if v != nil {
+		_c.SetChannelPartnerUserID(*v)
+	}
+	return _c
+}
+
 // SetAgentUserID sets the "agent_user_id" field.
 func (_c *CommissionSplitLogCreate) SetAgentUserID(v int64) *CommissionSplitLogCreate {
 	_c.mutation.SetAgentUserID(v)
@@ -294,6 +308,11 @@ func (_c *CommissionSplitLogCreate) SetConsumerUser(v *User) *CommissionSplitLog
 // SetBeneficiaryUser sets the "beneficiary_user" edge to the User entity.
 func (_c *CommissionSplitLogCreate) SetBeneficiaryUser(v *User) *CommissionSplitLogCreate {
 	return _c.SetBeneficiaryUserID(v.ID)
+}
+
+// SetChannelPartnerUser sets the "channel_partner_user" edge to the User entity.
+func (_c *CommissionSplitLogCreate) SetChannelPartnerUser(v *User) *CommissionSplitLogCreate {
+	return _c.SetChannelPartnerUserID(v.ID)
 }
 
 // SetAgentUser sets the "agent_user" edge to the User entity.
@@ -591,6 +610,23 @@ func (_c *CommissionSplitLogCreate) createSpec() (*CommissionSplitLog, *sqlgraph
 		_node.BeneficiaryUserID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
+	if nodes := _c.mutation.ChannelPartnerUserIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   commissionsplitlog.ChannelPartnerUserTable,
+			Columns: []string{commissionsplitlog.ChannelPartnerUserColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.ChannelPartnerUserID = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
 	if nodes := _c.mutation.AgentUserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -757,6 +793,24 @@ func (u *CommissionSplitLogUpsert) SetBeneficiaryRole(v string) *CommissionSplit
 // UpdateBeneficiaryRole sets the "beneficiary_role" field to the value that was provided on create.
 func (u *CommissionSplitLogUpsert) UpdateBeneficiaryRole() *CommissionSplitLogUpsert {
 	u.SetExcluded(commissionsplitlog.FieldBeneficiaryRole)
+	return u
+}
+
+// SetChannelPartnerUserID sets the "channel_partner_user_id" field.
+func (u *CommissionSplitLogUpsert) SetChannelPartnerUserID(v int64) *CommissionSplitLogUpsert {
+	u.Set(commissionsplitlog.FieldChannelPartnerUserID, v)
+	return u
+}
+
+// UpdateChannelPartnerUserID sets the "channel_partner_user_id" field to the value that was provided on create.
+func (u *CommissionSplitLogUpsert) UpdateChannelPartnerUserID() *CommissionSplitLogUpsert {
+	u.SetExcluded(commissionsplitlog.FieldChannelPartnerUserID)
+	return u
+}
+
+// ClearChannelPartnerUserID clears the value of the "channel_partner_user_id" field.
+func (u *CommissionSplitLogUpsert) ClearChannelPartnerUserID() *CommissionSplitLogUpsert {
+	u.SetNull(commissionsplitlog.FieldChannelPartnerUserID)
 	return u
 }
 
@@ -1101,6 +1155,27 @@ func (u *CommissionSplitLogUpsertOne) SetBeneficiaryRole(v string) *CommissionSp
 func (u *CommissionSplitLogUpsertOne) UpdateBeneficiaryRole() *CommissionSplitLogUpsertOne {
 	return u.Update(func(s *CommissionSplitLogUpsert) {
 		s.UpdateBeneficiaryRole()
+	})
+}
+
+// SetChannelPartnerUserID sets the "channel_partner_user_id" field.
+func (u *CommissionSplitLogUpsertOne) SetChannelPartnerUserID(v int64) *CommissionSplitLogUpsertOne {
+	return u.Update(func(s *CommissionSplitLogUpsert) {
+		s.SetChannelPartnerUserID(v)
+	})
+}
+
+// UpdateChannelPartnerUserID sets the "channel_partner_user_id" field to the value that was provided on create.
+func (u *CommissionSplitLogUpsertOne) UpdateChannelPartnerUserID() *CommissionSplitLogUpsertOne {
+	return u.Update(func(s *CommissionSplitLogUpsert) {
+		s.UpdateChannelPartnerUserID()
+	})
+}
+
+// ClearChannelPartnerUserID clears the value of the "channel_partner_user_id" field.
+func (u *CommissionSplitLogUpsertOne) ClearChannelPartnerUserID() *CommissionSplitLogUpsertOne {
+	return u.Update(func(s *CommissionSplitLogUpsert) {
+		s.ClearChannelPartnerUserID()
 	})
 }
 
@@ -1648,6 +1723,27 @@ func (u *CommissionSplitLogUpsertBulk) SetBeneficiaryRole(v string) *CommissionS
 func (u *CommissionSplitLogUpsertBulk) UpdateBeneficiaryRole() *CommissionSplitLogUpsertBulk {
 	return u.Update(func(s *CommissionSplitLogUpsert) {
 		s.UpdateBeneficiaryRole()
+	})
+}
+
+// SetChannelPartnerUserID sets the "channel_partner_user_id" field.
+func (u *CommissionSplitLogUpsertBulk) SetChannelPartnerUserID(v int64) *CommissionSplitLogUpsertBulk {
+	return u.Update(func(s *CommissionSplitLogUpsert) {
+		s.SetChannelPartnerUserID(v)
+	})
+}
+
+// UpdateChannelPartnerUserID sets the "channel_partner_user_id" field to the value that was provided on create.
+func (u *CommissionSplitLogUpsertBulk) UpdateChannelPartnerUserID() *CommissionSplitLogUpsertBulk {
+	return u.Update(func(s *CommissionSplitLogUpsert) {
+		s.UpdateChannelPartnerUserID()
+	})
+}
+
+// ClearChannelPartnerUserID clears the value of the "channel_partner_user_id" field.
+func (u *CommissionSplitLogUpsertBulk) ClearChannelPartnerUserID() *CommissionSplitLogUpsertBulk {
+	return u.Update(func(s *CommissionSplitLogUpsert) {
+		s.ClearChannelPartnerUserID()
 	})
 }
 

@@ -1,15 +1,27 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { Mail, Lock, Eye, EyeOff, AlertCircle, Loader2, LogIn, Globe, Moon, Sun, HandCoins } from 'lucide-react';
-import Link from 'next/link';
-import { api } from '@/lib/api';
-import { localizePath } from '@/i18n/routing';
-import { useI18n } from '@/i18n/use-i18n';
-import { useAuthStore } from '@/store/auth';
+import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import {
+  Mail,
+  Lock,
+  Eye,
+  EyeOff,
+  AlertCircle,
+  Loader2,
+  LogIn,
+  Globe,
+  Moon,
+  Sun,
+  HandCoins,
+} from "lucide-react";
+import Link from "next/link";
+import { api } from "@/lib/api";
+import { localizePath } from "@/i18n/routing";
+import { useI18n } from "@/i18n/use-i18n";
+import { useAuthStore } from "@/store/auth";
 
-const AGENT_ROLES = new Set(['admin', 'agent', 'distributor']);
+const AGENT_ROLES = new Set(["admin", "agent", "distributor"]);
 
 function getErrorMessage(error: unknown, fallback: string) {
   if (error instanceof Error && error.message) {
@@ -23,21 +35,21 @@ export default function AgentLoginPage() {
   const searchParams = useSearchParams();
   const login = useAuthStore((state) => state.login);
   const { availableLocales, locale, setLocale, t } = useI18n();
-  const localizedHomePath = localizePath('/', locale);
-  const localizedMainLoginPath = localizePath('/login', locale);
-  const localizedForgotPasswordPath = localizePath('/forgot-password', locale);
-  const localizedRegisterPath = localizePath('/register', locale);
+  const localizedHomePath = localizePath("/", locale);
+  const localizedMainLoginPath = localizePath("/login", locale);
+  const localizedForgotPasswordPath = localizePath("/forgot-password", locale);
+  const localizedRegisterPath = localizePath("/register", locale);
 
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [isDark, setIsDark] = useState(false);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
-      setIsDark(document.documentElement.classList.contains('dark'));
+      setIsDark(document.documentElement.classList.contains("dark"));
     }, 0);
 
     return () => {
@@ -49,21 +61,21 @@ export default function AgentLoginPage() {
     const nextDark = !isDark;
     setIsDark(nextDark);
     if (nextDark) {
-      document.documentElement.classList.add('dark');
-      localStorage.setItem('theme', 'dark');
+      document.documentElement.classList.add("dark");
+      localStorage.setItem("theme", "dark");
       return;
     }
-    document.documentElement.classList.remove('dark');
-    localStorage.setItem('theme', 'light');
+    document.documentElement.classList.remove("dark");
+    localStorage.setItem("theme", "light");
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError("");
     setIsLoading(true);
 
     try {
-      const payload = (await api.post('/auth/login', { email, password })) as {
+      const payload = (await api.post("/auth/login", { email, password })) as {
         access_token: string;
         user: {
           id: number;
@@ -73,8 +85,8 @@ export default function AgentLoginPage() {
         };
       };
 
-      if (!AGENT_ROLES.has(payload.user.role || '')) {
-        setError(t('publicAuth.distributionLogin.roleDenied'));
+      if (!AGENT_ROLES.has(payload.user.role || "")) {
+        setError(t("publicAuth.distributionLogin.roleDenied"));
         return;
       }
 
@@ -85,14 +97,14 @@ export default function AgentLoginPage() {
         balance: payload.user.balance ?? 0,
       });
 
-      const redirectTo = searchParams.get('redirect') || '/agent';
-      if (typeof window !== 'undefined') {
+      const redirectTo = searchParams.get("redirect") || "/agent";
+      if (typeof window !== "undefined") {
         window.location.replace(redirectTo);
         return;
       }
       router.replace(redirectTo);
     } catch (error: unknown) {
-      setError(getErrorMessage(error, t('publicAuth.login.errorFallback')));
+      setError(getErrorMessage(error, t("publicAuth.login.errorFallback")));
     } finally {
       setIsLoading(false);
     }
@@ -106,7 +118,7 @@ export default function AgentLoginPage() {
             href={localizedHomePath}
             className="text-sm font-medium text-gray-600 transition-colors hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
           >
-            {t('publicAuth.common.backHome')}
+            {t("publicAuth.common.backHome")}
           </Link>
           <div className="flex items-center gap-3">
             <div className="hidden items-center gap-2 rounded-full border border-gray-200 bg-white/80 px-3 py-2 text-gray-500 backdrop-blur dark:border-gray-800 dark:bg-[#171717]/80 dark:text-gray-300 sm:flex">
@@ -127,7 +139,11 @@ export default function AgentLoginPage() {
               onClick={toggleTheme}
               className="flex h-9 w-9 items-center justify-center rounded-full text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white"
             >
-              {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+              {isDark ? (
+                <Sun className="h-4 w-4" />
+              ) : (
+                <Moon className="h-4 w-4" />
+              )}
             </button>
           </div>
         </div>
@@ -138,15 +154,19 @@ export default function AgentLoginPage() {
           <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-100 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300">
             <HandCoins className="h-7 w-7" />
           </div>
-          <h2 className="mt-4 text-3xl font-bold text-gray-900 dark:text-white">{t('publicAuth.distributionLogin.title')}</h2>
-          <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">{t('publicAuth.distributionLogin.subtitle')}</p>
+          <h2 className="mt-4 text-3xl font-bold text-gray-900 dark:text-white">
+            {t("publicAuth.distributionLogin.title")}
+          </h2>
+          <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+            {t("publicAuth.distributionLogin.subtitle")}
+          </p>
         </div>
 
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="space-y-4">
             <div>
               <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                {t('publicAuth.common.email')}
+                {t("publicAuth.common.email")}
               </label>
               <div className="relative">
                 <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
@@ -158,7 +178,7 @@ export default function AgentLoginPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="block w-full rounded-lg border border-gray-300 bg-white py-2.5 pr-3 pl-10 text-gray-900 transition-colors focus:border-blue-500 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white sm:text-sm"
-                  placeholder={t('publicAuth.common.emailPlaceholder')}
+                  placeholder={t("publicAuth.common.emailPlaceholder")}
                   disabled={isLoading}
                 />
               </div>
@@ -167,13 +187,13 @@ export default function AgentLoginPage() {
             <div>
               <div className="mb-1 flex items-center justify-between gap-3">
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  {t('publicAuth.common.password')}
+                  {t("publicAuth.common.password")}
                 </label>
                 <Link
                   href={localizedForgotPasswordPath}
                   className="text-xs font-medium text-blue-600 transition-colors hover:text-blue-500 dark:text-blue-400"
                 >
-                  {t('publicAuth.login.forgotPassword')}
+                  {t("publicAuth.login.forgotPassword")}
                 </Link>
               </div>
               <div className="relative">
@@ -181,12 +201,12 @@ export default function AgentLoginPage() {
                   <Lock className="h-5 w-5 text-gray-400" />
                 </div>
                 <input
-                  type={showPassword ? 'text' : 'password'}
+                  type={showPassword ? "text" : "password"}
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="block w-full rounded-lg border border-gray-300 bg-white py-2.5 pr-10 pl-10 text-gray-900 transition-colors focus:border-blue-500 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white sm:text-sm"
-                  placeholder={t('publicAuth.common.passwordPlaceholder')}
+                  placeholder={t("publicAuth.common.passwordPlaceholder")}
                   disabled={isLoading}
                 />
                 <button
@@ -194,7 +214,11 @@ export default function AgentLoginPage() {
                   className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-500"
                   onClick={() => setShowPassword(!showPassword)}
                 >
-                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                  {showPassword ? (
+                    <EyeOff className="h-5 w-5" />
+                  ) : (
+                    <Eye className="h-5 w-5" />
+                  )}
                 </button>
               </div>
             </div>
@@ -205,7 +229,9 @@ export default function AgentLoginPage() {
               <div className="flex">
                 <AlertCircle className="h-5 w-5 text-red-400" />
                 <div className="ml-3">
-                  <h3 className="text-sm font-medium text-red-800 dark:text-red-200">{error}</h3>
+                  <h3 className="text-sm font-medium text-red-800 dark:text-red-200">
+                    {error}
+                  </h3>
                 </div>
               </div>
             </div>
@@ -221,19 +247,19 @@ export default function AgentLoginPage() {
             ) : (
               <>
                 <LogIn className="mr-2 h-5 w-5" />
-                {t('publicAuth.login.submit')}
+                {t("publicAuth.login.submit")}
               </>
             )}
           </button>
 
           <div className="space-y-3 text-center text-sm text-gray-500 dark:text-gray-400">
             <div>
-              {t('publicAuth.login.noAccount')}{' '}
+              {t("publicAuth.login.noAccount")}{" "}
               <Link
                 href={localizedRegisterPath}
                 className="font-medium text-blue-600 transition-colors hover:text-blue-500 dark:text-blue-400"
               >
-                {t('publicAuth.login.goRegister')}
+                {t("publicAuth.login.goRegister")}
               </Link>
             </div>
             <div>
@@ -241,7 +267,7 @@ export default function AgentLoginPage() {
                 href={localizedMainLoginPath}
                 className="font-medium text-amber-600 transition-colors hover:text-amber-500 dark:text-amber-400"
               >
-                {t('publicAuth.distributionLogin.mainLogin')}
+                {t("publicAuth.distributionLogin.mainLogin")}
               </Link>
             </div>
           </div>

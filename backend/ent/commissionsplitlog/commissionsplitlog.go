@@ -26,6 +26,8 @@ const (
 	FieldBeneficiaryUserID = "beneficiary_user_id"
 	// FieldBeneficiaryRole holds the string denoting the beneficiary_role field in the database.
 	FieldBeneficiaryRole = "beneficiary_role"
+	// FieldChannelPartnerUserID holds the string denoting the channel_partner_user_id field in the database.
+	FieldChannelPartnerUserID = "channel_partner_user_id"
 	// FieldAgentUserID holds the string denoting the agent_user_id field in the database.
 	FieldAgentUserID = "agent_user_id"
 	// FieldDistributorUserID holds the string denoting the distributor_user_id field in the database.
@@ -58,6 +60,8 @@ const (
 	EdgeConsumerUser = "consumer_user"
 	// EdgeBeneficiaryUser holds the string denoting the beneficiary_user edge name in mutations.
 	EdgeBeneficiaryUser = "beneficiary_user"
+	// EdgeChannelPartnerUser holds the string denoting the channel_partner_user edge name in mutations.
+	EdgeChannelPartnerUser = "channel_partner_user"
 	// EdgeAgentUser holds the string denoting the agent_user edge name in mutations.
 	EdgeAgentUser = "agent_user"
 	// EdgeDistributorUser holds the string denoting the distributor_user edge name in mutations.
@@ -87,6 +91,13 @@ const (
 	BeneficiaryUserInverseTable = "users"
 	// BeneficiaryUserColumn is the table column denoting the beneficiary_user relation/edge.
 	BeneficiaryUserColumn = "beneficiary_user_id"
+	// ChannelPartnerUserTable is the table that holds the channel_partner_user relation/edge.
+	ChannelPartnerUserTable = "commission_split_logs"
+	// ChannelPartnerUserInverseTable is the table name for the User entity.
+	// It exists in this package in order to avoid circular dependency with the "user" package.
+	ChannelPartnerUserInverseTable = "users"
+	// ChannelPartnerUserColumn is the table column denoting the channel_partner_user relation/edge.
+	ChannelPartnerUserColumn = "channel_partner_user_id"
 	// AgentUserTable is the table that holds the agent_user relation/edge.
 	AgentUserTable = "commission_split_logs"
 	// AgentUserInverseTable is the table name for the User entity.
@@ -119,6 +130,7 @@ var Columns = []string{
 	FieldConsumerUserID,
 	FieldBeneficiaryUserID,
 	FieldBeneficiaryRole,
+	FieldChannelPartnerUserID,
 	FieldAgentUserID,
 	FieldDistributorUserID,
 	FieldLevel,
@@ -213,6 +225,11 @@ func ByBeneficiaryRole(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldBeneficiaryRole, opts...).ToFunc()
 }
 
+// ByChannelPartnerUserID orders the results by the channel_partner_user_id field.
+func ByChannelPartnerUserID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldChannelPartnerUserID, opts...).ToFunc()
+}
+
 // ByAgentUserID orders the results by the agent_user_id field.
 func ByAgentUserID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldAgentUserID, opts...).ToFunc()
@@ -294,6 +311,13 @@ func ByBeneficiaryUserField(field string, opts ...sql.OrderTermOption) OrderOpti
 	}
 }
 
+// ByChannelPartnerUserField orders the results by channel_partner_user field.
+func ByChannelPartnerUserField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newChannelPartnerUserStep(), sql.OrderByField(field, opts...))
+	}
+}
+
 // ByAgentUserField orders the results by agent_user field.
 func ByAgentUserField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -333,6 +357,13 @@ func newBeneficiaryUserStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(BeneficiaryUserInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, false, BeneficiaryUserTable, BeneficiaryUserColumn),
+	)
+}
+func newChannelPartnerUserStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(ChannelPartnerUserInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, false, ChannelPartnerUserTable, ChannelPartnerUserColumn),
 	)
 }
 func newAgentUserStep() *sqlgraph.Step {

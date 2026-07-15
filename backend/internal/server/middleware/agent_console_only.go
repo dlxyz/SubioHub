@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// AgentConsoleOnly 允许 admin、agent 或 distributor 访问代理后台接口
+// AgentConsoleOnly 允许 admin、channel_partner、agent 或 distributor 访问营销后台接口
 // 必须在 JWTAuth 中间件之后使用
 func AgentConsoleOnly() gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -16,7 +16,10 @@ func AgentConsoleOnly() gin.HandlerFunc {
 			return
 		}
 
-		if role != service.RoleAdmin && role != service.RoleAgent && role != service.RoleDistributor {
+		if role != service.RoleAdmin &&
+			role != service.RoleChannelPartner &&
+			role != service.RoleAgent &&
+			role != service.RoleDistributor {
 			AbortWithError(c, 403, "FORBIDDEN", "Agent console access required")
 			return
 		}

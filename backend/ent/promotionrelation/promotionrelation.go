@@ -20,6 +20,8 @@ const (
 	FieldUpdatedAt = "updated_at"
 	// FieldUserID holds the string denoting the user_id field in the database.
 	FieldUserID = "user_id"
+	// FieldChannelPartnerUserID holds the string denoting the channel_partner_user_id field in the database.
+	FieldChannelPartnerUserID = "channel_partner_user_id"
 	// FieldAgentUserID holds the string denoting the agent_user_id field in the database.
 	FieldAgentUserID = "agent_user_id"
 	// FieldDistributorUserID holds the string denoting the distributor_user_id field in the database.
@@ -38,6 +40,8 @@ const (
 	FieldNotes = "notes"
 	// EdgeUser holds the string denoting the user edge name in mutations.
 	EdgeUser = "user"
+	// EdgeChannelPartnerUser holds the string denoting the channel_partner_user edge name in mutations.
+	EdgeChannelPartnerUser = "channel_partner_user"
 	// EdgeAgentUser holds the string denoting the agent_user edge name in mutations.
 	EdgeAgentUser = "agent_user"
 	// EdgeDistributorUser holds the string denoting the distributor_user edge name in mutations.
@@ -53,6 +57,13 @@ const (
 	UserInverseTable = "users"
 	// UserColumn is the table column denoting the user relation/edge.
 	UserColumn = "user_id"
+	// ChannelPartnerUserTable is the table that holds the channel_partner_user relation/edge.
+	ChannelPartnerUserTable = "promotion_relations"
+	// ChannelPartnerUserInverseTable is the table name for the User entity.
+	// It exists in this package in order to avoid circular dependency with the "user" package.
+	ChannelPartnerUserInverseTable = "users"
+	// ChannelPartnerUserColumn is the table column denoting the channel_partner_user relation/edge.
+	ChannelPartnerUserColumn = "channel_partner_user_id"
 	// AgentUserTable is the table that holds the agent_user relation/edge.
 	AgentUserTable = "promotion_relations"
 	// AgentUserInverseTable is the table name for the User entity.
@@ -82,6 +93,7 @@ var Columns = []string{
 	FieldCreatedAt,
 	FieldUpdatedAt,
 	FieldUserID,
+	FieldChannelPartnerUserID,
 	FieldAgentUserID,
 	FieldDistributorUserID,
 	FieldDirectParentUserID,
@@ -146,6 +158,11 @@ func ByUserID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUserID, opts...).ToFunc()
 }
 
+// ByChannelPartnerUserID orders the results by the channel_partner_user_id field.
+func ByChannelPartnerUserID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldChannelPartnerUserID, opts...).ToFunc()
+}
+
 // ByAgentUserID orders the results by the agent_user_id field.
 func ByAgentUserID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldAgentUserID, opts...).ToFunc()
@@ -193,6 +210,13 @@ func ByUserField(field string, opts ...sql.OrderTermOption) OrderOption {
 	}
 }
 
+// ByChannelPartnerUserField orders the results by channel_partner_user field.
+func ByChannelPartnerUserField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newChannelPartnerUserStep(), sql.OrderByField(field, opts...))
+	}
+}
+
 // ByAgentUserField orders the results by agent_user field.
 func ByAgentUserField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -218,6 +242,13 @@ func newUserStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(UserInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, false, UserTable, UserColumn),
+	)
+}
+func newChannelPartnerUserStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(ChannelPartnerUserInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, false, ChannelPartnerUserTable, ChannelPartnerUserColumn),
 	)
 }
 func newAgentUserStep() *sqlgraph.Step {

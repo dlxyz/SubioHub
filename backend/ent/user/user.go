@@ -63,6 +63,12 @@ const (
 	FieldCommissionBalance = "commission_balance"
 	// FieldTotalCommissionEarned holds the string denoting the total_commission_earned field in the database.
 	FieldTotalCommissionEarned = "total_commission_earned"
+	// FieldChannelPartnerID holds the string denoting the channel_partner_id field in the database.
+	FieldChannelPartnerID = "channel_partner_id"
+	// FieldAgentOwnerID holds the string denoting the agent_owner_id field in the database.
+	FieldAgentOwnerID = "agent_owner_id"
+	// FieldDistributorOwnerID holds the string denoting the distributor_owner_id field in the database.
+	FieldDistributorOwnerID = "distributor_owner_id"
 	// FieldIsKeyAccount holds the string denoting the is_key_account field in the database.
 	FieldIsKeyAccount = "is_key_account"
 	// FieldKeyAccountLevel holds the string denoting the key_account_level field in the database.
@@ -77,6 +83,18 @@ const (
 	EdgeInviter = "inviter"
 	// EdgeInvitees holds the string denoting the invitees edge name in mutations.
 	EdgeInvitees = "invitees"
+	// EdgeChannelPartner holds the string denoting the channel_partner edge name in mutations.
+	EdgeChannelPartner = "channel_partner"
+	// EdgeChannelMembers holds the string denoting the channel_members edge name in mutations.
+	EdgeChannelMembers = "channel_members"
+	// EdgeAgentOwner holds the string denoting the agent_owner edge name in mutations.
+	EdgeAgentOwner = "agent_owner"
+	// EdgeAgentMembers holds the string denoting the agent_members edge name in mutations.
+	EdgeAgentMembers = "agent_members"
+	// EdgeDistributorOwner holds the string denoting the distributor_owner edge name in mutations.
+	EdgeDistributorOwner = "distributor_owner"
+	// EdgeDistributorMembers holds the string denoting the distributor_members edge name in mutations.
+	EdgeDistributorMembers = "distributor_members"
 	// EdgeCommissionLogs holds the string denoting the commission_logs edge name in mutations.
 	EdgeCommissionLogs = "commission_logs"
 	// EdgeAPIKeys holds the string denoting the api_keys edge name in mutations.
@@ -111,6 +129,30 @@ const (
 	InviteesTable = "users"
 	// InviteesColumn is the table column denoting the invitees relation/edge.
 	InviteesColumn = "inviter_id"
+	// ChannelPartnerTable is the table that holds the channel_partner relation/edge.
+	ChannelPartnerTable = "users"
+	// ChannelPartnerColumn is the table column denoting the channel_partner relation/edge.
+	ChannelPartnerColumn = "channel_partner_id"
+	// ChannelMembersTable is the table that holds the channel_members relation/edge.
+	ChannelMembersTable = "users"
+	// ChannelMembersColumn is the table column denoting the channel_members relation/edge.
+	ChannelMembersColumn = "channel_partner_id"
+	// AgentOwnerTable is the table that holds the agent_owner relation/edge.
+	AgentOwnerTable = "users"
+	// AgentOwnerColumn is the table column denoting the agent_owner relation/edge.
+	AgentOwnerColumn = "agent_owner_id"
+	// AgentMembersTable is the table that holds the agent_members relation/edge.
+	AgentMembersTable = "users"
+	// AgentMembersColumn is the table column denoting the agent_members relation/edge.
+	AgentMembersColumn = "agent_owner_id"
+	// DistributorOwnerTable is the table that holds the distributor_owner relation/edge.
+	DistributorOwnerTable = "users"
+	// DistributorOwnerColumn is the table column denoting the distributor_owner relation/edge.
+	DistributorOwnerColumn = "distributor_owner_id"
+	// DistributorMembersTable is the table that holds the distributor_members relation/edge.
+	DistributorMembersTable = "users"
+	// DistributorMembersColumn is the table column denoting the distributor_members relation/edge.
+	DistributorMembersColumn = "distributor_owner_id"
 	// CommissionLogsTable is the table that holds the commission_logs relation/edge.
 	CommissionLogsTable = "commission_logs"
 	// CommissionLogsInverseTable is the table name for the CommissionLog entity.
@@ -222,6 +264,9 @@ var Columns = []string{
 	FieldCommissionRate,
 	FieldCommissionBalance,
 	FieldTotalCommissionEarned,
+	FieldChannelPartnerID,
+	FieldAgentOwnerID,
+	FieldDistributorOwnerID,
 	FieldIsKeyAccount,
 	FieldKeyAccountLevel,
 	FieldKeyAccountDiscountRate,
@@ -441,6 +486,21 @@ func ByTotalCommissionEarned(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTotalCommissionEarned, opts...).ToFunc()
 }
 
+// ByChannelPartnerID orders the results by the channel_partner_id field.
+func ByChannelPartnerID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldChannelPartnerID, opts...).ToFunc()
+}
+
+// ByAgentOwnerID orders the results by the agent_owner_id field.
+func ByAgentOwnerID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldAgentOwnerID, opts...).ToFunc()
+}
+
+// ByDistributorOwnerID orders the results by the distributor_owner_id field.
+func ByDistributorOwnerID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldDistributorOwnerID, opts...).ToFunc()
+}
+
 // ByIsKeyAccount orders the results by the is_key_account field.
 func ByIsKeyAccount(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldIsKeyAccount, opts...).ToFunc()
@@ -484,6 +544,69 @@ func ByInviteesCount(opts ...sql.OrderTermOption) OrderOption {
 func ByInvitees(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	return func(s *sql.Selector) {
 		sqlgraph.OrderByNeighborTerms(s, newInviteesStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByChannelPartnerField orders the results by channel_partner field.
+func ByChannelPartnerField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newChannelPartnerStep(), sql.OrderByField(field, opts...))
+	}
+}
+
+// ByChannelMembersCount orders the results by channel_members count.
+func ByChannelMembersCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newChannelMembersStep(), opts...)
+	}
+}
+
+// ByChannelMembers orders the results by channel_members terms.
+func ByChannelMembers(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newChannelMembersStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByAgentOwnerField orders the results by agent_owner field.
+func ByAgentOwnerField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newAgentOwnerStep(), sql.OrderByField(field, opts...))
+	}
+}
+
+// ByAgentMembersCount orders the results by agent_members count.
+func ByAgentMembersCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newAgentMembersStep(), opts...)
+	}
+}
+
+// ByAgentMembers orders the results by agent_members terms.
+func ByAgentMembers(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newAgentMembersStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByDistributorOwnerField orders the results by distributor_owner field.
+func ByDistributorOwnerField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newDistributorOwnerStep(), sql.OrderByField(field, opts...))
+	}
+}
+
+// ByDistributorMembersCount orders the results by distributor_members count.
+func ByDistributorMembersCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newDistributorMembersStep(), opts...)
+	}
+}
+
+// ByDistributorMembers orders the results by distributor_members terms.
+func ByDistributorMembers(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newDistributorMembersStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
 
@@ -666,6 +789,48 @@ func newInviteesStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(Table, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, InviteesTable, InviteesColumn),
+	)
+}
+func newChannelPartnerStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(Table, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, true, ChannelPartnerTable, ChannelPartnerColumn),
+	)
+}
+func newChannelMembersStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(Table, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, ChannelMembersTable, ChannelMembersColumn),
+	)
+}
+func newAgentOwnerStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(Table, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, true, AgentOwnerTable, AgentOwnerColumn),
+	)
+}
+func newAgentMembersStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(Table, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, AgentMembersTable, AgentMembersColumn),
+	)
+}
+func newDistributorOwnerStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(Table, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, true, DistributorOwnerTable, DistributorOwnerColumn),
+	)
+}
+func newDistributorMembersStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(Table, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, DistributorMembersTable, DistributorMembersColumn),
 	)
 }
 func newCommissionLogsStep() *sqlgraph.Step {

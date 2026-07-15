@@ -437,6 +437,66 @@ func (_u *UserUpdate) AddTotalCommissionEarned(v float64) *UserUpdate {
 	return _u
 }
 
+// SetChannelPartnerID sets the "channel_partner_id" field.
+func (_u *UserUpdate) SetChannelPartnerID(v int64) *UserUpdate {
+	_u.mutation.SetChannelPartnerID(v)
+	return _u
+}
+
+// SetNillableChannelPartnerID sets the "channel_partner_id" field if the given value is not nil.
+func (_u *UserUpdate) SetNillableChannelPartnerID(v *int64) *UserUpdate {
+	if v != nil {
+		_u.SetChannelPartnerID(*v)
+	}
+	return _u
+}
+
+// ClearChannelPartnerID clears the value of the "channel_partner_id" field.
+func (_u *UserUpdate) ClearChannelPartnerID() *UserUpdate {
+	_u.mutation.ClearChannelPartnerID()
+	return _u
+}
+
+// SetAgentOwnerID sets the "agent_owner_id" field.
+func (_u *UserUpdate) SetAgentOwnerID(v int64) *UserUpdate {
+	_u.mutation.SetAgentOwnerID(v)
+	return _u
+}
+
+// SetNillableAgentOwnerID sets the "agent_owner_id" field if the given value is not nil.
+func (_u *UserUpdate) SetNillableAgentOwnerID(v *int64) *UserUpdate {
+	if v != nil {
+		_u.SetAgentOwnerID(*v)
+	}
+	return _u
+}
+
+// ClearAgentOwnerID clears the value of the "agent_owner_id" field.
+func (_u *UserUpdate) ClearAgentOwnerID() *UserUpdate {
+	_u.mutation.ClearAgentOwnerID()
+	return _u
+}
+
+// SetDistributorOwnerID sets the "distributor_owner_id" field.
+func (_u *UserUpdate) SetDistributorOwnerID(v int64) *UserUpdate {
+	_u.mutation.SetDistributorOwnerID(v)
+	return _u
+}
+
+// SetNillableDistributorOwnerID sets the "distributor_owner_id" field if the given value is not nil.
+func (_u *UserUpdate) SetNillableDistributorOwnerID(v *int64) *UserUpdate {
+	if v != nil {
+		_u.SetDistributorOwnerID(*v)
+	}
+	return _u
+}
+
+// ClearDistributorOwnerID clears the value of the "distributor_owner_id" field.
+func (_u *UserUpdate) ClearDistributorOwnerID() *UserUpdate {
+	_u.mutation.ClearDistributorOwnerID()
+	return _u
+}
+
 // SetIsKeyAccount sets the "is_key_account" field.
 func (_u *UserUpdate) SetIsKeyAccount(v bool) *UserUpdate {
 	_u.mutation.SetIsKeyAccount(v)
@@ -539,6 +599,66 @@ func (_u *UserUpdate) AddInvitees(v ...*User) *UserUpdate {
 		ids[i] = v[i].ID
 	}
 	return _u.AddInviteeIDs(ids...)
+}
+
+// SetChannelPartner sets the "channel_partner" edge to the User entity.
+func (_u *UserUpdate) SetChannelPartner(v *User) *UserUpdate {
+	return _u.SetChannelPartnerID(v.ID)
+}
+
+// AddChannelMemberIDs adds the "channel_members" edge to the User entity by IDs.
+func (_u *UserUpdate) AddChannelMemberIDs(ids ...int64) *UserUpdate {
+	_u.mutation.AddChannelMemberIDs(ids...)
+	return _u
+}
+
+// AddChannelMembers adds the "channel_members" edges to the User entity.
+func (_u *UserUpdate) AddChannelMembers(v ...*User) *UserUpdate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddChannelMemberIDs(ids...)
+}
+
+// SetAgentOwner sets the "agent_owner" edge to the User entity.
+func (_u *UserUpdate) SetAgentOwner(v *User) *UserUpdate {
+	return _u.SetAgentOwnerID(v.ID)
+}
+
+// AddAgentMemberIDs adds the "agent_members" edge to the User entity by IDs.
+func (_u *UserUpdate) AddAgentMemberIDs(ids ...int64) *UserUpdate {
+	_u.mutation.AddAgentMemberIDs(ids...)
+	return _u
+}
+
+// AddAgentMembers adds the "agent_members" edges to the User entity.
+func (_u *UserUpdate) AddAgentMembers(v ...*User) *UserUpdate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddAgentMemberIDs(ids...)
+}
+
+// SetDistributorOwner sets the "distributor_owner" edge to the User entity.
+func (_u *UserUpdate) SetDistributorOwner(v *User) *UserUpdate {
+	return _u.SetDistributorOwnerID(v.ID)
+}
+
+// AddDistributorMemberIDs adds the "distributor_members" edge to the User entity by IDs.
+func (_u *UserUpdate) AddDistributorMemberIDs(ids ...int64) *UserUpdate {
+	_u.mutation.AddDistributorMemberIDs(ids...)
+	return _u
+}
+
+// AddDistributorMembers adds the "distributor_members" edges to the User entity.
+func (_u *UserUpdate) AddDistributorMembers(v ...*User) *UserUpdate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddDistributorMemberIDs(ids...)
 }
 
 // AddCommissionLogIDs adds the "commission_logs" edge to the CommissionLog entity by IDs.
@@ -736,6 +856,87 @@ func (_u *UserUpdate) RemoveInvitees(v ...*User) *UserUpdate {
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveInviteeIDs(ids...)
+}
+
+// ClearChannelPartner clears the "channel_partner" edge to the User entity.
+func (_u *UserUpdate) ClearChannelPartner() *UserUpdate {
+	_u.mutation.ClearChannelPartner()
+	return _u
+}
+
+// ClearChannelMembers clears all "channel_members" edges to the User entity.
+func (_u *UserUpdate) ClearChannelMembers() *UserUpdate {
+	_u.mutation.ClearChannelMembers()
+	return _u
+}
+
+// RemoveChannelMemberIDs removes the "channel_members" edge to User entities by IDs.
+func (_u *UserUpdate) RemoveChannelMemberIDs(ids ...int64) *UserUpdate {
+	_u.mutation.RemoveChannelMemberIDs(ids...)
+	return _u
+}
+
+// RemoveChannelMembers removes "channel_members" edges to User entities.
+func (_u *UserUpdate) RemoveChannelMembers(v ...*User) *UserUpdate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveChannelMemberIDs(ids...)
+}
+
+// ClearAgentOwner clears the "agent_owner" edge to the User entity.
+func (_u *UserUpdate) ClearAgentOwner() *UserUpdate {
+	_u.mutation.ClearAgentOwner()
+	return _u
+}
+
+// ClearAgentMembers clears all "agent_members" edges to the User entity.
+func (_u *UserUpdate) ClearAgentMembers() *UserUpdate {
+	_u.mutation.ClearAgentMembers()
+	return _u
+}
+
+// RemoveAgentMemberIDs removes the "agent_members" edge to User entities by IDs.
+func (_u *UserUpdate) RemoveAgentMemberIDs(ids ...int64) *UserUpdate {
+	_u.mutation.RemoveAgentMemberIDs(ids...)
+	return _u
+}
+
+// RemoveAgentMembers removes "agent_members" edges to User entities.
+func (_u *UserUpdate) RemoveAgentMembers(v ...*User) *UserUpdate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveAgentMemberIDs(ids...)
+}
+
+// ClearDistributorOwner clears the "distributor_owner" edge to the User entity.
+func (_u *UserUpdate) ClearDistributorOwner() *UserUpdate {
+	_u.mutation.ClearDistributorOwner()
+	return _u
+}
+
+// ClearDistributorMembers clears all "distributor_members" edges to the User entity.
+func (_u *UserUpdate) ClearDistributorMembers() *UserUpdate {
+	_u.mutation.ClearDistributorMembers()
+	return _u
+}
+
+// RemoveDistributorMemberIDs removes the "distributor_members" edge to User entities by IDs.
+func (_u *UserUpdate) RemoveDistributorMemberIDs(ids ...int64) *UserUpdate {
+	_u.mutation.RemoveDistributorMemberIDs(ids...)
+	return _u
+}
+
+// RemoveDistributorMembers removes "distributor_members" edges to User entities.
+func (_u *UserUpdate) RemoveDistributorMembers(v ...*User) *UserUpdate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveDistributorMemberIDs(ids...)
 }
 
 // ClearCommissionLogs clears all "commission_logs" edges to the CommissionLog entity.
@@ -1250,6 +1451,228 @@ func (_u *UserUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 			Inverse: false,
 			Table:   user.InviteesTable,
 			Columns: []string{user.InviteesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.ChannelPartnerCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   user.ChannelPartnerTable,
+			Columns: []string{user.ChannelPartnerColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.ChannelPartnerIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   user.ChannelPartnerTable,
+			Columns: []string{user.ChannelPartnerColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.ChannelMembersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.ChannelMembersTable,
+			Columns: []string{user.ChannelMembersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedChannelMembersIDs(); len(nodes) > 0 && !_u.mutation.ChannelMembersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.ChannelMembersTable,
+			Columns: []string{user.ChannelMembersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.ChannelMembersIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.ChannelMembersTable,
+			Columns: []string{user.ChannelMembersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.AgentOwnerCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   user.AgentOwnerTable,
+			Columns: []string{user.AgentOwnerColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.AgentOwnerIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   user.AgentOwnerTable,
+			Columns: []string{user.AgentOwnerColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.AgentMembersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.AgentMembersTable,
+			Columns: []string{user.AgentMembersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedAgentMembersIDs(); len(nodes) > 0 && !_u.mutation.AgentMembersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.AgentMembersTable,
+			Columns: []string{user.AgentMembersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.AgentMembersIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.AgentMembersTable,
+			Columns: []string{user.AgentMembersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.DistributorOwnerCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   user.DistributorOwnerTable,
+			Columns: []string{user.DistributorOwnerColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.DistributorOwnerIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   user.DistributorOwnerTable,
+			Columns: []string{user.DistributorOwnerColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.DistributorMembersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.DistributorMembersTable,
+			Columns: []string{user.DistributorMembersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedDistributorMembersIDs(); len(nodes) > 0 && !_u.mutation.DistributorMembersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.DistributorMembersTable,
+			Columns: []string{user.DistributorMembersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.DistributorMembersIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.DistributorMembersTable,
+			Columns: []string{user.DistributorMembersColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt64),
@@ -2186,6 +2609,66 @@ func (_u *UserUpdateOne) AddTotalCommissionEarned(v float64) *UserUpdateOne {
 	return _u
 }
 
+// SetChannelPartnerID sets the "channel_partner_id" field.
+func (_u *UserUpdateOne) SetChannelPartnerID(v int64) *UserUpdateOne {
+	_u.mutation.SetChannelPartnerID(v)
+	return _u
+}
+
+// SetNillableChannelPartnerID sets the "channel_partner_id" field if the given value is not nil.
+func (_u *UserUpdateOne) SetNillableChannelPartnerID(v *int64) *UserUpdateOne {
+	if v != nil {
+		_u.SetChannelPartnerID(*v)
+	}
+	return _u
+}
+
+// ClearChannelPartnerID clears the value of the "channel_partner_id" field.
+func (_u *UserUpdateOne) ClearChannelPartnerID() *UserUpdateOne {
+	_u.mutation.ClearChannelPartnerID()
+	return _u
+}
+
+// SetAgentOwnerID sets the "agent_owner_id" field.
+func (_u *UserUpdateOne) SetAgentOwnerID(v int64) *UserUpdateOne {
+	_u.mutation.SetAgentOwnerID(v)
+	return _u
+}
+
+// SetNillableAgentOwnerID sets the "agent_owner_id" field if the given value is not nil.
+func (_u *UserUpdateOne) SetNillableAgentOwnerID(v *int64) *UserUpdateOne {
+	if v != nil {
+		_u.SetAgentOwnerID(*v)
+	}
+	return _u
+}
+
+// ClearAgentOwnerID clears the value of the "agent_owner_id" field.
+func (_u *UserUpdateOne) ClearAgentOwnerID() *UserUpdateOne {
+	_u.mutation.ClearAgentOwnerID()
+	return _u
+}
+
+// SetDistributorOwnerID sets the "distributor_owner_id" field.
+func (_u *UserUpdateOne) SetDistributorOwnerID(v int64) *UserUpdateOne {
+	_u.mutation.SetDistributorOwnerID(v)
+	return _u
+}
+
+// SetNillableDistributorOwnerID sets the "distributor_owner_id" field if the given value is not nil.
+func (_u *UserUpdateOne) SetNillableDistributorOwnerID(v *int64) *UserUpdateOne {
+	if v != nil {
+		_u.SetDistributorOwnerID(*v)
+	}
+	return _u
+}
+
+// ClearDistributorOwnerID clears the value of the "distributor_owner_id" field.
+func (_u *UserUpdateOne) ClearDistributorOwnerID() *UserUpdateOne {
+	_u.mutation.ClearDistributorOwnerID()
+	return _u
+}
+
 // SetIsKeyAccount sets the "is_key_account" field.
 func (_u *UserUpdateOne) SetIsKeyAccount(v bool) *UserUpdateOne {
 	_u.mutation.SetIsKeyAccount(v)
@@ -2288,6 +2771,66 @@ func (_u *UserUpdateOne) AddInvitees(v ...*User) *UserUpdateOne {
 		ids[i] = v[i].ID
 	}
 	return _u.AddInviteeIDs(ids...)
+}
+
+// SetChannelPartner sets the "channel_partner" edge to the User entity.
+func (_u *UserUpdateOne) SetChannelPartner(v *User) *UserUpdateOne {
+	return _u.SetChannelPartnerID(v.ID)
+}
+
+// AddChannelMemberIDs adds the "channel_members" edge to the User entity by IDs.
+func (_u *UserUpdateOne) AddChannelMemberIDs(ids ...int64) *UserUpdateOne {
+	_u.mutation.AddChannelMemberIDs(ids...)
+	return _u
+}
+
+// AddChannelMembers adds the "channel_members" edges to the User entity.
+func (_u *UserUpdateOne) AddChannelMembers(v ...*User) *UserUpdateOne {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddChannelMemberIDs(ids...)
+}
+
+// SetAgentOwner sets the "agent_owner" edge to the User entity.
+func (_u *UserUpdateOne) SetAgentOwner(v *User) *UserUpdateOne {
+	return _u.SetAgentOwnerID(v.ID)
+}
+
+// AddAgentMemberIDs adds the "agent_members" edge to the User entity by IDs.
+func (_u *UserUpdateOne) AddAgentMemberIDs(ids ...int64) *UserUpdateOne {
+	_u.mutation.AddAgentMemberIDs(ids...)
+	return _u
+}
+
+// AddAgentMembers adds the "agent_members" edges to the User entity.
+func (_u *UserUpdateOne) AddAgentMembers(v ...*User) *UserUpdateOne {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddAgentMemberIDs(ids...)
+}
+
+// SetDistributorOwner sets the "distributor_owner" edge to the User entity.
+func (_u *UserUpdateOne) SetDistributorOwner(v *User) *UserUpdateOne {
+	return _u.SetDistributorOwnerID(v.ID)
+}
+
+// AddDistributorMemberIDs adds the "distributor_members" edge to the User entity by IDs.
+func (_u *UserUpdateOne) AddDistributorMemberIDs(ids ...int64) *UserUpdateOne {
+	_u.mutation.AddDistributorMemberIDs(ids...)
+	return _u
+}
+
+// AddDistributorMembers adds the "distributor_members" edges to the User entity.
+func (_u *UserUpdateOne) AddDistributorMembers(v ...*User) *UserUpdateOne {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddDistributorMemberIDs(ids...)
 }
 
 // AddCommissionLogIDs adds the "commission_logs" edge to the CommissionLog entity by IDs.
@@ -2485,6 +3028,87 @@ func (_u *UserUpdateOne) RemoveInvitees(v ...*User) *UserUpdateOne {
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveInviteeIDs(ids...)
+}
+
+// ClearChannelPartner clears the "channel_partner" edge to the User entity.
+func (_u *UserUpdateOne) ClearChannelPartner() *UserUpdateOne {
+	_u.mutation.ClearChannelPartner()
+	return _u
+}
+
+// ClearChannelMembers clears all "channel_members" edges to the User entity.
+func (_u *UserUpdateOne) ClearChannelMembers() *UserUpdateOne {
+	_u.mutation.ClearChannelMembers()
+	return _u
+}
+
+// RemoveChannelMemberIDs removes the "channel_members" edge to User entities by IDs.
+func (_u *UserUpdateOne) RemoveChannelMemberIDs(ids ...int64) *UserUpdateOne {
+	_u.mutation.RemoveChannelMemberIDs(ids...)
+	return _u
+}
+
+// RemoveChannelMembers removes "channel_members" edges to User entities.
+func (_u *UserUpdateOne) RemoveChannelMembers(v ...*User) *UserUpdateOne {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveChannelMemberIDs(ids...)
+}
+
+// ClearAgentOwner clears the "agent_owner" edge to the User entity.
+func (_u *UserUpdateOne) ClearAgentOwner() *UserUpdateOne {
+	_u.mutation.ClearAgentOwner()
+	return _u
+}
+
+// ClearAgentMembers clears all "agent_members" edges to the User entity.
+func (_u *UserUpdateOne) ClearAgentMembers() *UserUpdateOne {
+	_u.mutation.ClearAgentMembers()
+	return _u
+}
+
+// RemoveAgentMemberIDs removes the "agent_members" edge to User entities by IDs.
+func (_u *UserUpdateOne) RemoveAgentMemberIDs(ids ...int64) *UserUpdateOne {
+	_u.mutation.RemoveAgentMemberIDs(ids...)
+	return _u
+}
+
+// RemoveAgentMembers removes "agent_members" edges to User entities.
+func (_u *UserUpdateOne) RemoveAgentMembers(v ...*User) *UserUpdateOne {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveAgentMemberIDs(ids...)
+}
+
+// ClearDistributorOwner clears the "distributor_owner" edge to the User entity.
+func (_u *UserUpdateOne) ClearDistributorOwner() *UserUpdateOne {
+	_u.mutation.ClearDistributorOwner()
+	return _u
+}
+
+// ClearDistributorMembers clears all "distributor_members" edges to the User entity.
+func (_u *UserUpdateOne) ClearDistributorMembers() *UserUpdateOne {
+	_u.mutation.ClearDistributorMembers()
+	return _u
+}
+
+// RemoveDistributorMemberIDs removes the "distributor_members" edge to User entities by IDs.
+func (_u *UserUpdateOne) RemoveDistributorMemberIDs(ids ...int64) *UserUpdateOne {
+	_u.mutation.RemoveDistributorMemberIDs(ids...)
+	return _u
+}
+
+// RemoveDistributorMembers removes "distributor_members" edges to User entities.
+func (_u *UserUpdateOne) RemoveDistributorMembers(v ...*User) *UserUpdateOne {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveDistributorMemberIDs(ids...)
 }
 
 // ClearCommissionLogs clears all "commission_logs" edges to the CommissionLog entity.
@@ -3029,6 +3653,228 @@ func (_u *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) {
 			Inverse: false,
 			Table:   user.InviteesTable,
 			Columns: []string{user.InviteesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.ChannelPartnerCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   user.ChannelPartnerTable,
+			Columns: []string{user.ChannelPartnerColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.ChannelPartnerIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   user.ChannelPartnerTable,
+			Columns: []string{user.ChannelPartnerColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.ChannelMembersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.ChannelMembersTable,
+			Columns: []string{user.ChannelMembersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedChannelMembersIDs(); len(nodes) > 0 && !_u.mutation.ChannelMembersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.ChannelMembersTable,
+			Columns: []string{user.ChannelMembersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.ChannelMembersIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.ChannelMembersTable,
+			Columns: []string{user.ChannelMembersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.AgentOwnerCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   user.AgentOwnerTable,
+			Columns: []string{user.AgentOwnerColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.AgentOwnerIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   user.AgentOwnerTable,
+			Columns: []string{user.AgentOwnerColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.AgentMembersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.AgentMembersTable,
+			Columns: []string{user.AgentMembersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedAgentMembersIDs(); len(nodes) > 0 && !_u.mutation.AgentMembersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.AgentMembersTable,
+			Columns: []string{user.AgentMembersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.AgentMembersIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.AgentMembersTable,
+			Columns: []string{user.AgentMembersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.DistributorOwnerCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   user.DistributorOwnerTable,
+			Columns: []string{user.DistributorOwnerColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.DistributorOwnerIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   user.DistributorOwnerTable,
+			Columns: []string{user.DistributorOwnerColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.DistributorMembersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.DistributorMembersTable,
+			Columns: []string{user.DistributorMembersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedDistributorMembersIDs(); len(nodes) > 0 && !_u.mutation.DistributorMembersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.DistributorMembersTable,
+			Columns: []string{user.DistributorMembersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.DistributorMembersIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.DistributorMembersTable,
+			Columns: []string{user.DistributorMembersColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt64),

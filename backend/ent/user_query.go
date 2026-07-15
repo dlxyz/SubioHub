@@ -37,6 +37,12 @@ type UserQuery struct {
 	predicates                []predicate.User
 	withInviter               *UserQuery
 	withInvitees              *UserQuery
+	withChannelPartner        *UserQuery
+	withChannelMembers        *UserQuery
+	withAgentOwner            *UserQuery
+	withAgentMembers          *UserQuery
+	withDistributorOwner      *UserQuery
+	withDistributorMembers    *UserQuery
 	withCommissionLogs        *CommissionLogQuery
 	withAPIKeys               *APIKeyQuery
 	withRedeemCodes           *RedeemCodeQuery
@@ -123,6 +129,138 @@ func (_q *UserQuery) QueryInvitees() *UserQuery {
 			sqlgraph.From(user.Table, user.FieldID, selector),
 			sqlgraph.To(user.Table, user.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, user.InviteesTable, user.InviteesColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryChannelPartner chains the current query on the "channel_partner" edge.
+func (_q *UserQuery) QueryChannelPartner() *UserQuery {
+	query := (&UserClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, selector),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, user.ChannelPartnerTable, user.ChannelPartnerColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryChannelMembers chains the current query on the "channel_members" edge.
+func (_q *UserQuery) QueryChannelMembers() *UserQuery {
+	query := (&UserClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, selector),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.ChannelMembersTable, user.ChannelMembersColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryAgentOwner chains the current query on the "agent_owner" edge.
+func (_q *UserQuery) QueryAgentOwner() *UserQuery {
+	query := (&UserClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, selector),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, user.AgentOwnerTable, user.AgentOwnerColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryAgentMembers chains the current query on the "agent_members" edge.
+func (_q *UserQuery) QueryAgentMembers() *UserQuery {
+	query := (&UserClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, selector),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.AgentMembersTable, user.AgentMembersColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryDistributorOwner chains the current query on the "distributor_owner" edge.
+func (_q *UserQuery) QueryDistributorOwner() *UserQuery {
+	query := (&UserClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, selector),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, user.DistributorOwnerTable, user.DistributorOwnerColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryDistributorMembers chains the current query on the "distributor_members" edge.
+func (_q *UserQuery) QueryDistributorMembers() *UserQuery {
+	query := (&UserClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, selector),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.DistributorMembersTable, user.DistributorMembersColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -588,6 +726,12 @@ func (_q *UserQuery) Clone() *UserQuery {
 		predicates:                append([]predicate.User{}, _q.predicates...),
 		withInviter:               _q.withInviter.Clone(),
 		withInvitees:              _q.withInvitees.Clone(),
+		withChannelPartner:        _q.withChannelPartner.Clone(),
+		withChannelMembers:        _q.withChannelMembers.Clone(),
+		withAgentOwner:            _q.withAgentOwner.Clone(),
+		withAgentMembers:          _q.withAgentMembers.Clone(),
+		withDistributorOwner:      _q.withDistributorOwner.Clone(),
+		withDistributorMembers:    _q.withDistributorMembers.Clone(),
 		withCommissionLogs:        _q.withCommissionLogs.Clone(),
 		withAPIKeys:               _q.withAPIKeys.Clone(),
 		withRedeemCodes:           _q.withRedeemCodes.Clone(),
@@ -625,6 +769,72 @@ func (_q *UserQuery) WithInvitees(opts ...func(*UserQuery)) *UserQuery {
 		opt(query)
 	}
 	_q.withInvitees = query
+	return _q
+}
+
+// WithChannelPartner tells the query-builder to eager-load the nodes that are connected to
+// the "channel_partner" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *UserQuery) WithChannelPartner(opts ...func(*UserQuery)) *UserQuery {
+	query := (&UserClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withChannelPartner = query
+	return _q
+}
+
+// WithChannelMembers tells the query-builder to eager-load the nodes that are connected to
+// the "channel_members" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *UserQuery) WithChannelMembers(opts ...func(*UserQuery)) *UserQuery {
+	query := (&UserClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withChannelMembers = query
+	return _q
+}
+
+// WithAgentOwner tells the query-builder to eager-load the nodes that are connected to
+// the "agent_owner" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *UserQuery) WithAgentOwner(opts ...func(*UserQuery)) *UserQuery {
+	query := (&UserClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withAgentOwner = query
+	return _q
+}
+
+// WithAgentMembers tells the query-builder to eager-load the nodes that are connected to
+// the "agent_members" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *UserQuery) WithAgentMembers(opts ...func(*UserQuery)) *UserQuery {
+	query := (&UserClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withAgentMembers = query
+	return _q
+}
+
+// WithDistributorOwner tells the query-builder to eager-load the nodes that are connected to
+// the "distributor_owner" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *UserQuery) WithDistributorOwner(opts ...func(*UserQuery)) *UserQuery {
+	query := (&UserClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withDistributorOwner = query
+	return _q
+}
+
+// WithDistributorMembers tells the query-builder to eager-load the nodes that are connected to
+// the "distributor_members" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *UserQuery) WithDistributorMembers(opts ...func(*UserQuery)) *UserQuery {
+	query := (&UserClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withDistributorMembers = query
 	return _q
 }
 
@@ -838,9 +1048,15 @@ func (_q *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 	var (
 		nodes       = []*User{}
 		_spec       = _q.querySpec()
-		loadedTypes = [14]bool{
+		loadedTypes = [20]bool{
 			_q.withInviter != nil,
 			_q.withInvitees != nil,
+			_q.withChannelPartner != nil,
+			_q.withChannelMembers != nil,
+			_q.withAgentOwner != nil,
+			_q.withAgentMembers != nil,
+			_q.withDistributorOwner != nil,
+			_q.withDistributorMembers != nil,
 			_q.withCommissionLogs != nil,
 			_q.withAPIKeys != nil,
 			_q.withRedeemCodes != nil,
@@ -886,6 +1102,45 @@ func (_q *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 		if err := _q.loadInvitees(ctx, query, nodes,
 			func(n *User) { n.Edges.Invitees = []*User{} },
 			func(n *User, e *User) { n.Edges.Invitees = append(n.Edges.Invitees, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withChannelPartner; query != nil {
+		if err := _q.loadChannelPartner(ctx, query, nodes, nil,
+			func(n *User, e *User) { n.Edges.ChannelPartner = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withChannelMembers; query != nil {
+		if err := _q.loadChannelMembers(ctx, query, nodes,
+			func(n *User) { n.Edges.ChannelMembers = []*User{} },
+			func(n *User, e *User) { n.Edges.ChannelMembers = append(n.Edges.ChannelMembers, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withAgentOwner; query != nil {
+		if err := _q.loadAgentOwner(ctx, query, nodes, nil,
+			func(n *User, e *User) { n.Edges.AgentOwner = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withAgentMembers; query != nil {
+		if err := _q.loadAgentMembers(ctx, query, nodes,
+			func(n *User) { n.Edges.AgentMembers = []*User{} },
+			func(n *User, e *User) { n.Edges.AgentMembers = append(n.Edges.AgentMembers, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withDistributorOwner; query != nil {
+		if err := _q.loadDistributorOwner(ctx, query, nodes, nil,
+			func(n *User, e *User) { n.Edges.DistributorOwner = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withDistributorMembers; query != nil {
+		if err := _q.loadDistributorMembers(ctx, query, nodes,
+			func(n *User) { n.Edges.DistributorMembers = []*User{} },
+			func(n *User, e *User) { n.Edges.DistributorMembers = append(n.Edges.DistributorMembers, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -1038,6 +1293,201 @@ func (_q *UserQuery) loadInvitees(ctx context.Context, query *UserQuery, nodes [
 		node, ok := nodeids[*fk]
 		if !ok {
 			return fmt.Errorf(`unexpected referenced foreign-key "inviter_id" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *UserQuery) loadChannelPartner(ctx context.Context, query *UserQuery, nodes []*User, init func(*User), assign func(*User, *User)) error {
+	ids := make([]int64, 0, len(nodes))
+	nodeids := make(map[int64][]*User)
+	for i := range nodes {
+		if nodes[i].ChannelPartnerID == nil {
+			continue
+		}
+		fk := *nodes[i].ChannelPartnerID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(user.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "channel_partner_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
+func (_q *UserQuery) loadChannelMembers(ctx context.Context, query *UserQuery, nodes []*User, init func(*User), assign func(*User, *User)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int64]*User)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(user.FieldChannelPartnerID)
+	}
+	query.Where(predicate.User(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(user.ChannelMembersColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.ChannelPartnerID
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "channel_partner_id" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "channel_partner_id" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *UserQuery) loadAgentOwner(ctx context.Context, query *UserQuery, nodes []*User, init func(*User), assign func(*User, *User)) error {
+	ids := make([]int64, 0, len(nodes))
+	nodeids := make(map[int64][]*User)
+	for i := range nodes {
+		if nodes[i].AgentOwnerID == nil {
+			continue
+		}
+		fk := *nodes[i].AgentOwnerID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(user.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "agent_owner_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
+func (_q *UserQuery) loadAgentMembers(ctx context.Context, query *UserQuery, nodes []*User, init func(*User), assign func(*User, *User)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int64]*User)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(user.FieldAgentOwnerID)
+	}
+	query.Where(predicate.User(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(user.AgentMembersColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.AgentOwnerID
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "agent_owner_id" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "agent_owner_id" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *UserQuery) loadDistributorOwner(ctx context.Context, query *UserQuery, nodes []*User, init func(*User), assign func(*User, *User)) error {
+	ids := make([]int64, 0, len(nodes))
+	nodeids := make(map[int64][]*User)
+	for i := range nodes {
+		if nodes[i].DistributorOwnerID == nil {
+			continue
+		}
+		fk := *nodes[i].DistributorOwnerID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(user.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "distributor_owner_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
+func (_q *UserQuery) loadDistributorMembers(ctx context.Context, query *UserQuery, nodes []*User, init func(*User), assign func(*User, *User)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int64]*User)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(user.FieldDistributorOwnerID)
+	}
+	query.Where(predicate.User(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(user.DistributorMembersColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.DistributorOwnerID
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "distributor_owner_id" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "distributor_owner_id" returned %v for node %v`, *fk, n.ID)
 		}
 		assign(node, n)
 	}
@@ -1471,6 +1921,15 @@ func (_q *UserQuery) querySpec() *sqlgraph.QuerySpec {
 		}
 		if _q.withInviter != nil {
 			_spec.Node.AddColumnOnce(user.FieldInviterID)
+		}
+		if _q.withChannelPartner != nil {
+			_spec.Node.AddColumnOnce(user.FieldChannelPartnerID)
+		}
+		if _q.withAgentOwner != nil {
+			_spec.Node.AddColumnOnce(user.FieldAgentOwnerID)
+		}
+		if _q.withDistributorOwner != nil {
+			_spec.Node.AddColumnOnce(user.FieldDistributorOwnerID)
 		}
 	}
 	if ps := _q.predicates; len(ps) > 0 {

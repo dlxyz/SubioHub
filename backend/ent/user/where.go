@@ -175,6 +175,21 @@ func TotalCommissionEarned(v float64) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldTotalCommissionEarned, v))
 }
 
+// ChannelPartnerID applies equality check predicate on the "channel_partner_id" field. It's identical to ChannelPartnerIDEQ.
+func ChannelPartnerID(v int64) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldChannelPartnerID, v))
+}
+
+// AgentOwnerID applies equality check predicate on the "agent_owner_id" field. It's identical to AgentOwnerIDEQ.
+func AgentOwnerID(v int64) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldAgentOwnerID, v))
+}
+
+// DistributorOwnerID applies equality check predicate on the "distributor_owner_id" field. It's identical to DistributorOwnerIDEQ.
+func DistributorOwnerID(v int64) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldDistributorOwnerID, v))
+}
+
 // IsKeyAccount applies equality check predicate on the "is_key_account" field. It's identical to IsKeyAccountEQ.
 func IsKeyAccount(v bool) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldIsKeyAccount, v))
@@ -1390,6 +1405,96 @@ func TotalCommissionEarnedLTE(v float64) predicate.User {
 	return predicate.User(sql.FieldLTE(FieldTotalCommissionEarned, v))
 }
 
+// ChannelPartnerIDEQ applies the EQ predicate on the "channel_partner_id" field.
+func ChannelPartnerIDEQ(v int64) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldChannelPartnerID, v))
+}
+
+// ChannelPartnerIDNEQ applies the NEQ predicate on the "channel_partner_id" field.
+func ChannelPartnerIDNEQ(v int64) predicate.User {
+	return predicate.User(sql.FieldNEQ(FieldChannelPartnerID, v))
+}
+
+// ChannelPartnerIDIn applies the In predicate on the "channel_partner_id" field.
+func ChannelPartnerIDIn(vs ...int64) predicate.User {
+	return predicate.User(sql.FieldIn(FieldChannelPartnerID, vs...))
+}
+
+// ChannelPartnerIDNotIn applies the NotIn predicate on the "channel_partner_id" field.
+func ChannelPartnerIDNotIn(vs ...int64) predicate.User {
+	return predicate.User(sql.FieldNotIn(FieldChannelPartnerID, vs...))
+}
+
+// ChannelPartnerIDIsNil applies the IsNil predicate on the "channel_partner_id" field.
+func ChannelPartnerIDIsNil() predicate.User {
+	return predicate.User(sql.FieldIsNull(FieldChannelPartnerID))
+}
+
+// ChannelPartnerIDNotNil applies the NotNil predicate on the "channel_partner_id" field.
+func ChannelPartnerIDNotNil() predicate.User {
+	return predicate.User(sql.FieldNotNull(FieldChannelPartnerID))
+}
+
+// AgentOwnerIDEQ applies the EQ predicate on the "agent_owner_id" field.
+func AgentOwnerIDEQ(v int64) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldAgentOwnerID, v))
+}
+
+// AgentOwnerIDNEQ applies the NEQ predicate on the "agent_owner_id" field.
+func AgentOwnerIDNEQ(v int64) predicate.User {
+	return predicate.User(sql.FieldNEQ(FieldAgentOwnerID, v))
+}
+
+// AgentOwnerIDIn applies the In predicate on the "agent_owner_id" field.
+func AgentOwnerIDIn(vs ...int64) predicate.User {
+	return predicate.User(sql.FieldIn(FieldAgentOwnerID, vs...))
+}
+
+// AgentOwnerIDNotIn applies the NotIn predicate on the "agent_owner_id" field.
+func AgentOwnerIDNotIn(vs ...int64) predicate.User {
+	return predicate.User(sql.FieldNotIn(FieldAgentOwnerID, vs...))
+}
+
+// AgentOwnerIDIsNil applies the IsNil predicate on the "agent_owner_id" field.
+func AgentOwnerIDIsNil() predicate.User {
+	return predicate.User(sql.FieldIsNull(FieldAgentOwnerID))
+}
+
+// AgentOwnerIDNotNil applies the NotNil predicate on the "agent_owner_id" field.
+func AgentOwnerIDNotNil() predicate.User {
+	return predicate.User(sql.FieldNotNull(FieldAgentOwnerID))
+}
+
+// DistributorOwnerIDEQ applies the EQ predicate on the "distributor_owner_id" field.
+func DistributorOwnerIDEQ(v int64) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldDistributorOwnerID, v))
+}
+
+// DistributorOwnerIDNEQ applies the NEQ predicate on the "distributor_owner_id" field.
+func DistributorOwnerIDNEQ(v int64) predicate.User {
+	return predicate.User(sql.FieldNEQ(FieldDistributorOwnerID, v))
+}
+
+// DistributorOwnerIDIn applies the In predicate on the "distributor_owner_id" field.
+func DistributorOwnerIDIn(vs ...int64) predicate.User {
+	return predicate.User(sql.FieldIn(FieldDistributorOwnerID, vs...))
+}
+
+// DistributorOwnerIDNotIn applies the NotIn predicate on the "distributor_owner_id" field.
+func DistributorOwnerIDNotIn(vs ...int64) predicate.User {
+	return predicate.User(sql.FieldNotIn(FieldDistributorOwnerID, vs...))
+}
+
+// DistributorOwnerIDIsNil applies the IsNil predicate on the "distributor_owner_id" field.
+func DistributorOwnerIDIsNil() predicate.User {
+	return predicate.User(sql.FieldIsNull(FieldDistributorOwnerID))
+}
+
+// DistributorOwnerIDNotNil applies the NotNil predicate on the "distributor_owner_id" field.
+func DistributorOwnerIDNotNil() predicate.User {
+	return predicate.User(sql.FieldNotNull(FieldDistributorOwnerID))
+}
+
 // IsKeyAccountEQ applies the EQ predicate on the "is_key_account" field.
 func IsKeyAccountEQ(v bool) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldIsKeyAccount, v))
@@ -1648,6 +1753,144 @@ func HasInvitees() predicate.User {
 func HasInviteesWith(preds ...predicate.User) predicate.User {
 	return predicate.User(func(s *sql.Selector) {
 		step := newInviteesStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasChannelPartner applies the HasEdge predicate on the "channel_partner" edge.
+func HasChannelPartner() predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, ChannelPartnerTable, ChannelPartnerColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasChannelPartnerWith applies the HasEdge predicate on the "channel_partner" edge with a given conditions (other predicates).
+func HasChannelPartnerWith(preds ...predicate.User) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := newChannelPartnerStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasChannelMembers applies the HasEdge predicate on the "channel_members" edge.
+func HasChannelMembers() predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, ChannelMembersTable, ChannelMembersColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasChannelMembersWith applies the HasEdge predicate on the "channel_members" edge with a given conditions (other predicates).
+func HasChannelMembersWith(preds ...predicate.User) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := newChannelMembersStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasAgentOwner applies the HasEdge predicate on the "agent_owner" edge.
+func HasAgentOwner() predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, AgentOwnerTable, AgentOwnerColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasAgentOwnerWith applies the HasEdge predicate on the "agent_owner" edge with a given conditions (other predicates).
+func HasAgentOwnerWith(preds ...predicate.User) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := newAgentOwnerStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasAgentMembers applies the HasEdge predicate on the "agent_members" edge.
+func HasAgentMembers() predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, AgentMembersTable, AgentMembersColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasAgentMembersWith applies the HasEdge predicate on the "agent_members" edge with a given conditions (other predicates).
+func HasAgentMembersWith(preds ...predicate.User) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := newAgentMembersStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasDistributorOwner applies the HasEdge predicate on the "distributor_owner" edge.
+func HasDistributorOwner() predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, DistributorOwnerTable, DistributorOwnerColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasDistributorOwnerWith applies the HasEdge predicate on the "distributor_owner" edge with a given conditions (other predicates).
+func HasDistributorOwnerWith(preds ...predicate.User) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := newDistributorOwnerStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasDistributorMembers applies the HasEdge predicate on the "distributor_members" edge.
+func HasDistributorMembers() predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, DistributorMembersTable, DistributorMembersColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasDistributorMembersWith applies the HasEdge predicate on the "distributor_members" edge with a given conditions (other predicates).
+func HasDistributorMembersWith(preds ...predicate.User) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := newDistributorMembersStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

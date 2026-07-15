@@ -76,6 +76,27 @@ func (_u *CommissionRuleUpdate) SetNillableCalcMode(v *string) *CommissionRuleUp
 	return _u
 }
 
+// SetChannelPartnerTargetRate sets the "channel_partner_target_rate" field.
+func (_u *CommissionRuleUpdate) SetChannelPartnerTargetRate(v float64) *CommissionRuleUpdate {
+	_u.mutation.ResetChannelPartnerTargetRate()
+	_u.mutation.SetChannelPartnerTargetRate(v)
+	return _u
+}
+
+// SetNillableChannelPartnerTargetRate sets the "channel_partner_target_rate" field if the given value is not nil.
+func (_u *CommissionRuleUpdate) SetNillableChannelPartnerTargetRate(v *float64) *CommissionRuleUpdate {
+	if v != nil {
+		_u.SetChannelPartnerTargetRate(*v)
+	}
+	return _u
+}
+
+// AddChannelPartnerTargetRate adds value to the "channel_partner_target_rate" field.
+func (_u *CommissionRuleUpdate) AddChannelPartnerTargetRate(v float64) *CommissionRuleUpdate {
+	_u.mutation.AddChannelPartnerTargetRate(v)
+	return _u
+}
+
 // SetAgentTargetRate sets the "agent_target_rate" field.
 func (_u *CommissionRuleUpdate) SetAgentTargetRate(v float64) *CommissionRuleUpdate {
 	_u.mutation.ResetAgentTargetRate()
@@ -362,6 +383,12 @@ func (_u *CommissionRuleUpdate) sqlSave(ctx context.Context) (_node int, err err
 	if value, ok := _u.mutation.CalcMode(); ok {
 		_spec.SetField(commissionrule.FieldCalcMode, field.TypeString, value)
 	}
+	if value, ok := _u.mutation.ChannelPartnerTargetRate(); ok {
+		_spec.SetField(commissionrule.FieldChannelPartnerTargetRate, field.TypeFloat64, value)
+	}
+	if value, ok := _u.mutation.AddedChannelPartnerTargetRate(); ok {
+		_spec.AddField(commissionrule.FieldChannelPartnerTargetRate, field.TypeFloat64, value)
+	}
 	if value, ok := _u.mutation.AgentTargetRate(); ok {
 		_spec.SetField(commissionrule.FieldAgentTargetRate, field.TypeFloat64, value)
 	}
@@ -484,6 +511,27 @@ func (_u *CommissionRuleUpdateOne) SetNillableCalcMode(v *string) *CommissionRul
 	if v != nil {
 		_u.SetCalcMode(*v)
 	}
+	return _u
+}
+
+// SetChannelPartnerTargetRate sets the "channel_partner_target_rate" field.
+func (_u *CommissionRuleUpdateOne) SetChannelPartnerTargetRate(v float64) *CommissionRuleUpdateOne {
+	_u.mutation.ResetChannelPartnerTargetRate()
+	_u.mutation.SetChannelPartnerTargetRate(v)
+	return _u
+}
+
+// SetNillableChannelPartnerTargetRate sets the "channel_partner_target_rate" field if the given value is not nil.
+func (_u *CommissionRuleUpdateOne) SetNillableChannelPartnerTargetRate(v *float64) *CommissionRuleUpdateOne {
+	if v != nil {
+		_u.SetChannelPartnerTargetRate(*v)
+	}
+	return _u
+}
+
+// AddChannelPartnerTargetRate adds value to the "channel_partner_target_rate" field.
+func (_u *CommissionRuleUpdateOne) AddChannelPartnerTargetRate(v float64) *CommissionRuleUpdateOne {
+	_u.mutation.AddChannelPartnerTargetRate(v)
 	return _u
 }
 
@@ -802,6 +850,12 @@ func (_u *CommissionRuleUpdateOne) sqlSave(ctx context.Context) (_node *Commissi
 	}
 	if value, ok := _u.mutation.CalcMode(); ok {
 		_spec.SetField(commissionrule.FieldCalcMode, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.ChannelPartnerTargetRate(); ok {
+		_spec.SetField(commissionrule.FieldChannelPartnerTargetRate, field.TypeFloat64, value)
+	}
+	if value, ok := _u.mutation.AddedChannelPartnerTargetRate(); ok {
+		_spec.AddField(commissionrule.FieldChannelPartnerTargetRate, field.TypeFloat64, value)
 	}
 	if value, ok := _u.mutation.AgentTargetRate(); ok {
 		_spec.SetField(commissionrule.FieldAgentTargetRate, field.TypeFloat64, value)

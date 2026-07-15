@@ -1,11 +1,12 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 import {
   Bell,
   Box,
+  Building2,
   ChartColumn,
   ChevronDown,
   ChevronRight,
@@ -28,10 +29,10 @@ import {
   Users,
   WalletCards,
   X,
-} from 'lucide-react';
-import { useI18n } from '@/i18n/use-i18n';
-import { useAuthStore } from '@/store/auth';
-import { cn } from '@/lib/utils';
+} from "lucide-react";
+import { useI18n } from "@/i18n/use-i18n";
+import { useAuthStore } from "@/store/auth";
+import { cn } from "@/lib/utils";
 
 type NavItem = {
   labelKey: string;
@@ -47,58 +48,140 @@ type NavSection = {
 
 const adminSections: NavSection[] = [
   {
-    titleKey: 'admin.nav.sectionOperations',
+    titleKey: "admin.nav.sectionOperations",
     items: [
-      { labelKey: 'admin.nav.dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
-      { labelKey: 'admin.nav.ops', href: '/admin/ops', icon: Gauge },
-      { labelKey: 'admin.nav.announcements', href: '/admin/announcements', icon: Bell },
-      { labelKey: 'admin.nav.news', href: '/admin/news', icon: Newspaper },
-      { labelKey: 'admin.nav.settings', href: '/admin/settings', icon: Settings },
+      {
+        labelKey: "admin.nav.dashboard",
+        href: "/admin/dashboard",
+        icon: LayoutDashboard,
+      },
+      { labelKey: "admin.nav.ops", href: "/admin/ops", icon: Gauge },
+      {
+        labelKey: "admin.nav.announcements",
+        href: "/admin/announcements",
+        icon: Bell,
+      },
+      { labelKey: "admin.nav.news", href: "/admin/news", icon: Newspaper },
+      {
+        labelKey: "admin.nav.settings",
+        href: "/admin/settings",
+        icon: Settings,
+      },
     ],
   },
   {
-    titleKey: 'admin.nav.sectionSubInterfaces',
+    titleKey: "admin.nav.sectionSubInterfaces",
     items: [
-      { labelKey: 'admin.nav.groups', href: '/admin/groups', icon: UserCog },
-      { labelKey: 'admin.nav.domesticChannels', href: '/admin/domestic-channels', icon: Box },
-      { labelKey: 'admin.nav.overseasChannels', href: '/admin/channels', icon: Globe },
-      { labelKey: 'admin.nav.modelMarketplace', href: '/admin/model-marketplace', icon: LayoutGrid },
-      { labelKey: 'admin.nav.accounts', href: '/admin/accounts', icon: Globe },
-      { labelKey: 'admin.nav.ipProxies', href: '/admin/proxies', icon: Shield },
-      { labelKey: 'admin.nav.usage', href: '/admin/usage', icon: ChartColumn },
+      { labelKey: "admin.nav.groups", href: "/admin/groups", icon: UserCog },
+      {
+        labelKey: "admin.nav.domesticChannels",
+        href: "/admin/domestic-channels",
+        icon: Box,
+      },
+      {
+        labelKey: "admin.nav.overseasChannels",
+        href: "/admin/channels",
+        icon: Globe,
+      },
+      {
+        labelKey: "admin.nav.modelMarketplace",
+        href: "/admin/model-marketplace",
+        icon: LayoutGrid,
+      },
+      { labelKey: "admin.nav.accounts", href: "/admin/accounts", icon: Globe },
+      { labelKey: "admin.nav.ipProxies", href: "/admin/proxies", icon: Shield },
+      { labelKey: "admin.nav.usage", href: "/admin/usage", icon: ChartColumn },
     ],
   },
   {
-    titleKey: 'admin.nav.sectionCustomers',
+    titleKey: "admin.nav.sectionCustomers",
     items: [
-      { labelKey: 'admin.nav.users', href: '/admin/users', icon: Users },
-      { labelKey: 'admin.nav.keyAccounts', href: '/admin/key-accounts', icon: UserCog },
-      { labelKey: 'admin.nav.proxies', href: '/admin/agent-management', icon: Shield },
-      { labelKey: 'admin.nav.businessChannels', href: '/admin/channel-distributors', icon: HandCoins },
-      { labelKey: 'admin.nav.commissionSplits', href: '/admin/affiliate', icon: HandCoins },
+      { labelKey: "admin.nav.users", href: "/admin/users", icon: Users },
+      {
+        labelKey: "admin.nav.keyAccounts",
+        href: "/admin/key-accounts",
+        icon: UserCog,
+      },
+      {
+        labelKey: "admin.nav.channelPartners",
+        href: "/admin/channel-partners",
+        icon: Building2,
+      },
+      {
+        labelKey: "admin.nav.proxies",
+        href: "/admin/agent-management",
+        icon: Shield,
+      },
+      {
+        labelKey: "admin.nav.businessChannels",
+        href: "/admin/channel-distributors",
+        icon: HandCoins,
+      },
+      {
+        labelKey: "admin.nav.commissionSplits",
+        href: "/admin/affiliate",
+        icon: HandCoins,
+      },
     ],
   },
   {
-    titleKey: 'admin.nav.sectionCashflow',
+    titleKey: "admin.nav.sectionCashflow",
     items: [
-      { labelKey: 'admin.nav.plans', href: '/admin/orders/plans', icon: CreditCard },
-      { labelKey: 'admin.nav.subscriptions', href: '/admin/subscriptions', icon: CreditCard },
-      { labelKey: 'admin.nav.paymentDashboard', href: '/admin/orders/dashboard', icon: CreditCard },
-      { labelKey: 'admin.nav.ordersManagement', href: '/admin/orders', icon: WalletCards },
-      { labelKey: 'admin.nav.withdrawals', href: '/admin/withdrawals', icon: WalletCards },
-      { labelKey: 'admin.nav.redeem', href: '/admin/redeem', icon: Ticket },
-      { labelKey: 'admin.nav.promoCodes', href: '/admin/promo-codes', icon: Gift },
+      {
+        labelKey: "admin.nav.plans",
+        href: "/admin/orders/plans",
+        icon: CreditCard,
+      },
+      {
+        labelKey: "admin.nav.subscriptions",
+        href: "/admin/subscriptions",
+        icon: CreditCard,
+      },
+      {
+        labelKey: "admin.nav.paymentDashboard",
+        href: "/admin/orders/dashboard",
+        icon: CreditCard,
+      },
+      {
+        labelKey: "admin.nav.ordersManagement",
+        href: "/admin/orders",
+        icon: WalletCards,
+      },
+      {
+        labelKey: "admin.nav.withdrawals",
+        href: "/admin/withdrawals",
+        icon: WalletCards,
+      },
+      { labelKey: "admin.nav.redeem", href: "/admin/redeem", icon: Ticket },
+      {
+        labelKey: "admin.nav.promoCodes",
+        href: "/admin/promo-codes",
+        icon: Gift,
+      },
     ],
   },
   {
     items: [
-      { labelKey: 'admin.nav.personalConsole', href: '/dashboard', icon: User },
-      { labelKey: 'admin.nav.distributionConsole', href: '/agent', icon: HandCoins },
+      { labelKey: "admin.nav.personalConsole", href: "/dashboard", icon: User },
+      {
+        labelKey: "admin.nav.distributionConsole",
+        href: "/agent",
+        icon: HandCoins,
+      },
+      {
+        labelKey: "admin.nav.channelConsole",
+        href: "/partner",
+        icon: Building2,
+      },
     ],
   },
 ];
 
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
+export default function AdminLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const router = useRouter();
   const pathname = usePathname();
   const { user, isAuthenticated, logout } = useAuthStore();
@@ -106,12 +189,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [mounted, setMounted] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isDark, setIsDark] = useState(false);
-  const [expandedMenus, setExpandedMenus] = useState<Record<string, boolean>>({});
+  const [expandedMenus, setExpandedMenus] = useState<Record<string, boolean>>(
+    {},
+  );
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
       setMounted(true);
-      setIsDark(document.documentElement.classList.contains('dark'));
+      setIsDark(document.documentElement.classList.contains("dark"));
     }, 0);
 
     return () => window.clearTimeout(timer);
@@ -122,17 +207,20 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       return;
     }
     if (!isAuthenticated) {
-      router.replace('/login');
+      router.replace("/login");
       return;
     }
-    if (user?.role !== 'admin') {
-      router.replace('/dashboard');
+    if (user?.role !== "admin") {
+      router.replace("/dashboard");
     }
   }, [mounted, isAuthenticated, router, user?.role]);
 
   const isItemActive = (item: NavItem) => {
     if (item.children?.length) {
-      return item.children.some((child) => pathname === child.href || pathname.startsWith(`${child.href}/`));
+      return item.children.some(
+        (child) =>
+          pathname === child.href || pathname.startsWith(`${child.href}/`),
+      );
     }
     return pathname === item.href || pathname.startsWith(`${item.href}/`);
   };
@@ -142,7 +230,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       for (const item of section.items) {
         if (item.children?.length) {
           const child = item.children.find(
-            (entry) => pathname === entry.href || pathname.startsWith(`${entry.href}/`)
+            (entry) =>
+              pathname === entry.href || pathname.startsWith(`${entry.href}/`),
           );
           if (child) {
             return t(child.labelKey);
@@ -153,24 +242,24 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         }
       }
     }
-    return t('admin.layout.titleFallback');
+    return t("admin.layout.titleFallback");
   })();
 
   const toggleTheme = () => {
     const nextDark = !isDark;
     setIsDark(nextDark);
     if (nextDark) {
-      document.documentElement.classList.add('dark');
-      localStorage.setItem('theme', 'dark');
+      document.documentElement.classList.add("dark");
+      localStorage.setItem("theme", "dark");
     } else {
-      document.documentElement.classList.remove('dark');
-      localStorage.setItem('theme', 'light');
+      document.documentElement.classList.remove("dark");
+      localStorage.setItem("theme", "light");
     }
   };
 
   const handleLogout = () => {
     logout();
-    router.replace('/login');
+    router.replace("/login");
   };
 
   const toggleMenu = (href: string) => {
@@ -184,12 +273,16 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     return <div className="min-h-screen bg-gray-50 dark:bg-[#121212]" />;
   }
 
-  if (!isAuthenticated || user?.role !== 'admin') {
+  if (!isAuthenticated || user?.role !== "admin") {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gray-50 px-6 dark:bg-[#121212]">
         <div className="w-full max-w-md rounded-2xl border border-gray-200 bg-white p-8 text-center shadow-sm dark:border-gray-800 dark:bg-[#1A1A1A]">
-          <h1 className="text-xl font-semibold text-gray-900 dark:text-white">{t('admin.layout.checking')}</h1>
-          <p className="mt-3 text-sm text-gray-500 dark:text-gray-400">{t('admin.layout.redirecting')}</p>
+          <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
+            {t("admin.layout.checking")}
+          </h1>
+          <p className="mt-3 text-sm text-gray-500 dark:text-gray-400">
+            {t("admin.layout.redirecting")}
+          </p>
         </div>
       </div>
     );
@@ -206,8 +299,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
       <aside
         className={cn(
-          'fixed inset-y-0 left-0 z-50 flex w-72 flex-col border-r border-gray-200 bg-white transition-transform duration-300 ease-in-out dark:border-gray-800/60 dark:bg-[#1A1A1A] md:translate-x-0',
-          sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+          "fixed inset-y-0 left-0 z-50 flex w-72 flex-col border-r border-gray-200 bg-white transition-transform duration-300 ease-in-out dark:border-gray-800/60 dark:bg-[#1A1A1A] md:translate-x-0",
+          sidebarOpen ? "translate-x-0" : "-translate-x-full",
         )}
       >
         <div className="flex h-16 items-center justify-between border-b border-gray-200 px-4 dark:border-gray-800/60">
@@ -216,8 +309,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               <Gauge className="h-5 w-5" />
             </div>
             <div>
-              <div className="text-sm font-semibold text-gray-900 dark:text-white">SubioHub Admin</div>
-              <div className="text-xs text-gray-500 dark:text-gray-400">{t('admin.layout.brandTag')}</div>
+              <div className="text-sm font-semibold text-gray-900 dark:text-white">
+                SubioHub Admin
+              </div>
+              <div className="text-xs text-gray-500 dark:text-gray-400">
+                {t("admin.layout.brandTag")}
+              </div>
             </div>
           </Link>
           <button
@@ -231,7 +328,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <nav className="flex-1 overflow-y-auto px-3 py-6">
           <div className="space-y-6">
             {adminSections.map((section) => (
-              <div key={section.titleKey || 'default'} className="space-y-1">
+              <div key={section.titleKey || "default"} className="space-y-1">
                 {section.titleKey && (
                   <div className="px-3 pb-2 text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500">
                     {t(section.titleKey)}
@@ -240,7 +337,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
                 {section.items.map((item) => {
                   const isActive = isItemActive(item);
-                  const isSwitchItem = item.href === '/dashboard' || item.href === '/agent';
+                  const isSwitchItem =
+                    item.href === "/dashboard" ||
+                    item.href === "/agent" ||
+                    item.href === "/partner";
 
                   if (item.children?.length) {
                     const isExpanded = expandedMenus[item.href] ?? isActive;
@@ -251,23 +351,27 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                           onClick={() => toggleMenu(item.href)}
                           aria-expanded={isExpanded}
                           className={cn(
-                            'flex w-full items-center rounded-lg px-3 py-2.5 text-left text-sm font-medium transition-colors',
+                            "flex w-full items-center rounded-lg px-3 py-2.5 text-left text-sm font-medium transition-colors",
                             isActive
-                              ? 'bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400'
-                              : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800/50'
+                              ? "bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400"
+                              : "text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800/50",
                           )}
                         >
                           <item.icon
                             className={cn(
-                              'mr-3 h-5 w-5 flex-shrink-0',
-                              isActive ? 'text-blue-700 dark:text-blue-400' : 'text-gray-400 dark:text-gray-500'
+                              "mr-3 h-5 w-5 flex-shrink-0",
+                              isActive
+                                ? "text-blue-700 dark:text-blue-400"
+                                : "text-gray-400 dark:text-gray-500",
                             )}
                           />
                           <span className="flex-1">{t(item.labelKey)}</span>
                           <ChevronDown
                             className={cn(
-                              'h-4 w-4 transition-transform',
-                              isExpanded ? 'rotate-0 text-gray-400 dark:text-gray-500' : '-rotate-90 text-gray-300 dark:text-gray-600'
+                              "h-4 w-4 transition-transform",
+                              isExpanded
+                                ? "rotate-0 text-gray-400 dark:text-gray-500"
+                                : "-rotate-90 text-gray-300 dark:text-gray-600",
                             )}
                           />
                         </button>
@@ -276,26 +380,31 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                           <div className="ml-4 space-y-1 border-l border-gray-200 pl-3 dark:border-gray-800">
                             {item.children.map((child) => {
                               const isChildActive =
-                                pathname === child.href || pathname.startsWith(`${child.href}/`);
+                                pathname === child.href ||
+                                pathname.startsWith(`${child.href}/`);
                               return (
                                 <Link
                                   key={child.href}
                                   href={child.href}
                                   onClick={() => setSidebarOpen(false)}
                                   className={cn(
-                                    'flex items-center rounded-lg px-3 py-2 text-sm transition-colors',
+                                    "flex items-center rounded-lg px-3 py-2 text-sm transition-colors",
                                     isChildActive
-                                      ? 'bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400'
-                                      : 'text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800/50'
+                                      ? "bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400"
+                                      : "text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800/50",
                                   )}
                                 >
                                   <child.icon
                                     className={cn(
-                                      'mr-3 h-4 w-4 flex-shrink-0',
-                                      isChildActive ? 'text-blue-700 dark:text-blue-400' : 'text-gray-400 dark:text-gray-500'
+                                      "mr-3 h-4 w-4 flex-shrink-0",
+                                      isChildActive
+                                        ? "text-blue-700 dark:text-blue-400"
+                                        : "text-gray-400 dark:text-gray-500",
                                     )}
                                   />
-                                  <span className="flex-1">{t(child.labelKey)}</span>
+                                  <span className="flex-1">
+                                    {t(child.labelKey)}
+                                  </span>
                                   <ChevronRight className="h-4 w-4 text-gray-300 dark:text-gray-600" />
                                 </Link>
                               );
@@ -308,19 +417,29 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
                   if (isSwitchItem) {
                     const switchHint =
-                      item.href === '/agent' ? '切换到代理系统管理' : '切换到个人系统管理';
+                      item.href === "/partner"
+                        ? "切换到渠道管理后台"
+                        : item.href === "/agent"
+                          ? "切换到代理系统管理"
+                          : "切换到个人系统管理";
                     const switchTone =
-                      item.href === '/agent'
+                      item.href === "/partner"
                         ? {
-                            card: 'border-amber-200/70 text-amber-700 hover:bg-amber-50 dark:border-amber-500/20 dark:text-amber-300 dark:hover:bg-amber-500/10',
-                            icon: 'text-amber-500',
-                            hint: 'text-amber-500/80 dark:text-amber-300/70',
+                            card: "border-teal-200/70 text-teal-700 hover:bg-teal-50 dark:border-teal-500/20 dark:text-teal-300 dark:hover:bg-teal-500/10",
+                            icon: "text-teal-500",
+                            hint: "text-teal-500/80 dark:text-teal-300/70",
                           }
-                        : {
-                            card: 'border-purple-200/70 text-purple-700 hover:bg-purple-50 dark:border-purple-500/20 dark:text-purple-300 dark:hover:bg-purple-500/10',
-                            icon: 'text-purple-500',
-                            hint: 'text-purple-500/80 dark:text-purple-300/70',
-                          };
+                        : item.href === "/agent"
+                          ? {
+                              card: "border-amber-200/70 text-amber-700 hover:bg-amber-50 dark:border-amber-500/20 dark:text-amber-300 dark:hover:bg-amber-500/10",
+                              icon: "text-amber-500",
+                              hint: "text-amber-500/80 dark:text-amber-300/70",
+                            }
+                          : {
+                              card: "border-purple-200/70 text-purple-700 hover:bg-purple-50 dark:border-purple-500/20 dark:text-purple-300 dark:hover:bg-purple-500/10",
+                              icon: "text-purple-500",
+                              hint: "text-purple-500/80 dark:text-purple-300/70",
+                            };
 
                     return (
                       <Link
@@ -328,14 +447,26 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                         href={item.href}
                         onClick={() => setSidebarOpen(false)}
                         className={cn(
-                          'flex items-center rounded-2xl border px-3 py-3 text-sm font-medium transition',
-                          switchTone.card
+                          "flex items-center rounded-2xl border px-3 py-3 text-sm font-medium transition",
+                          switchTone.card,
                         )}
                       >
-                        <item.icon className={cn('mr-3 h-5 w-5 flex-shrink-0', switchTone.icon)} />
+                        <item.icon
+                          className={cn(
+                            "mr-3 h-5 w-5 flex-shrink-0",
+                            switchTone.icon,
+                          )}
+                        />
                         <div className="min-w-0">
                           <div>{t(item.labelKey)}</div>
-                          <div className={cn('mt-0.5 truncate text-xs', switchTone.hint)}>{switchHint}</div>
+                          <div
+                            className={cn(
+                              "mt-0.5 truncate text-xs",
+                              switchTone.hint,
+                            )}
+                          >
+                            {switchHint}
+                          </div>
                         </div>
                       </Link>
                     );
@@ -347,16 +478,18 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                       href={item.href}
                       onClick={() => setSidebarOpen(false)}
                       className={cn(
-                        'flex items-center rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
+                        "flex items-center rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
                         isActive
-                          ? 'bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400'
-                          : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800/50'
+                          ? "bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400"
+                          : "text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800/50",
                       )}
                     >
                       <item.icon
                         className={cn(
-                          'mr-3 h-5 w-5 flex-shrink-0',
-                          isActive ? 'text-blue-700 dark:text-blue-400' : 'text-gray-400 dark:text-gray-500'
+                          "mr-3 h-5 w-5 flex-shrink-0",
+                          isActive
+                            ? "text-blue-700 dark:text-blue-400"
+                            : "text-gray-400 dark:text-gray-500",
                         )}
                       />
                       <span className="flex-1">{t(item.labelKey)}</span>
@@ -371,9 +504,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
         <div className="border-t border-gray-200 p-4 dark:border-gray-800/60">
           <div className="rounded-xl bg-gray-50 p-3 dark:bg-gray-900/40">
-            <p className="text-sm font-medium text-gray-900 dark:text-white">{user.email}</p>
+            <p className="text-sm font-medium text-gray-900 dark:text-white">
+              {user.email}
+            </p>
             <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-              {t('admin.layout.role')}: {user.role || 'admin'}
+              {t("admin.layout.role")}: {user.role || "admin"}
             </p>
           </div>
           <div className="mt-3 flex gap-2">
@@ -381,13 +516,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               href="/dashboard"
               className="flex-1 rounded-lg border border-gray-200 px-3 py-2 text-center text-sm text-gray-700 transition-colors hover:bg-gray-100 dark:border-gray-800 dark:text-gray-300 dark:hover:bg-gray-800/60"
             >
-              {t('admin.layout.userSide')}
+              {t("admin.layout.userSide")}
             </Link>
             <button
               onClick={handleLogout}
               className="flex-1 rounded-lg bg-red-500 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-red-600"
             >
-              {t('admin.layout.logout')}
+              {t("admin.layout.logout")}
             </button>
           </div>
         </div>
@@ -404,8 +539,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               <Menu className="h-6 w-6" />
             </button>
             <div>
-              <h1 className="text-lg font-semibold text-gray-900 dark:text-white">{pageTitle}</h1>
-              <p className="text-xs text-gray-500 dark:text-gray-400">{t('admin.layout.migrationHint')}</p>
+              <h1 className="text-lg font-semibold text-gray-900 dark:text-white">
+                {pageTitle}
+              </h1>
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                {t("admin.layout.migrationHint")}
+              </p>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -427,7 +566,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               onClick={toggleTheme}
               className="flex h-9 w-9 items-center justify-center rounded-full text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white"
             >
-              {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+              {isDark ? (
+                <Sun className="h-4 w-4" />
+              ) : (
+                <Moon className="h-4 w-4" />
+              )}
             </button>
           </div>
         </header>

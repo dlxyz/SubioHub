@@ -79,6 +79,11 @@ func CalcMode(v string) predicate.CommissionRule {
 	return predicate.CommissionRule(sql.FieldEQ(FieldCalcMode, v))
 }
 
+// ChannelPartnerTargetRate applies equality check predicate on the "channel_partner_target_rate" field. It's identical to ChannelPartnerTargetRateEQ.
+func ChannelPartnerTargetRate(v float64) predicate.CommissionRule {
+	return predicate.CommissionRule(sql.FieldEQ(FieldChannelPartnerTargetRate, v))
+}
+
 // AgentTargetRate applies equality check predicate on the "agent_target_rate" field. It's identical to AgentTargetRateEQ.
 func AgentTargetRate(v float64) predicate.CommissionRule {
 	return predicate.CommissionRule(sql.FieldEQ(FieldAgentTargetRate, v))
@@ -397,6 +402,46 @@ func CalcModeEqualFold(v string) predicate.CommissionRule {
 // CalcModeContainsFold applies the ContainsFold predicate on the "calc_mode" field.
 func CalcModeContainsFold(v string) predicate.CommissionRule {
 	return predicate.CommissionRule(sql.FieldContainsFold(FieldCalcMode, v))
+}
+
+// ChannelPartnerTargetRateEQ applies the EQ predicate on the "channel_partner_target_rate" field.
+func ChannelPartnerTargetRateEQ(v float64) predicate.CommissionRule {
+	return predicate.CommissionRule(sql.FieldEQ(FieldChannelPartnerTargetRate, v))
+}
+
+// ChannelPartnerTargetRateNEQ applies the NEQ predicate on the "channel_partner_target_rate" field.
+func ChannelPartnerTargetRateNEQ(v float64) predicate.CommissionRule {
+	return predicate.CommissionRule(sql.FieldNEQ(FieldChannelPartnerTargetRate, v))
+}
+
+// ChannelPartnerTargetRateIn applies the In predicate on the "channel_partner_target_rate" field.
+func ChannelPartnerTargetRateIn(vs ...float64) predicate.CommissionRule {
+	return predicate.CommissionRule(sql.FieldIn(FieldChannelPartnerTargetRate, vs...))
+}
+
+// ChannelPartnerTargetRateNotIn applies the NotIn predicate on the "channel_partner_target_rate" field.
+func ChannelPartnerTargetRateNotIn(vs ...float64) predicate.CommissionRule {
+	return predicate.CommissionRule(sql.FieldNotIn(FieldChannelPartnerTargetRate, vs...))
+}
+
+// ChannelPartnerTargetRateGT applies the GT predicate on the "channel_partner_target_rate" field.
+func ChannelPartnerTargetRateGT(v float64) predicate.CommissionRule {
+	return predicate.CommissionRule(sql.FieldGT(FieldChannelPartnerTargetRate, v))
+}
+
+// ChannelPartnerTargetRateGTE applies the GTE predicate on the "channel_partner_target_rate" field.
+func ChannelPartnerTargetRateGTE(v float64) predicate.CommissionRule {
+	return predicate.CommissionRule(sql.FieldGTE(FieldChannelPartnerTargetRate, v))
+}
+
+// ChannelPartnerTargetRateLT applies the LT predicate on the "channel_partner_target_rate" field.
+func ChannelPartnerTargetRateLT(v float64) predicate.CommissionRule {
+	return predicate.CommissionRule(sql.FieldLT(FieldChannelPartnerTargetRate, v))
+}
+
+// ChannelPartnerTargetRateLTE applies the LTE predicate on the "channel_partner_target_rate" field.
+func ChannelPartnerTargetRateLTE(v float64) predicate.CommissionRule {
+	return predicate.CommissionRule(sql.FieldLTE(FieldChannelPartnerTargetRate, v))
 }
 
 // AgentTargetRateEQ applies the EQ predicate on the "agent_target_rate" field.

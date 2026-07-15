@@ -20,6 +20,13 @@ func RegisterAgentRoutes(
 		registerProxyRoutes(agent, h)
 		registerChannelRoutes(agent, h)
 		registerAffiliateRoutes(agent, h)
+		agents := agent.Group("/agents")
+		{
+			agents.GET("", h.Affiliate.ListAgents)
+			agents.POST("", h.Affiliate.CreateAgent)
+			agents.POST("/:id/rate", h.Affiliate.SetAgentRate)
+			agents.PUT("/:id/status", h.Affiliate.UpdateAgentStatus)
+		}
 		distributors := agent.Group("/distributors")
 		{
 			distributors.GET("", h.Affiliate.ListDistributors)

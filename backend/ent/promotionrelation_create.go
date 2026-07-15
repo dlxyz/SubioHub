@@ -57,6 +57,20 @@ func (_c *PromotionRelationCreate) SetUserID(v int64) *PromotionRelationCreate {
 	return _c
 }
 
+// SetChannelPartnerUserID sets the "channel_partner_user_id" field.
+func (_c *PromotionRelationCreate) SetChannelPartnerUserID(v int64) *PromotionRelationCreate {
+	_c.mutation.SetChannelPartnerUserID(v)
+	return _c
+}
+
+// SetNillableChannelPartnerUserID sets the "channel_partner_user_id" field if the given value is not nil.
+func (_c *PromotionRelationCreate) SetNillableChannelPartnerUserID(v *int64) *PromotionRelationCreate {
+	if v != nil {
+		_c.SetChannelPartnerUserID(*v)
+	}
+	return _c
+}
+
 // SetAgentUserID sets the "agent_user_id" field.
 func (_c *PromotionRelationCreate) SetAgentUserID(v int64) *PromotionRelationCreate {
 	_c.mutation.SetAgentUserID(v)
@@ -172,6 +186,11 @@ func (_c *PromotionRelationCreate) SetNillableNotes(v *string) *PromotionRelatio
 // SetUser sets the "user" edge to the User entity.
 func (_c *PromotionRelationCreate) SetUser(v *User) *PromotionRelationCreate {
 	return _c.SetUserID(v.ID)
+}
+
+// SetChannelPartnerUser sets the "channel_partner_user" edge to the User entity.
+func (_c *PromotionRelationCreate) SetChannelPartnerUser(v *User) *PromotionRelationCreate {
+	return _c.SetChannelPartnerUserID(v.ID)
 }
 
 // SetAgentUser sets the "agent_user" edge to the User entity.
@@ -358,6 +377,23 @@ func (_c *PromotionRelationCreate) createSpec() (*PromotionRelation, *sqlgraph.C
 		_node.UserID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
+	if nodes := _c.mutation.ChannelPartnerUserIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   promotionrelation.ChannelPartnerUserTable,
+			Columns: []string{promotionrelation.ChannelPartnerUserColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.ChannelPartnerUserID = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
 	if nodes := _c.mutation.AgentUserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -482,6 +518,24 @@ func (u *PromotionRelationUpsert) SetUserID(v int64) *PromotionRelationUpsert {
 // UpdateUserID sets the "user_id" field to the value that was provided on create.
 func (u *PromotionRelationUpsert) UpdateUserID() *PromotionRelationUpsert {
 	u.SetExcluded(promotionrelation.FieldUserID)
+	return u
+}
+
+// SetChannelPartnerUserID sets the "channel_partner_user_id" field.
+func (u *PromotionRelationUpsert) SetChannelPartnerUserID(v int64) *PromotionRelationUpsert {
+	u.Set(promotionrelation.FieldChannelPartnerUserID, v)
+	return u
+}
+
+// UpdateChannelPartnerUserID sets the "channel_partner_user_id" field to the value that was provided on create.
+func (u *PromotionRelationUpsert) UpdateChannelPartnerUserID() *PromotionRelationUpsert {
+	u.SetExcluded(promotionrelation.FieldChannelPartnerUserID)
+	return u
+}
+
+// ClearChannelPartnerUserID clears the value of the "channel_partner_user_id" field.
+func (u *PromotionRelationUpsert) ClearChannelPartnerUserID() *PromotionRelationUpsert {
+	u.SetNull(promotionrelation.FieldChannelPartnerUserID)
 	return u
 }
 
@@ -675,6 +729,27 @@ func (u *PromotionRelationUpsertOne) SetUserID(v int64) *PromotionRelationUpsert
 func (u *PromotionRelationUpsertOne) UpdateUserID() *PromotionRelationUpsertOne {
 	return u.Update(func(s *PromotionRelationUpsert) {
 		s.UpdateUserID()
+	})
+}
+
+// SetChannelPartnerUserID sets the "channel_partner_user_id" field.
+func (u *PromotionRelationUpsertOne) SetChannelPartnerUserID(v int64) *PromotionRelationUpsertOne {
+	return u.Update(func(s *PromotionRelationUpsert) {
+		s.SetChannelPartnerUserID(v)
+	})
+}
+
+// UpdateChannelPartnerUserID sets the "channel_partner_user_id" field to the value that was provided on create.
+func (u *PromotionRelationUpsertOne) UpdateChannelPartnerUserID() *PromotionRelationUpsertOne {
+	return u.Update(func(s *PromotionRelationUpsert) {
+		s.UpdateChannelPartnerUserID()
+	})
+}
+
+// ClearChannelPartnerUserID clears the value of the "channel_partner_user_id" field.
+func (u *PromotionRelationUpsertOne) ClearChannelPartnerUserID() *PromotionRelationUpsertOne {
+	return u.Update(func(s *PromotionRelationUpsert) {
+		s.ClearChannelPartnerUserID()
 	})
 }
 
@@ -1054,6 +1129,27 @@ func (u *PromotionRelationUpsertBulk) SetUserID(v int64) *PromotionRelationUpser
 func (u *PromotionRelationUpsertBulk) UpdateUserID() *PromotionRelationUpsertBulk {
 	return u.Update(func(s *PromotionRelationUpsert) {
 		s.UpdateUserID()
+	})
+}
+
+// SetChannelPartnerUserID sets the "channel_partner_user_id" field.
+func (u *PromotionRelationUpsertBulk) SetChannelPartnerUserID(v int64) *PromotionRelationUpsertBulk {
+	return u.Update(func(s *PromotionRelationUpsert) {
+		s.SetChannelPartnerUserID(v)
+	})
+}
+
+// UpdateChannelPartnerUserID sets the "channel_partner_user_id" field to the value that was provided on create.
+func (u *PromotionRelationUpsertBulk) UpdateChannelPartnerUserID() *PromotionRelationUpsertBulk {
+	return u.Update(func(s *PromotionRelationUpsert) {
+		s.UpdateChannelPartnerUserID()
+	})
+}
+
+// ClearChannelPartnerUserID clears the value of the "channel_partner_user_id" field.
+func (u *PromotionRelationUpsertBulk) ClearChannelPartnerUserID() *PromotionRelationUpsertBulk {
+	return u.Update(func(s *PromotionRelationUpsert) {
+		s.ClearChannelPartnerUserID()
 	})
 }
 

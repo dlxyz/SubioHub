@@ -85,6 +85,11 @@ func BeneficiaryRole(v string) predicate.CommissionSplitLog {
 	return predicate.CommissionSplitLog(sql.FieldEQ(FieldBeneficiaryRole, v))
 }
 
+// ChannelPartnerUserID applies equality check predicate on the "channel_partner_user_id" field. It's identical to ChannelPartnerUserIDEQ.
+func ChannelPartnerUserID(v int64) predicate.CommissionSplitLog {
+	return predicate.CommissionSplitLog(sql.FieldEQ(FieldChannelPartnerUserID, v))
+}
+
 // AgentUserID applies equality check predicate on the "agent_user_id" field. It's identical to AgentUserIDEQ.
 func AgentUserID(v int64) predicate.CommissionSplitLog {
 	return predicate.CommissionSplitLog(sql.FieldEQ(FieldAgentUserID, v))
@@ -358,6 +363,36 @@ func BeneficiaryRoleEqualFold(v string) predicate.CommissionSplitLog {
 // BeneficiaryRoleContainsFold applies the ContainsFold predicate on the "beneficiary_role" field.
 func BeneficiaryRoleContainsFold(v string) predicate.CommissionSplitLog {
 	return predicate.CommissionSplitLog(sql.FieldContainsFold(FieldBeneficiaryRole, v))
+}
+
+// ChannelPartnerUserIDEQ applies the EQ predicate on the "channel_partner_user_id" field.
+func ChannelPartnerUserIDEQ(v int64) predicate.CommissionSplitLog {
+	return predicate.CommissionSplitLog(sql.FieldEQ(FieldChannelPartnerUserID, v))
+}
+
+// ChannelPartnerUserIDNEQ applies the NEQ predicate on the "channel_partner_user_id" field.
+func ChannelPartnerUserIDNEQ(v int64) predicate.CommissionSplitLog {
+	return predicate.CommissionSplitLog(sql.FieldNEQ(FieldChannelPartnerUserID, v))
+}
+
+// ChannelPartnerUserIDIn applies the In predicate on the "channel_partner_user_id" field.
+func ChannelPartnerUserIDIn(vs ...int64) predicate.CommissionSplitLog {
+	return predicate.CommissionSplitLog(sql.FieldIn(FieldChannelPartnerUserID, vs...))
+}
+
+// ChannelPartnerUserIDNotIn applies the NotIn predicate on the "channel_partner_user_id" field.
+func ChannelPartnerUserIDNotIn(vs ...int64) predicate.CommissionSplitLog {
+	return predicate.CommissionSplitLog(sql.FieldNotIn(FieldChannelPartnerUserID, vs...))
+}
+
+// ChannelPartnerUserIDIsNil applies the IsNil predicate on the "channel_partner_user_id" field.
+func ChannelPartnerUserIDIsNil() predicate.CommissionSplitLog {
+	return predicate.CommissionSplitLog(sql.FieldIsNull(FieldChannelPartnerUserID))
+}
+
+// ChannelPartnerUserIDNotNil applies the NotNil predicate on the "channel_partner_user_id" field.
+func ChannelPartnerUserIDNotNil() predicate.CommissionSplitLog {
+	return predicate.CommissionSplitLog(sql.FieldNotNull(FieldChannelPartnerUserID))
 }
 
 // AgentUserIDEQ applies the EQ predicate on the "agent_user_id" field.
@@ -976,6 +1011,29 @@ func HasBeneficiaryUser() predicate.CommissionSplitLog {
 func HasBeneficiaryUserWith(preds ...predicate.User) predicate.CommissionSplitLog {
 	return predicate.CommissionSplitLog(func(s *sql.Selector) {
 		step := newBeneficiaryUserStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasChannelPartnerUser applies the HasEdge predicate on the "channel_partner_user" edge.
+func HasChannelPartnerUser() predicate.CommissionSplitLog {
+	return predicate.CommissionSplitLog(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, ChannelPartnerUserTable, ChannelPartnerUserColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasChannelPartnerUserWith applies the HasEdge predicate on the "channel_partner_user" edge with a given conditions (other predicates).
+func HasChannelPartnerUserWith(preds ...predicate.User) predicate.CommissionSplitLog {
+	return predicate.CommissionSplitLog(func(s *sql.Selector) {
+		step := newChannelPartnerUserStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

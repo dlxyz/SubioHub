@@ -22,23 +22,25 @@ type PromotionRelation struct {
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
-	// 被归属的终端用户 ID
+	// Target end user ID
 	UserID int64 `json:"user_id,omitempty"`
-	// 所属代理用户 ID
+	// Top-level channel partner user ID
+	ChannelPartnerUserID *int64 `json:"channel_partner_user_id,omitempty"`
+	// Owning agent user ID
 	AgentUserID *int64 `json:"agent_user_id,omitempty"`
-	// 所属分销用户 ID
+	// Owning distributor user ID
 	DistributorUserID *int64 `json:"distributor_user_id,omitempty"`
-	// 直接上级用户 ID，可能是代理或分销
+	// Direct parent user ID
 	DirectParentUserID *int64 `json:"direct_parent_user_id,omitempty"`
-	// 直接上级角色：admin/agent/distributor/user
+	// Direct parent role
 	DirectParentRole string `json:"direct_parent_role,omitempty"`
-	// 绑定来源：manual / agent_direct / distributor_direct / import
+	// Binding source
 	BindingSource string `json:"binding_source,omitempty"`
-	// 绑定关系是否锁定
+	// Whether the binding is locked
 	IsLocked bool `json:"is_locked,omitempty"`
-	// 首次绑定时间
+	// First bound time
 	BoundAt time.Time `json:"bound_at,omitempty"`
-	// 归属关系备注
+	// Binding notes
 	Notes *string `json:"notes,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the PromotionRelationQuery when eager-loading is set.
@@ -50,6 +52,8 @@ type PromotionRelation struct {
 type PromotionRelationEdges struct {
 	// User holds the value of the user edge.
 	User *User `json:"user,omitempty"`
+	// ChannelPartnerUser holds the value of the channel_partner_user edge.
+	ChannelPartnerUser *User `json:"channel_partner_user,omitempty"`
 	// AgentUser holds the value of the agent_user edge.
 	AgentUser *User `json:"agent_user,omitempty"`
 	// DistributorUser holds the value of the distributor_user edge.
@@ -58,7 +62,7 @@ type PromotionRelationEdges struct {
 	DirectParentUser *User `json:"direct_parent_user,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [4]bool
+	loadedTypes [5]bool
 }
 
 // UserOrErr returns the User value or an error if the edge
@@ -72,12 +76,23 @@ func (e PromotionRelationEdges) UserOrErr() (*User, error) {
 	return nil, &NotLoadedError{edge: "user"}
 }
 
+// ChannelPartnerUserOrErr returns the ChannelPartnerUser value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e PromotionRelationEdges) ChannelPartnerUserOrErr() (*User, error) {
+	if e.ChannelPartnerUser != nil {
+		return e.ChannelPartnerUser, nil
+	} else if e.loadedTypes[1] {
+		return nil, &NotFoundError{label: user.Label}
+	}
+	return nil, &NotLoadedError{edge: "channel_partner_user"}
+}
+
 // AgentUserOrErr returns the AgentUser value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
 func (e PromotionRelationEdges) AgentUserOrErr() (*User, error) {
 	if e.AgentUser != nil {
 		return e.AgentUser, nil
-	} else if e.loadedTypes[1] {
+	} else if e.loadedTypes[2] {
 		return nil, &NotFoundError{label: user.Label}
 	}
 	return nil, &NotLoadedError{edge: "agent_user"}
@@ -88,7 +103,7 @@ func (e PromotionRelationEdges) AgentUserOrErr() (*User, error) {
 func (e PromotionRelationEdges) DistributorUserOrErr() (*User, error) {
 	if e.DistributorUser != nil {
 		return e.DistributorUser, nil
-	} else if e.loadedTypes[2] {
+	} else if e.loadedTypes[3] {
 		return nil, &NotFoundError{label: user.Label}
 	}
 	return nil, &NotLoadedError{edge: "distributor_user"}
@@ -99,7 +114,7 @@ func (e PromotionRelationEdges) DistributorUserOrErr() (*User, error) {
 func (e PromotionRelationEdges) DirectParentUserOrErr() (*User, error) {
 	if e.DirectParentUser != nil {
 		return e.DirectParentUser, nil
-	} else if e.loadedTypes[3] {
+	} else if e.loadedTypes[4] {
 		return nil, &NotFoundError{label: user.Label}
 	}
 	return nil, &NotLoadedError{edge: "direct_parent_user"}
@@ -112,7 +127,7 @@ func (*PromotionRelation) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case promotionrelation.FieldIsLocked:
 			values[i] = new(sql.NullBool)
-		case promotionrelation.FieldID, promotionrelation.FieldUserID, promotionrelation.FieldAgentUserID, promotionrelation.FieldDistributorUserID, promotionrelation.FieldDirectParentUserID:
+		case promotionrelation.FieldID, promotionrelation.FieldUserID, promotionrelation.FieldChannelPartnerUserID, promotionrelation.FieldAgentUserID, promotionrelation.FieldDistributorUserID, promotionrelation.FieldDirectParentUserID:
 			values[i] = new(sql.NullInt64)
 		case promotionrelation.FieldDirectParentRole, promotionrelation.FieldBindingSource, promotionrelation.FieldNotes:
 			values[i] = new(sql.NullString)
@@ -156,6 +171,13 @@ func (_m *PromotionRelation) assignValues(columns []string, values []any) error 
 				return fmt.Errorf("unexpected type %T for field user_id", values[i])
 			} else if value.Valid {
 				_m.UserID = value.Int64
+			}
+		case promotionrelation.FieldChannelPartnerUserID:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field channel_partner_user_id", values[i])
+			} else if value.Valid {
+				_m.ChannelPartnerUserID = new(int64)
+				*_m.ChannelPartnerUserID = value.Int64
 			}
 		case promotionrelation.FieldAgentUserID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
@@ -227,6 +249,11 @@ func (_m *PromotionRelation) QueryUser() *UserQuery {
 	return NewPromotionRelationClient(_m.config).QueryUser(_m)
 }
 
+// QueryChannelPartnerUser queries the "channel_partner_user" edge of the PromotionRelation entity.
+func (_m *PromotionRelation) QueryChannelPartnerUser() *UserQuery {
+	return NewPromotionRelationClient(_m.config).QueryChannelPartnerUser(_m)
+}
+
 // QueryAgentUser queries the "agent_user" edge of the PromotionRelation entity.
 func (_m *PromotionRelation) QueryAgentUser() *UserQuery {
 	return NewPromotionRelationClient(_m.config).QueryAgentUser(_m)
@@ -273,6 +300,11 @@ func (_m *PromotionRelation) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("user_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.UserID))
+	builder.WriteString(", ")
+	if v := _m.ChannelPartnerUserID; v != nil {
+		builder.WriteString("channel_partner_user_id=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
 	builder.WriteString(", ")
 	if v := _m.AgentUserID; v != nil {
 		builder.WriteString("agent_user_id=")
