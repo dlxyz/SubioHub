@@ -323,10 +323,11 @@ func (h *AffiliateHandler) ListDistributors(c *gin.Context) {
 		Search: search,
 		Status: status,
 	}
-	if role == service.RoleChannelPartner {
+	switch role {
+	case service.RoleChannelPartner:
 		channelPartnerID := subject.UserID
 		filters.ChannelPartnerID = &channelPartnerID
-	} else if role == service.RoleAgent {
+	case service.RoleAgent:
 		agentOwnerID := subject.UserID
 		filters.AgentOwnerID = &agentOwnerID
 	}
