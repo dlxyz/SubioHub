@@ -24,6 +24,7 @@ func UserFromServiceShallow(u *service.User) *User {
 		ChannelPartnerID:           u.ChannelPartnerID,
 		AgentOwnerID:               u.AgentOwnerID,
 		DistributorOwnerID:         u.DistributorOwnerID,
+		CommissionRate:             u.CommissionRate,
 		AllowedGroups:              u.AllowedGroups,
 		CreatedAt:                  u.CreatedAt,
 		UpdatedAt:                  u.UpdatedAt,

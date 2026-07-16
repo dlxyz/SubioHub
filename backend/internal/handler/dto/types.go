@@ -18,6 +18,7 @@ type User struct {
 	ChannelPartnerID   *int64    `json:"channel_partner_id,omitempty"`
 	AgentOwnerID       *int64    `json:"agent_owner_id,omitempty"`
 	DistributorOwnerID *int64    `json:"distributor_owner_id,omitempty"`
+	CommissionRate     float64   `json:"commission_rate"`
 	AllowedGroups      []int64   `json:"allowed_groups"`
 	CreatedAt          time.Time `json:"created_at"`
 	UpdatedAt          time.Time `json:"updated_at"`
