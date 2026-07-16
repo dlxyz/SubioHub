@@ -62,6 +62,7 @@ func TestAPIContracts(t *testing.T) {
 					"balance_notify_threshold_type": "",
 					"balance_notify_threshold": null,
 					"balance_notify_extra_emails": null,
+					"commission_rate": 0,
 					"total_recharged": 0,
 					"run_mode": "standard",
 					"invite_code": ""

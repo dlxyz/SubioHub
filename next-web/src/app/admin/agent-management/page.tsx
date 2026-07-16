@@ -205,27 +205,32 @@ export default function AdminAgentManagementPage() {
     setError("");
     setSuccess("");
     try {
-      await updateAdminUser(user.id, {
+      const updated = await updateAdminUser(user.id, {
         channel_partner_id: channelPartnerID,
       });
+      // Use API response for the authoritative value
+      const actualOwnerID = updated.channel_partner_id ?? null;
       const ownerName =
-        channelPartners.find((item) => item.id === channelPartnerID)?.email ||
-        `#${channelPartnerID}`;
+        (actualOwnerID
+          ? channelPartners.find((item) => item.id === actualOwnerID)?.email
+          : null) ||
+        (actualOwnerID ? `#${actualOwnerID}` : "无");
       setUsers((prev) =>
         prev.map((item) =>
           item.id === user.id
-            ? {
-                ...item,
-                channel_partner_id:
-                  channelPartnerID > 0 ? channelPartnerID : null,
-              }
+            ? { ...item, ...updated }
             : item,
         ),
       );
+      // Keep ownerDrafts in sync
+      setOwnerDrafts((prev) => ({
+        ...prev,
+        [user.id]: actualOwnerID ? String(actualOwnerID) : "",
+      }));
       setSuccess(
-        channelPartnerID > 0
-          ? `已为 ${user.email} 绑定渠道主 ${ownerName}`
-          : `已清空 ${user.email} 的渠道主归属`,
+        actualOwnerID
+          ? `已为 ${updated.email || user.email} 绑定渠道主 ${ownerName}`
+          : `已清空 ${updated.email || user.email} 的渠道主归属`,
       );
     } catch (saveError: unknown) {
       setError(getErrorMessage(saveError, "更新渠道主归属失败"));

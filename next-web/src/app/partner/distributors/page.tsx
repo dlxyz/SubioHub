@@ -11,11 +11,23 @@ import {
   UserCircle,
   Users,
 } from "lucide-react";
-import { listPartnerDistributors } from "@/lib/partner-api";
+import { listPartnerAgents, listPartnerDistributors } from "@/lib/partner-api";
 import type { AdminUser, PaginatedResult } from "@/lib/admin-api";
 import { cn } from "@/lib/utils";
 
 const PAGE_SIZE = 20;
+
+function formatAgentLabel(
+  id: number | null | undefined,
+  agentMap: Map<number, AdminUser>,
+): string {
+  if (id == null) return "";
+  const agent = agentMap.get(id);
+  if (agent) {
+    return agent.email;
+  }
+  return `Agent #${id}`;
+}
 
 export default function PartnerDistributorsPage() {
   const [data, setData] = useState<PaginatedResult<AdminUser>>({
@@ -30,6 +42,7 @@ export default function PartnerDistributorsPage() {
   const [committedSearch, setCommittedSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [page, setPage] = useState(1);
+  const [agentMap, setAgentMap] = useState<Map<number, AdminUser>>(new Map());
   const mountRef = useRef(false);
 
   const load = useCallback(async () => {
@@ -65,6 +78,17 @@ export default function PartnerDistributorsPage() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, committedSearch, statusFilter]);
+
+  // Load all agents once for name resolution
+  useEffect(() => {
+    void listPartnerAgents({ page: 1, page_size: 1000 }).then((result) => {
+      const map = new Map<number, AdminUser>();
+      result.items.forEach((agent) => {
+        map.set(agent.id, agent);
+      });
+      setAgentMap(map);
+    }).catch(() => { /* silently ignore */ });
+  }, []);
 
   const handleSearch = () => {
     setCommittedSearch(searchInput);
@@ -213,7 +237,7 @@ export default function PartnerDistributorsPage() {
                     <td className="px-6 py-4 text-gray-700 dark:text-gray-300">
                       {user.agent_owner_id ? (
                         <span className="inline-flex items-center gap-1 rounded-lg bg-gray-100 px-2 py-1 text-xs dark:bg-gray-800">
-                          Agent #{user.agent_owner_id}
+                          {formatAgentLabel(user.agent_owner_id, agentMap)}
                         </span>
                       ) : (
                         <span className="text-gray-400">-</span>
