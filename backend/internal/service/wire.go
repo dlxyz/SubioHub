@@ -506,8 +506,8 @@ func ProvidePaymentOrderExpiryService(paymentSvc *PaymentService) *PaymentOrderE
 }
 
 // ProvideExchangeRateService creates and starts ExchangeRateService.
-func ProvideExchangeRateService(entClient *dbent.Client, rdb *redis.Client, settingRepo SettingRepository, cfg *config.Config) *ExchangeRateService {
-	svc := NewExchangeRateService(entClient, rdb, settingRepo, cfg)
+func ProvideExchangeRateService(entClient *dbent.Client, cache ExchangeRateCache, settingRepo SettingRepository, cfg *config.Config) *ExchangeRateService {
+	svc := NewExchangeRateService(entClient, cache, settingRepo, cfg)
 	svc.Start()
 	return svc
 }

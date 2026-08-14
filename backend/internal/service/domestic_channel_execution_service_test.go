@@ -412,7 +412,8 @@ func TestMiniMaxProviderAdapter_PrepareChatCompletionsBody(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	adapter := newDomesticProviderAdapter(ProviderTypeMiniMax).(DomesticChatAdapter)
+	adapter, ok := newDomesticProviderAdapter(ProviderTypeMiniMax).(DomesticChatAdapter)
+	require.True(t, ok)
 	body, err := adapter.PrepareChatCompletionsBody(cfg, []byte(`{
 		"model":"MiniMax-M2.5",
 		"messages":[{"role":"user","content":"Hello"}],
@@ -436,7 +437,8 @@ func TestZhipuProviderAdapter_PrepareChatCompletionsBody(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	adapter := newDomesticProviderAdapter(ProviderTypeZhipu).(DomesticChatAdapter)
+	adapter, ok := newDomesticProviderAdapter(ProviderTypeZhipu).(DomesticChatAdapter)
+	require.True(t, ok)
 	body, err := adapter.PrepareChatCompletionsBody(cfg, []byte(`{
 		"model":"glm-4.5",
 		"messages":[{"role":"user","content":"Hello"}],
@@ -454,7 +456,8 @@ func TestQwenProviderAdapter_PrepareChatCompletionsBody(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	adapter := newDomesticProviderAdapter(ProviderTypeQwen).(DomesticChatAdapter)
+	adapter, ok := newDomesticProviderAdapter(ProviderTypeQwen).(DomesticChatAdapter)
+	require.True(t, ok)
 
 	t.Run("non streaming defaults thinking off", func(t *testing.T) {
 		body, err := adapter.PrepareChatCompletionsBody(cfg, []byte(`{

@@ -17,13 +17,11 @@ import (
 	"github.com/dlxyz/SubioHub/internal/config"
 	"github.com/dlxyz/SubioHub/internal/payment"
 	"github.com/dlxyz/SubioHub/internal/pkg/logger"
-	"github.com/redis/go-redis/v9"
 	"github.com/robfig/cron/v3"
 )
 
 const (
 	exchangeRateKeyPrefix    = "exchange:rate:"
-	exchangeRateCacheTTL     = 25 * time.Hour
 	exchangeRateHTTPTimeout  = 15 * time.Second
 	maxExchangeRateRespBytes = 1 << 20
 
@@ -43,11 +41,18 @@ func CurrencyForPaymentType(paymentType string) string {
 	}
 }
 
+// ExchangeRateCache 定义汇率缓存的读取与写入接口，由 repository 层提供 Redis 实现，
+// 避免 service 直接依赖 Redis 客户端（depguard: service-no-repository）。
+type ExchangeRateCache interface {
+	Get(ctx context.Context, key string) (string, error)
+	Set(ctx context.Context, key string, value float64) error
+}
+
 // ExchangeRateService 提供「1 单位币种 = 多少 USD」的汇率服务。
 // 汇率通过定时任务从汇率 API 拉取，缓存到 Redis，并持久化到 exchange_rates 表作为降级兜底。
 type ExchangeRateService struct {
 	entClient   *dbent.Client
-	rdb         *redis.Client
+	cache       ExchangeRateCache
 	settingRepo SettingRepository
 	cfg         *config.Config
 	httpClient  *http.Client
@@ -57,10 +62,10 @@ type ExchangeRateService struct {
 }
 
 // NewExchangeRateService creates a new ExchangeRateService.
-func NewExchangeRateService(entClient *dbent.Client, rdb *redis.Client, settingRepo SettingRepository, cfg *config.Config) *ExchangeRateService {
+func NewExchangeRateService(entClient *dbent.Client, cache ExchangeRateCache, settingRepo SettingRepository, cfg *config.Config) *ExchangeRateService {
 	return &ExchangeRateService{
 		entClient:   entClient,
-		rdb:         rdb,
+		cache:       cache,
 		settingRepo: settingRepo,
 		cfg:         cfg,
 		httpClient:  &http.Client{Timeout: exchangeRateHTTPTimeout},
@@ -115,8 +120,8 @@ func (s *ExchangeRateService) ToUSD(ctx context.Context, currency string) (float
 	}
 
 	key := exchangeRateKey(cur)
-	if s.rdb != nil {
-		if v, err := s.rdb.Get(ctx, key).Result(); err == nil {
+	if s.cache != nil {
+		if v, err := s.cache.Get(ctx, key); err == nil {
 			if r, perr := strconv.ParseFloat(v, 64); perr == nil && r > 0 {
 				return r, nil
 			}
@@ -128,8 +133,8 @@ func (s *ExchangeRateService) ToUSD(ctx context.Context, currency string) (float
 			Where(exchangerate.CurrencyEQ(cur)).
 			Only(ctx)
 		if err == nil && rec.Rate > 0 {
-			if s.rdb != nil {
-				_ = s.rdb.Set(ctx, key, rec.Rate, exchangeRateCacheTTL).Err()
+			if s.cache != nil {
+				_ = s.cache.Set(ctx, key, rec.Rate)
 			}
 			return rec.Rate, nil
 		}
@@ -174,7 +179,7 @@ func (s *ExchangeRateService) RefreshRates(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf("fetch exchange rate: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("unexpected status %d", resp.StatusCode)
 	}
@@ -206,8 +211,8 @@ func (s *ExchangeRateService) RefreshRates(ctx context.Context) error {
 
 // storeRate 写 Redis 并 upsert 到 exchange_rates 表。
 func (s *ExchangeRateService) storeRate(ctx context.Context, currency string, rate float64) error {
-	if s.rdb != nil {
-		if err := s.rdb.Set(ctx, exchangeRateKey(currency), rate, exchangeRateCacheTTL).Err(); err != nil {
+	if s.cache != nil {
+		if err := s.cache.Set(ctx, exchangeRateKey(currency), rate); err != nil {
 			logger.LegacyPrintf("service.exchange_rate", "写 Redis 汇率缓存失败: %v", err)
 		}
 	}

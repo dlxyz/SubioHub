@@ -915,7 +915,7 @@ func (minimaxDomesticProviderAdapter) BuildAudioTranscriptionRequest(form *multi
 	if err != nil {
 		return "", nil, err
 	}
-	defer file.Close()
+	defer func() { _ = file.Close() }()
 
 	if upstreamModel == "" {
 		if values := form.Value["model"]; len(values) > 0 {
@@ -2254,7 +2254,7 @@ func jimengSignRequest(req *http.Request, accessKey, secretKey string) error {
 
 func jimengHMACSHA256(key, data []byte) []byte {
 	h := hmac.New(sha256.New, key)
-	h.Write(data)
+	_, _ = h.Write(data)
 	return h.Sum(nil)
 }
 

@@ -247,13 +247,13 @@ func tegroSign(params map[string]string, secret string) string {
 	var buf strings.Builder
 	for i, k := range keys {
 		if i > 0 {
-			buf.WriteByte('&')
+			_ = buf.WriteByte('&')
 		}
-		buf.WriteString(k)
-		buf.WriteByte('=')
-		buf.WriteString(url.QueryEscape(params[k]))
+		_, _ = buf.WriteString(k)
+		_ = buf.WriteByte('=')
+		_, _ = buf.WriteString(url.QueryEscape(params[k]))
 	}
-	buf.WriteString(secret)
+	_, _ = buf.WriteString(secret)
 
 	hash := md5.Sum([]byte(buf.String()))
 	return hex.EncodeToString(hash[:])
