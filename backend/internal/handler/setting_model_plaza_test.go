@@ -65,6 +65,10 @@ func (s *stubChannelRepository) GetGroupPlatforms(ctx context.Context, groupIDs 
 	return nil, nil
 }
 
+func (s *stubChannelRepository) GetGroupIDByName(ctx context.Context, name string) (int64, error) {
+	return 0, nil
+}
+
 func (s *stubChannelRepository) ListModelPricing(ctx context.Context, channelID int64) ([]service.ChannelModelPricing, error) {
 	return nil, nil
 }

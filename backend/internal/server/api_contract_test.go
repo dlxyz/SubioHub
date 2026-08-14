@@ -65,7 +65,8 @@ func TestAPIContracts(t *testing.T) {
 					"commission_rate": 0,
 					"total_recharged": 0,
 					"run_mode": "standard",
-					"invite_code": ""
+					"invite_code": "",
+					"preferred_currency": ""
 				}
 			}`,
 		},
@@ -576,6 +577,9 @@ func TestAPIContracts(t *testing.T) {
 					"default_balance": 1.25,
 					"default_subscriptions": [],
 					"enable_model_fallback": false,
+					"exchange_rate_api_url": "",
+					"exchange_rate_cron": "",
+					"exchange_rate_fallback": 0,
 					"fallback_model_anthropic": "claude-3-5-sonnet-20241022",
 					"fallback_model_antigravity": "gemini-2.5-pro",
 					"fallback_model_gemini": "gemini-2.5-pro",

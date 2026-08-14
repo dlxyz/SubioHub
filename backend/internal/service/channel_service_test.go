@@ -29,6 +29,7 @@ type mockChannelRepository struct {
 	setGroupIDsFn              func(ctx context.Context, channelID int64, groupIDs []int64) error
 	getChannelIDByGroupIDFn    func(ctx context.Context, groupID int64) (int64, error)
 	getGroupsInOtherChannelsFn func(ctx context.Context, channelID int64, groupIDs []int64) ([]int64, error)
+	getGroupIDByNameFn         func(ctx context.Context, name string) (int64, error)
 	listModelPricingFn         func(ctx context.Context, channelID int64) ([]ChannelModelPricing, error)
 	createModelPricingFn       func(ctx context.Context, pricing *ChannelModelPricing) error
 	updateModelPricingFn       func(ctx context.Context, pricing *ChannelModelPricing) error
@@ -118,6 +119,13 @@ func (m *mockChannelRepository) GetGroupsInOtherChannels(ctx context.Context, ch
 		return m.getGroupsInOtherChannelsFn(ctx, channelID, groupIDs)
 	}
 	return nil, nil
+}
+
+func (m *mockChannelRepository) GetGroupIDByName(ctx context.Context, name string) (int64, error) {
+	if m.getGroupIDByNameFn != nil {
+		return m.getGroupIDByNameFn(ctx, name)
+	}
+	return 0, nil
 }
 
 func (m *mockChannelRepository) GetGroupPlatforms(ctx context.Context, groupIDs []int64) (map[int64]string, error) {
