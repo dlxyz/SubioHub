@@ -33,7 +33,11 @@ const DEFAULT_FORM: FormState = {
   status: 'active',
 };
 
-function getInitialForm(mode: 'create' | 'edit', apiKey?: UserAPIKey | null): FormState {
+function getInitialForm(
+  mode: 'create' | 'edit',
+  apiKey: UserAPIKey | null | undefined,
+  groups: UserAPIKeyGroup[]
+): FormState {
   if (mode === 'edit' && apiKey) {
     return {
       name: apiKey.name || '',
@@ -42,7 +46,11 @@ function getInitialForm(mode: 'create' | 'edit', apiKey?: UserAPIKey | null): Fo
       status: apiKey.status === 'inactive' ? 'inactive' : 'active',
     };
   }
-  return DEFAULT_FORM;
+  const defaultGroup = groups.find((group) => group.name.toLowerCase() === 'default') ?? groups[0];
+  return {
+    ...DEFAULT_FORM,
+    groupId: defaultGroup ? String(defaultGroup.id) : '',
+  };
 }
 
 function parseQuota(value: string): number | undefined {
@@ -56,7 +64,7 @@ function parseQuota(value: string): number | undefined {
 }
 
 export function APIKeyFormModal({ open, mode, apiKey, groups, submitting, onClose, onSubmit }: Props) {
-  const [form, setForm] = useState<FormState>(() => getInitialForm(mode, apiKey));
+  const [form, setForm] = useState<FormState>(() => getInitialForm(mode, apiKey, groups));
   const [error, setError] = useState('');
 
   if (!open) {

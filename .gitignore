@@ -27,6 +27,9 @@ vendor/
 # Go 编译缓存
 backend/.gocache/
 
+# Ent 代码生成缓存
+backend/ent/.entc/
+
 # ===================
 # Node.js / Vue 前端
 # ===================

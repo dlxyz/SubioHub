@@ -21,6 +21,7 @@ import (
 	"github.com/dlxyz/SubioHub/ent/commissionrule"
 	"github.com/dlxyz/SubioHub/ent/commissionsplitlog"
 	"github.com/dlxyz/SubioHub/ent/errorpassthroughrule"
+	"github.com/dlxyz/SubioHub/ent/exchangerate"
 	"github.com/dlxyz/SubioHub/ent/group"
 	"github.com/dlxyz/SubioHub/ent/idempotencyrecord"
 	"github.com/dlxyz/SubioHub/ent/newspost"
@@ -113,6 +114,7 @@ func checkColumn(t, c string) error {
 			commissionrule.Table:          commissionrule.ValidColumn,
 			commissionsplitlog.Table:      commissionsplitlog.ValidColumn,
 			errorpassthroughrule.Table:    errorpassthroughrule.ValidColumn,
+			exchangerate.Table:            exchangerate.ValidColumn,
 			group.Table:                   group.ValidColumn,
 			idempotencyrecord.Table:       idempotencyrecord.ValidColumn,
 			newspost.Table:                newspost.ValidColumn,

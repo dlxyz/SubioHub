@@ -79,6 +79,7 @@ export default function LoginPage() {
           email: string;
           role: string;
           balance?: number;
+          preferred_currency?: string;
         };
       };
 
@@ -88,6 +89,7 @@ export default function LoginPage() {
         email: payload.user.email,
         role: payload.user.role,
         balance: payload.user.balance ?? 0,
+        preferred_currency: payload.user.preferred_currency,
       });
 
       // 开发态下客户端路由偶发卡住时，退回浏览器级跳转更稳定

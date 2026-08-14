@@ -53,6 +53,8 @@ const (
 	FieldBalanceNotifyExtraEmails = "balance_notify_extra_emails"
 	// FieldTotalRecharged holds the string denoting the total_recharged field in the database.
 	FieldTotalRecharged = "total_recharged"
+	// FieldPreferredCurrency holds the string denoting the preferred_currency field in the database.
+	FieldPreferredCurrency = "preferred_currency"
 	// FieldInviterID holds the string denoting the inviter_id field in the database.
 	FieldInviterID = "inviter_id"
 	// FieldInviteCode holds the string denoting the invite_code field in the database.
@@ -259,6 +261,7 @@ var Columns = []string{
 	FieldBalanceNotifyThreshold,
 	FieldBalanceNotifyExtraEmails,
 	FieldTotalRecharged,
+	FieldPreferredCurrency,
 	FieldInviterID,
 	FieldInviteCode,
 	FieldCommissionRate,
@@ -336,6 +339,10 @@ var (
 	DefaultBalanceNotifyExtraEmails string
 	// DefaultTotalRecharged holds the default value on creation for the "total_recharged" field.
 	DefaultTotalRecharged float64
+	// DefaultPreferredCurrency holds the default value on creation for the "preferred_currency" field.
+	DefaultPreferredCurrency string
+	// PreferredCurrencyValidator is a validator for the "preferred_currency" field. It is called by the builders before save.
+	PreferredCurrencyValidator func(string) error
 	// InviteCodeValidator is a validator for the "invite_code" field. It is called by the builders before save.
 	InviteCodeValidator func(string) error
 	// DefaultCommissionRate holds the default value on creation for the "commission_rate" field.
@@ -459,6 +466,11 @@ func ByBalanceNotifyExtraEmails(opts ...sql.OrderTermOption) OrderOption {
 // ByTotalRecharged orders the results by the total_recharged field.
 func ByTotalRecharged(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTotalRecharged, opts...).ToFunc()
+}
+
+// ByPreferredCurrency orders the results by the preferred_currency field.
+func ByPreferredCurrency(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldPreferredCurrency, opts...).ToFunc()
 }
 
 // ByInviterID orders the results by the inviter_id field.

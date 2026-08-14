@@ -36,6 +36,7 @@ type User struct {
 	BalanceNotifyThreshold     *float64
 	BalanceNotifyExtraEmails   []NotifyEmailEntry
 	TotalRecharged             float64
+	PreferredCurrency          string
 
 	// 分销相关
 	InviterID              *int64

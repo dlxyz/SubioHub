@@ -604,6 +604,28 @@ var (
 			},
 		},
 	}
+	// ExchangeRatesColumns holds the columns for the "exchange_rates" table.
+	ExchangeRatesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt64, Increment: true},
+		{Name: "currency", Type: field.TypeString, Size: 10},
+		{Name: "rate", Type: field.TypeFloat64, SchemaType: map[string]string{"postgres": "decimal(20,10)"}},
+		{Name: "fetched_at", Type: field.TypeTime, SchemaType: map[string]string{"postgres": "timestamptz"}},
+		{Name: "created_at", Type: field.TypeTime, SchemaType: map[string]string{"postgres": "timestamptz"}},
+		{Name: "updated_at", Type: field.TypeTime, SchemaType: map[string]string{"postgres": "timestamptz"}},
+	}
+	// ExchangeRatesTable holds the schema information for the "exchange_rates" table.
+	ExchangeRatesTable = &schema.Table{
+		Name:       "exchange_rates",
+		Columns:    ExchangeRatesColumns,
+		PrimaryKey: []*schema.Column{ExchangeRatesColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "exchangerate_currency",
+				Unique:  true,
+				Columns: []*schema.Column{ExchangeRatesColumns[1]},
+			},
+		},
+	}
 	// GroupsColumns holds the columns for the "groups" table.
 	GroupsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt64, Increment: true},
@@ -836,6 +858,9 @@ var (
 		{Name: "amount", Type: field.TypeFloat64, SchemaType: map[string]string{"postgres": "decimal(20,2)"}},
 		{Name: "pay_amount", Type: field.TypeFloat64, SchemaType: map[string]string{"postgres": "decimal(20,2)"}},
 		{Name: "fee_rate", Type: field.TypeFloat64, Default: 0, SchemaType: map[string]string{"postgres": "decimal(10,4)"}},
+		{Name: "currency", Type: field.TypeString, Size: 10, Default: "CNY"},
+		{Name: "exchange_rate", Type: field.TypeFloat64, Default: 1, SchemaType: map[string]string{"postgres": "decimal(20,10)"}},
+		{Name: "base_amount", Type: field.TypeFloat64, Default: 0, SchemaType: map[string]string{"postgres": "decimal(20,10)"}},
 		{Name: "recharge_code", Type: field.TypeString, Size: 64},
 		{Name: "out_trade_no", Type: field.TypeString, Size: 64, Default: ""},
 		{Name: "payment_type", Type: field.TypeString, Size: 30},
@@ -876,7 +901,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "payment_orders_users_payment_orders",
-				Columns:    []*schema.Column{PaymentOrdersColumns[37]},
+				Columns:    []*schema.Column{PaymentOrdersColumns[40]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -885,42 +910,42 @@ var (
 			{
 				Name:    "paymentorder_out_trade_no",
 				Unique:  false,
-				Columns: []*schema.Column{PaymentOrdersColumns[8]},
+				Columns: []*schema.Column{PaymentOrdersColumns[11]},
 			},
 			{
 				Name:    "paymentorder_user_id",
 				Unique:  false,
-				Columns: []*schema.Column{PaymentOrdersColumns[37]},
+				Columns: []*schema.Column{PaymentOrdersColumns[40]},
 			},
 			{
 				Name:    "paymentorder_status",
 				Unique:  false,
-				Columns: []*schema.Column{PaymentOrdersColumns[19]},
+				Columns: []*schema.Column{PaymentOrdersColumns[22]},
 			},
 			{
 				Name:    "paymentorder_expires_at",
 				Unique:  false,
-				Columns: []*schema.Column{PaymentOrdersColumns[27]},
+				Columns: []*schema.Column{PaymentOrdersColumns[30]},
 			},
 			{
 				Name:    "paymentorder_created_at",
 				Unique:  false,
-				Columns: []*schema.Column{PaymentOrdersColumns[35]},
+				Columns: []*schema.Column{PaymentOrdersColumns[38]},
 			},
 			{
 				Name:    "paymentorder_paid_at",
 				Unique:  false,
-				Columns: []*schema.Column{PaymentOrdersColumns[28]},
+				Columns: []*schema.Column{PaymentOrdersColumns[31]},
 			},
 			{
 				Name:    "paymentorder_payment_type_paid_at",
 				Unique:  false,
-				Columns: []*schema.Column{PaymentOrdersColumns[9], PaymentOrdersColumns[28]},
+				Columns: []*schema.Column{PaymentOrdersColumns[12], PaymentOrdersColumns[31]},
 			},
 			{
 				Name:    "paymentorder_order_type",
 				Unique:  false,
-				Columns: []*schema.Column{PaymentOrdersColumns[14]},
+				Columns: []*schema.Column{PaymentOrdersColumns[17]},
 			},
 		},
 	}
@@ -1505,6 +1530,7 @@ var (
 		{Name: "balance_notify_threshold", Type: field.TypeFloat64, Nullable: true, SchemaType: map[string]string{"postgres": "decimal(20,8)"}},
 		{Name: "balance_notify_extra_emails", Type: field.TypeString, Default: "[]", SchemaType: map[string]string{"postgres": "text"}},
 		{Name: "total_recharged", Type: field.TypeFloat64, Default: 0, SchemaType: map[string]string{"postgres": "decimal(20,8)"}},
+		{Name: "preferred_currency", Type: field.TypeString, Size: 10, Default: "USD"},
 		{Name: "invite_code", Type: field.TypeString, Unique: true, Nullable: true, Size: 32},
 		{Name: "commission_rate", Type: field.TypeFloat64, Default: 0.1, SchemaType: map[string]string{"postgres": "decimal(5,4)"}},
 		{Name: "commission_balance", Type: field.TypeFloat64, Default: 0, SchemaType: map[string]string{"postgres": "decimal(20,8)"}},
@@ -1527,25 +1553,25 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "users_users_invitees",
-				Columns:    []*schema.Column{UsersColumns[29]},
-				RefColumns: []*schema.Column{UsersColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-			{
-				Symbol:     "users_users_channel_members",
 				Columns:    []*schema.Column{UsersColumns[30]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
-				Symbol:     "users_users_agent_members",
+				Symbol:     "users_users_channel_members",
 				Columns:    []*schema.Column{UsersColumns[31]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
-				Symbol:     "users_users_distributor_members",
+				Symbol:     "users_users_agent_members",
 				Columns:    []*schema.Column{UsersColumns[32]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "users_users_distributor_members",
+				Columns:    []*schema.Column{UsersColumns[33]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -1564,27 +1590,27 @@ var (
 			{
 				Name:    "user_channel_partner_id",
 				Unique:  false,
-				Columns: []*schema.Column{UsersColumns[30]},
+				Columns: []*schema.Column{UsersColumns[31]},
 			},
 			{
 				Name:    "user_agent_owner_id",
 				Unique:  false,
-				Columns: []*schema.Column{UsersColumns[31]},
+				Columns: []*schema.Column{UsersColumns[32]},
 			},
 			{
 				Name:    "user_distributor_owner_id",
 				Unique:  false,
-				Columns: []*schema.Column{UsersColumns[32]},
+				Columns: []*schema.Column{UsersColumns[33]},
 			},
 			{
 				Name:    "user_is_key_account",
 				Unique:  false,
-				Columns: []*schema.Column{UsersColumns[24]},
+				Columns: []*schema.Column{UsersColumns[25]},
 			},
 			{
 				Name:    "user_key_account_level",
 				Unique:  false,
-				Columns: []*schema.Column{UsersColumns[25]},
+				Columns: []*schema.Column{UsersColumns[26]},
 			},
 		},
 	}
@@ -1807,6 +1833,7 @@ var (
 		CommissionRulesTable,
 		CommissionSplitLogsTable,
 		ErrorPassthroughRulesTable,
+		ExchangeRatesTable,
 		GroupsTable,
 		IdempotencyRecordsTable,
 		NewsPostsTable,
@@ -1877,6 +1904,9 @@ func init() {
 	}
 	ErrorPassthroughRulesTable.Annotation = &entsql.Annotation{
 		Table: "error_passthrough_rules",
+	}
+	ExchangeRatesTable.Annotation = &entsql.Annotation{
+		Table: "exchange_rates",
 	}
 	GroupsTable.Annotation = &entsql.Annotation{
 		Table: "groups",

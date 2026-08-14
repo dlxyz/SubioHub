@@ -136,6 +136,7 @@ func (h *PaymentHandler) GetCheckoutInfo(c *gin.Context) {
 		HelpText:                  cfg.HelpText,
 		HelpImageURL:              cfg.HelpImageURL,
 		StripePublishableKey:      cfg.StripePublishableKey,
+		ExchangeRates:             h.paymentService.GetDisplayRates(ctx),
 	})
 }
 
@@ -150,6 +151,7 @@ type checkoutInfoResponse struct {
 	HelpText                  string                          `json:"help_text"`
 	HelpImageURL              string                          `json:"help_image_url"`
 	StripePublishableKey      string                          `json:"stripe_publishable_key"`
+	ExchangeRates             map[string]float64              `json:"exchange_rates"`
 }
 
 type checkoutPlan struct {

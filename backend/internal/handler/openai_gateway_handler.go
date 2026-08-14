@@ -282,7 +282,7 @@ func (h *OpenAIGatewayHandler) Responses(c *gin.Context) {
 		h.handleStreamingAwareError(c, http.StatusServiceUnavailable, "api_error", "Channel temporarily unavailable", streamStarted)
 		return
 	}
-	if domesticChannel != nil {
+	if domesticChannel != nil && domesticChannel.CoversModel(reqModel) {
 		forwardBody := body
 		if channelMapping.Mapped {
 			forwardBody = h.gatewayService.ReplaceModelInBody(body, channelMapping.MappedModel)
@@ -710,7 +710,7 @@ func (h *OpenAIGatewayHandler) Messages(c *gin.Context) {
 		h.anthropicStreamingAwareError(c, http.StatusServiceUnavailable, "api_error", "Channel temporarily unavailable", streamStarted)
 		return
 	}
-	if domesticChannel != nil {
+	if domesticChannel != nil && domesticChannel.CoversModel(reqModel) {
 		forwardBody := resolveDomesticMessagesForwardBody(body, channelMappingMsg, preferredMappedModel, h.gatewayService)
 		result, err := h.domesticChannelService.ForwardAnthropicMessages(c.Request.Context(), c, domesticChannel, forwardBody, reqModel)
 		if err != nil && !errors.Is(err, service.ErrDomesticResponseWritten) {

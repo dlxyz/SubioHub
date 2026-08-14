@@ -79,6 +79,8 @@ function getPaymentTypeLabel(paymentType: string | undefined, t: (key: string) =
       return t('admin.orders.paymentTypes.stripe');
     case 'easypay':
       return t('admin.orders.paymentTypes.easypay');
+    case 'creem':
+      return t('admin.orders.paymentTypes.creem');
     case 'alipay_direct':
       return t('admin.orders.paymentTypes.alipayDirect');
     case 'wxpay_direct':
@@ -366,6 +368,7 @@ export default function AdminOrdersPage() {
             <option value="wxpay">{t('admin.orders.paymentTypes.wxpay')}</option>
             <option value="stripe">{t('admin.orders.paymentTypes.stripe')}</option>
             <option value="easypay">{t('admin.orders.paymentTypes.easypay')}</option>
+            <option value="creem">{t('admin.orders.paymentTypes.creem')}</option>
           </select>
           <select
             value={filters.orderType}

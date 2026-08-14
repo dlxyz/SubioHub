@@ -282,6 +282,20 @@ func (_c *UserCreate) SetNillableTotalRecharged(v *float64) *UserCreate {
 	return _c
 }
 
+// SetPreferredCurrency sets the "preferred_currency" field.
+func (_c *UserCreate) SetPreferredCurrency(v string) *UserCreate {
+	_c.mutation.SetPreferredCurrency(v)
+	return _c
+}
+
+// SetNillablePreferredCurrency sets the "preferred_currency" field if the given value is not nil.
+func (_c *UserCreate) SetNillablePreferredCurrency(v *string) *UserCreate {
+	if v != nil {
+		_c.SetPreferredCurrency(*v)
+	}
+	return _c
+}
+
 // SetInviterID sets the "inviter_id" field.
 func (_c *UserCreate) SetInviterID(v int64) *UserCreate {
 	_c.mutation.SetInviterID(v)
@@ -804,6 +818,10 @@ func (_c *UserCreate) defaults() error {
 		v := user.DefaultTotalRecharged
 		_c.mutation.SetTotalRecharged(v)
 	}
+	if _, ok := _c.mutation.PreferredCurrency(); !ok {
+		v := user.DefaultPreferredCurrency
+		_c.mutation.SetPreferredCurrency(v)
+	}
 	if _, ok := _c.mutation.CommissionRate(); !ok {
 		v := user.DefaultCommissionRate
 		_c.mutation.SetCommissionRate(v)
@@ -910,6 +928,14 @@ func (_c *UserCreate) check() error {
 	}
 	if _, ok := _c.mutation.TotalRecharged(); !ok {
 		return &ValidationError{Name: "total_recharged", err: errors.New(`ent: missing required field "User.total_recharged"`)}
+	}
+	if _, ok := _c.mutation.PreferredCurrency(); !ok {
+		return &ValidationError{Name: "preferred_currency", err: errors.New(`ent: missing required field "User.preferred_currency"`)}
+	}
+	if v, ok := _c.mutation.PreferredCurrency(); ok {
+		if err := user.PreferredCurrencyValidator(v); err != nil {
+			return &ValidationError{Name: "preferred_currency", err: fmt.Errorf(`ent: validator failed for field "User.preferred_currency": %w`, err)}
+		}
 	}
 	if v, ok := _c.mutation.InviteCode(); ok {
 		if err := user.InviteCodeValidator(v); err != nil {
@@ -1047,6 +1073,10 @@ func (_c *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.TotalRecharged(); ok {
 		_spec.SetField(user.FieldTotalRecharged, field.TypeFloat64, value)
 		_node.TotalRecharged = value
+	}
+	if value, ok := _c.mutation.PreferredCurrency(); ok {
+		_spec.SetField(user.FieldPreferredCurrency, field.TypeString, value)
+		_node.PreferredCurrency = value
 	}
 	if value, ok := _c.mutation.InviteCode(); ok {
 		_spec.SetField(user.FieldInviteCode, field.TypeString, value)
@@ -1712,6 +1742,18 @@ func (u *UserUpsert) AddTotalRecharged(v float64) *UserUpsert {
 	return u
 }
 
+// SetPreferredCurrency sets the "preferred_currency" field.
+func (u *UserUpsert) SetPreferredCurrency(v string) *UserUpsert {
+	u.Set(user.FieldPreferredCurrency, v)
+	return u
+}
+
+// UpdatePreferredCurrency sets the "preferred_currency" field to the value that was provided on create.
+func (u *UserUpsert) UpdatePreferredCurrency() *UserUpsert {
+	u.SetExcluded(user.FieldPreferredCurrency)
+	return u
+}
+
 // SetInviterID sets the "inviter_id" field.
 func (u *UserUpsert) SetInviterID(v int64) *UserUpsert {
 	u.Set(user.FieldInviterID, v)
@@ -2278,6 +2320,20 @@ func (u *UserUpsertOne) AddTotalRecharged(v float64) *UserUpsertOne {
 func (u *UserUpsertOne) UpdateTotalRecharged() *UserUpsertOne {
 	return u.Update(func(s *UserUpsert) {
 		s.UpdateTotalRecharged()
+	})
+}
+
+// SetPreferredCurrency sets the "preferred_currency" field.
+func (u *UserUpsertOne) SetPreferredCurrency(v string) *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.SetPreferredCurrency(v)
+	})
+}
+
+// UpdatePreferredCurrency sets the "preferred_currency" field to the value that was provided on create.
+func (u *UserUpsertOne) UpdatePreferredCurrency() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdatePreferredCurrency()
 	})
 }
 
@@ -3049,6 +3105,20 @@ func (u *UserUpsertBulk) AddTotalRecharged(v float64) *UserUpsertBulk {
 func (u *UserUpsertBulk) UpdateTotalRecharged() *UserUpsertBulk {
 	return u.Update(func(s *UserUpsert) {
 		s.UpdateTotalRecharged()
+	})
+}
+
+// SetPreferredCurrency sets the "preferred_currency" field.
+func (u *UserUpsertBulk) SetPreferredCurrency(v string) *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.SetPreferredCurrency(v)
+	})
+}
+
+// UpdatePreferredCurrency sets the "preferred_currency" field to the value that was provided on create.
+func (u *UserUpsertBulk) UpdatePreferredCurrency() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdatePreferredCurrency()
 	})
 }
 

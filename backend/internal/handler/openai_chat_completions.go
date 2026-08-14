@@ -112,7 +112,7 @@ func (h *OpenAIGatewayHandler) ChatCompletions(c *gin.Context) {
 		h.handleStreamingAwareError(c, http.StatusServiceUnavailable, "api_error", "Channel temporarily unavailable", streamStarted)
 		return
 	}
-	if domesticChannel != nil {
+	if domesticChannel != nil && domesticChannel.CoversModel(reqModel) {
 		forwardBody := body
 		if channelMapping.Mapped {
 			forwardBody = h.gatewayService.ReplaceModelInBody(body, channelMapping.MappedModel)

@@ -334,6 +334,20 @@ func (_u *UserUpdate) AddTotalRecharged(v float64) *UserUpdate {
 	return _u
 }
 
+// SetPreferredCurrency sets the "preferred_currency" field.
+func (_u *UserUpdate) SetPreferredCurrency(v string) *UserUpdate {
+	_u.mutation.SetPreferredCurrency(v)
+	return _u
+}
+
+// SetNillablePreferredCurrency sets the "preferred_currency" field if the given value is not nil.
+func (_u *UserUpdate) SetNillablePreferredCurrency(v *string) *UserUpdate {
+	if v != nil {
+		_u.SetPreferredCurrency(*v)
+	}
+	return _u
+}
+
 // SetInviterID sets the "inviter_id" field.
 func (_u *UserUpdate) SetInviterID(v int64) *UserUpdate {
 	_u.mutation.SetInviterID(v)
@@ -1239,6 +1253,11 @@ func (_u *UserUpdate) check() error {
 			return &ValidationError{Name: "username", err: fmt.Errorf(`ent: validator failed for field "User.username": %w`, err)}
 		}
 	}
+	if v, ok := _u.mutation.PreferredCurrency(); ok {
+		if err := user.PreferredCurrencyValidator(v); err != nil {
+			return &ValidationError{Name: "preferred_currency", err: fmt.Errorf(`ent: validator failed for field "User.preferred_currency": %w`, err)}
+		}
+	}
 	if v, ok := _u.mutation.InviteCode(); ok {
 		if err := user.InviteCodeValidator(v); err != nil {
 			return &ValidationError{Name: "invite_code", err: fmt.Errorf(`ent: validator failed for field "User.invite_code": %w`, err)}
@@ -1341,6 +1360,9 @@ func (_u *UserUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if value, ok := _u.mutation.AddedTotalRecharged(); ok {
 		_spec.AddField(user.FieldTotalRecharged, field.TypeFloat64, value)
+	}
+	if value, ok := _u.mutation.PreferredCurrency(); ok {
+		_spec.SetField(user.FieldPreferredCurrency, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.InviteCode(); ok {
 		_spec.SetField(user.FieldInviteCode, field.TypeString, value)
@@ -2506,6 +2528,20 @@ func (_u *UserUpdateOne) AddTotalRecharged(v float64) *UserUpdateOne {
 	return _u
 }
 
+// SetPreferredCurrency sets the "preferred_currency" field.
+func (_u *UserUpdateOne) SetPreferredCurrency(v string) *UserUpdateOne {
+	_u.mutation.SetPreferredCurrency(v)
+	return _u
+}
+
+// SetNillablePreferredCurrency sets the "preferred_currency" field if the given value is not nil.
+func (_u *UserUpdateOne) SetNillablePreferredCurrency(v *string) *UserUpdateOne {
+	if v != nil {
+		_u.SetPreferredCurrency(*v)
+	}
+	return _u
+}
+
 // SetInviterID sets the "inviter_id" field.
 func (_u *UserUpdateOne) SetInviterID(v int64) *UserUpdateOne {
 	_u.mutation.SetInviterID(v)
@@ -3424,6 +3460,11 @@ func (_u *UserUpdateOne) check() error {
 			return &ValidationError{Name: "username", err: fmt.Errorf(`ent: validator failed for field "User.username": %w`, err)}
 		}
 	}
+	if v, ok := _u.mutation.PreferredCurrency(); ok {
+		if err := user.PreferredCurrencyValidator(v); err != nil {
+			return &ValidationError{Name: "preferred_currency", err: fmt.Errorf(`ent: validator failed for field "User.preferred_currency": %w`, err)}
+		}
+	}
 	if v, ok := _u.mutation.InviteCode(); ok {
 		if err := user.InviteCodeValidator(v); err != nil {
 			return &ValidationError{Name: "invite_code", err: fmt.Errorf(`ent: validator failed for field "User.invite_code": %w`, err)}
@@ -3543,6 +3584,9 @@ func (_u *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) {
 	}
 	if value, ok := _u.mutation.AddedTotalRecharged(); ok {
 		_spec.AddField(user.FieldTotalRecharged, field.TypeFloat64, value)
+	}
+	if value, ok := _u.mutation.PreferredCurrency(); ok {
+		_spec.SetField(user.FieldPreferredCurrency, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.InviteCode(); ok {
 		_spec.SetField(user.FieldInviteCode, field.TypeString, value)

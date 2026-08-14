@@ -88,6 +88,78 @@ func RegisterGatewayRoutes(
 				},
 			})
 		})
+		gateway.POST("/images/generations", func(c *gin.Context) {
+			if getGroupPlatform(c) == service.PlatformOpenAI {
+				h.OpenAIGateway.Images(c)
+				return
+			}
+			c.JSON(http.StatusNotFound, gin.H{
+				"error": gin.H{
+					"type":    "not_found_error",
+					"message": "Image generation is not supported for this platform",
+				},
+			})
+		})
+		gateway.POST("/images/edits", func(c *gin.Context) {
+			if getGroupPlatform(c) == service.PlatformOpenAI {
+				h.OpenAIGateway.ImagesEdits(c)
+				return
+			}
+			c.JSON(http.StatusNotFound, gin.H{
+				"error": gin.H{
+					"type":    "not_found_error",
+					"message": "Image editing is not supported for this platform",
+				},
+			})
+		})
+		gateway.POST("/audio/speech", func(c *gin.Context) {
+			if getGroupPlatform(c) == service.PlatformOpenAI {
+				h.OpenAIGateway.AudioSpeech(c)
+				return
+			}
+			c.JSON(http.StatusNotFound, gin.H{
+				"error": gin.H{
+					"type":    "not_found_error",
+					"message": "Audio speech is not supported for this platform",
+				},
+			})
+		})
+		gateway.POST("/audio/transcriptions", func(c *gin.Context) {
+			if getGroupPlatform(c) == service.PlatformOpenAI {
+				h.OpenAIGateway.AudioTranscriptions(c)
+				return
+			}
+			c.JSON(http.StatusNotFound, gin.H{
+				"error": gin.H{
+					"type":    "not_found_error",
+					"message": "Audio transcription is not supported for this platform",
+				},
+			})
+		})
+		gateway.POST("/video/generations", func(c *gin.Context) {
+			if getGroupPlatform(c) == service.PlatformOpenAI {
+				h.OpenAIGateway.VideoGenerations(c)
+				return
+			}
+			c.JSON(http.StatusNotFound, gin.H{
+				"error": gin.H{
+					"type":    "not_found_error",
+					"message": "Video generation is not supported for this platform",
+				},
+			})
+		})
+		gateway.POST("/moderations", func(c *gin.Context) {
+			if getGroupPlatform(c) == service.PlatformOpenAI {
+				h.OpenAIGateway.Moderations(c)
+				return
+			}
+			c.JSON(http.StatusNotFound, gin.H{
+				"error": gin.H{
+					"type":    "not_found_error",
+					"message": "Moderation is not supported for this platform",
+				},
+			})
+		})
 		// OpenAI Responses API: auto-route based on group platform
 		gateway.POST("/responses", func(c *gin.Context) {
 			if getGroupPlatform(c) == service.PlatformOpenAI {
@@ -161,6 +233,78 @@ func RegisterGatewayRoutes(
 			"error": gin.H{
 				"type":    "not_found_error",
 				"message": "Rerank is not supported for this platform",
+			},
+		})
+	})
+	r.POST("/images/generations", bodyLimit, clientRequestID, opsErrorLogger, endpointNorm, gin.HandlerFunc(apiKeyAuth), requireGroupAnthropic, func(c *gin.Context) {
+		if getGroupPlatform(c) == service.PlatformOpenAI {
+			h.OpenAIGateway.Images(c)
+			return
+		}
+		c.JSON(http.StatusNotFound, gin.H{
+			"error": gin.H{
+				"type":    "not_found_error",
+				"message": "Image generation is not supported for this platform",
+			},
+		})
+	})
+	r.POST("/images/edits", bodyLimit, clientRequestID, opsErrorLogger, endpointNorm, gin.HandlerFunc(apiKeyAuth), requireGroupAnthropic, func(c *gin.Context) {
+		if getGroupPlatform(c) == service.PlatformOpenAI {
+			h.OpenAIGateway.ImagesEdits(c)
+			return
+		}
+		c.JSON(http.StatusNotFound, gin.H{
+			"error": gin.H{
+				"type":    "not_found_error",
+				"message": "Image editing is not supported for this platform",
+			},
+		})
+	})
+	r.POST("/audio/speech", bodyLimit, clientRequestID, opsErrorLogger, endpointNorm, gin.HandlerFunc(apiKeyAuth), requireGroupAnthropic, func(c *gin.Context) {
+		if getGroupPlatform(c) == service.PlatformOpenAI {
+			h.OpenAIGateway.AudioSpeech(c)
+			return
+		}
+		c.JSON(http.StatusNotFound, gin.H{
+			"error": gin.H{
+				"type":    "not_found_error",
+				"message": "Audio speech is not supported for this platform",
+			},
+		})
+	})
+	r.POST("/audio/transcriptions", bodyLimit, clientRequestID, opsErrorLogger, endpointNorm, gin.HandlerFunc(apiKeyAuth), requireGroupAnthropic, func(c *gin.Context) {
+		if getGroupPlatform(c) == service.PlatformOpenAI {
+			h.OpenAIGateway.AudioTranscriptions(c)
+			return
+		}
+		c.JSON(http.StatusNotFound, gin.H{
+			"error": gin.H{
+				"type":    "not_found_error",
+				"message": "Audio transcription is not supported for this platform",
+			},
+		})
+	})
+	r.POST("/video/generations", bodyLimit, clientRequestID, opsErrorLogger, endpointNorm, gin.HandlerFunc(apiKeyAuth), requireGroupAnthropic, func(c *gin.Context) {
+		if getGroupPlatform(c) == service.PlatformOpenAI {
+			h.OpenAIGateway.VideoGenerations(c)
+			return
+		}
+		c.JSON(http.StatusNotFound, gin.H{
+			"error": gin.H{
+				"type":    "not_found_error",
+				"message": "Video generation is not supported for this platform",
+			},
+		})
+	})
+	r.POST("/moderations", bodyLimit, clientRequestID, opsErrorLogger, endpointNorm, gin.HandlerFunc(apiKeyAuth), requireGroupAnthropic, func(c *gin.Context) {
+		if getGroupPlatform(c) == service.PlatformOpenAI {
+			h.OpenAIGateway.Moderations(c)
+			return
+		}
+		c.JSON(http.StatusNotFound, gin.H{
+			"error": gin.H{
+				"type":    "not_found_error",
+				"message": "Moderation is not supported for this platform",
 			},
 		})
 	})

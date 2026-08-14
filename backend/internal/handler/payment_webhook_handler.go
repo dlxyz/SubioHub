@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"encoding/json"
 	"io"
 	"log/slog"
 	"net/http"
@@ -55,6 +56,18 @@ func (h *PaymentWebhookHandler) WxpayNotify(c *gin.Context) {
 // POST /api/v1/payment/webhook/stripe
 func (h *PaymentWebhookHandler) StripeWebhook(c *gin.Context) {
 	h.handleNotify(c, payment.TypeStripe)
+}
+
+// CreemWebhook handles Creem webhook events.
+// POST /api/v1/payment/webhook/creem
+func (h *PaymentWebhookHandler) CreemWebhook(c *gin.Context) {
+	h.handleNotify(c, payment.TypeCreem)
+}
+
+// TegroWebhook handles Tegro.money payment notifications.
+// POST /api/v1/payment/webhook/tegro
+func (h *PaymentWebhookHandler) TegroWebhook(c *gin.Context) {
+	h.handleNotify(c, payment.TypeTegro)
 }
 
 // handleNotify is the shared logic for all provider webhook handlers.
@@ -125,6 +138,19 @@ func extractOutTradeNo(rawBody, providerKey string) string {
 		if err == nil {
 			return values.Get("out_trade_no")
 		}
+	case payment.TypeCreem:
+		var evt struct {
+			Object struct {
+				RequestID string            `json:"request_id"`
+				Metadata  map[string]string `json:"metadata"`
+			} `json:"object"`
+		}
+		if err := json.Unmarshal([]byte(rawBody), &evt); err == nil {
+			if evt.Object.Metadata["order_id"] != "" {
+				return evt.Object.Metadata["order_id"]
+			}
+			return evt.Object.RequestID
+		}
 	}
 	// For other providers (Stripe, Alipay direct, WxPay direct), the registry
 	// typically has only one instance, so no instance lookup is needed.
@@ -152,6 +178,8 @@ func writeSuccessResponse(c *gin.Context, providerKey string) {
 		c.JSON(http.StatusOK, wxpaySuccessResponse{Code: wxpaySuccessCode, Message: wxpaySuccessMessage})
 	case payment.TypeStripe:
 		c.String(http.StatusOK, "")
+	case payment.TypeTegro:
+		c.String(http.StatusOK, "OK")
 	default:
 		c.String(http.StatusOK, "success")
 	}

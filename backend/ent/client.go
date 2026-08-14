@@ -24,6 +24,7 @@ import (
 	"github.com/dlxyz/SubioHub/ent/commissionrule"
 	"github.com/dlxyz/SubioHub/ent/commissionsplitlog"
 	"github.com/dlxyz/SubioHub/ent/errorpassthroughrule"
+	"github.com/dlxyz/SubioHub/ent/exchangerate"
 	"github.com/dlxyz/SubioHub/ent/group"
 	"github.com/dlxyz/SubioHub/ent/idempotencyrecord"
 	"github.com/dlxyz/SubioHub/ent/newspost"
@@ -74,6 +75,8 @@ type Client struct {
 	CommissionSplitLog *CommissionSplitLogClient
 	// ErrorPassthroughRule is the client for interacting with the ErrorPassthroughRule builders.
 	ErrorPassthroughRule *ErrorPassthroughRuleClient
+	// ExchangeRate is the client for interacting with the ExchangeRate builders.
+	ExchangeRate *ExchangeRateClient
 	// Group is the client for interacting with the Group builders.
 	Group *GroupClient
 	// IdempotencyRecord is the client for interacting with the IdempotencyRecord builders.
@@ -140,6 +143,7 @@ func (c *Client) init() {
 	c.CommissionRule = NewCommissionRuleClient(c.config)
 	c.CommissionSplitLog = NewCommissionSplitLogClient(c.config)
 	c.ErrorPassthroughRule = NewErrorPassthroughRuleClient(c.config)
+	c.ExchangeRate = NewExchangeRateClient(c.config)
 	c.Group = NewGroupClient(c.config)
 	c.IdempotencyRecord = NewIdempotencyRecordClient(c.config)
 	c.NewsPost = NewNewsPostClient(c.config)
@@ -264,6 +268,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		CommissionRule:          NewCommissionRuleClient(cfg),
 		CommissionSplitLog:      NewCommissionSplitLogClient(cfg),
 		ErrorPassthroughRule:    NewErrorPassthroughRuleClient(cfg),
+		ExchangeRate:            NewExchangeRateClient(cfg),
 		Group:                   NewGroupClient(cfg),
 		IdempotencyRecord:       NewIdempotencyRecordClient(cfg),
 		NewsPost:                NewNewsPostClient(cfg),
@@ -315,6 +320,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		CommissionRule:          NewCommissionRuleClient(cfg),
 		CommissionSplitLog:      NewCommissionSplitLogClient(cfg),
 		ErrorPassthroughRule:    NewErrorPassthroughRuleClient(cfg),
+		ExchangeRate:            NewExchangeRateClient(cfg),
 		Group:                   NewGroupClient(cfg),
 		IdempotencyRecord:       NewIdempotencyRecordClient(cfg),
 		NewsPost:                NewNewsPostClient(cfg),
@@ -369,8 +375,8 @@ func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
 		c.APIKey, c.Account, c.AccountGroup, c.Announcement, c.AnnouncementRead,
 		c.CommissionLog, c.CommissionRule, c.CommissionSplitLog,
-		c.ErrorPassthroughRule, c.Group, c.IdempotencyRecord, c.NewsPost,
-		c.NewsPostTranslation, c.PaymentAuditLog, c.PaymentOrder,
+		c.ErrorPassthroughRule, c.ExchangeRate, c.Group, c.IdempotencyRecord,
+		c.NewsPost, c.NewsPostTranslation, c.PaymentAuditLog, c.PaymentOrder,
 		c.PaymentProviderInstance, c.PromoCode, c.PromoCodeUsage, c.PromotionRelation,
 		c.Proxy, c.RedeemCode, c.SecuritySecret, c.Setting, c.SubscriptionPlan,
 		c.TLSFingerprintProfile, c.UsageCleanupTask, c.UsageLog, c.User,
@@ -387,8 +393,8 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
 		c.APIKey, c.Account, c.AccountGroup, c.Announcement, c.AnnouncementRead,
 		c.CommissionLog, c.CommissionRule, c.CommissionSplitLog,
-		c.ErrorPassthroughRule, c.Group, c.IdempotencyRecord, c.NewsPost,
-		c.NewsPostTranslation, c.PaymentAuditLog, c.PaymentOrder,
+		c.ErrorPassthroughRule, c.ExchangeRate, c.Group, c.IdempotencyRecord,
+		c.NewsPost, c.NewsPostTranslation, c.PaymentAuditLog, c.PaymentOrder,
 		c.PaymentProviderInstance, c.PromoCode, c.PromoCodeUsage, c.PromotionRelation,
 		c.Proxy, c.RedeemCode, c.SecuritySecret, c.Setting, c.SubscriptionPlan,
 		c.TLSFingerprintProfile, c.UsageCleanupTask, c.UsageLog, c.User,
@@ -420,6 +426,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.CommissionSplitLog.mutate(ctx, m)
 	case *ErrorPassthroughRuleMutation:
 		return c.ErrorPassthroughRule.mutate(ctx, m)
+	case *ExchangeRateMutation:
+		return c.ExchangeRate.mutate(ctx, m)
 	case *GroupMutation:
 		return c.Group.mutate(ctx, m)
 	case *IdempotencyRecordMutation:
@@ -1972,6 +1980,139 @@ func (c *ErrorPassthroughRuleClient) mutate(ctx context.Context, m *ErrorPassthr
 		return (&ErrorPassthroughRuleDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown ErrorPassthroughRule mutation op: %q", m.Op())
+	}
+}
+
+// ExchangeRateClient is a client for the ExchangeRate schema.
+type ExchangeRateClient struct {
+	config
+}
+
+// NewExchangeRateClient returns a client for the ExchangeRate from the given config.
+func NewExchangeRateClient(c config) *ExchangeRateClient {
+	return &ExchangeRateClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `exchangerate.Hooks(f(g(h())))`.
+func (c *ExchangeRateClient) Use(hooks ...Hook) {
+	c.hooks.ExchangeRate = append(c.hooks.ExchangeRate, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `exchangerate.Intercept(f(g(h())))`.
+func (c *ExchangeRateClient) Intercept(interceptors ...Interceptor) {
+	c.inters.ExchangeRate = append(c.inters.ExchangeRate, interceptors...)
+}
+
+// Create returns a builder for creating a ExchangeRate entity.
+func (c *ExchangeRateClient) Create() *ExchangeRateCreate {
+	mutation := newExchangeRateMutation(c.config, OpCreate)
+	return &ExchangeRateCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of ExchangeRate entities.
+func (c *ExchangeRateClient) CreateBulk(builders ...*ExchangeRateCreate) *ExchangeRateCreateBulk {
+	return &ExchangeRateCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *ExchangeRateClient) MapCreateBulk(slice any, setFunc func(*ExchangeRateCreate, int)) *ExchangeRateCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &ExchangeRateCreateBulk{err: fmt.Errorf("calling to ExchangeRateClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*ExchangeRateCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &ExchangeRateCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for ExchangeRate.
+func (c *ExchangeRateClient) Update() *ExchangeRateUpdate {
+	mutation := newExchangeRateMutation(c.config, OpUpdate)
+	return &ExchangeRateUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *ExchangeRateClient) UpdateOne(_m *ExchangeRate) *ExchangeRateUpdateOne {
+	mutation := newExchangeRateMutation(c.config, OpUpdateOne, withExchangeRate(_m))
+	return &ExchangeRateUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *ExchangeRateClient) UpdateOneID(id int64) *ExchangeRateUpdateOne {
+	mutation := newExchangeRateMutation(c.config, OpUpdateOne, withExchangeRateID(id))
+	return &ExchangeRateUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for ExchangeRate.
+func (c *ExchangeRateClient) Delete() *ExchangeRateDelete {
+	mutation := newExchangeRateMutation(c.config, OpDelete)
+	return &ExchangeRateDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *ExchangeRateClient) DeleteOne(_m *ExchangeRate) *ExchangeRateDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *ExchangeRateClient) DeleteOneID(id int64) *ExchangeRateDeleteOne {
+	builder := c.Delete().Where(exchangerate.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &ExchangeRateDeleteOne{builder}
+}
+
+// Query returns a query builder for ExchangeRate.
+func (c *ExchangeRateClient) Query() *ExchangeRateQuery {
+	return &ExchangeRateQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeExchangeRate},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a ExchangeRate entity by its id.
+func (c *ExchangeRateClient) Get(ctx context.Context, id int64) (*ExchangeRate, error) {
+	return c.Query().Where(exchangerate.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *ExchangeRateClient) GetX(ctx context.Context, id int64) *ExchangeRate {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *ExchangeRateClient) Hooks() []Hook {
+	return c.hooks.ExchangeRate
+}
+
+// Interceptors returns the client interceptors.
+func (c *ExchangeRateClient) Interceptors() []Interceptor {
+	return c.inters.ExchangeRate
+}
+
+func (c *ExchangeRateClient) mutate(ctx context.Context, m *ExchangeRateMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&ExchangeRateCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&ExchangeRateUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&ExchangeRateUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&ExchangeRateDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown ExchangeRate mutation op: %q", m.Op())
 	}
 }
 
@@ -5911,7 +6052,7 @@ func (c *UserSubscriptionClient) mutate(ctx context.Context, m *UserSubscription
 type (
 	hooks struct {
 		APIKey, Account, AccountGroup, Announcement, AnnouncementRead, CommissionLog,
-		CommissionRule, CommissionSplitLog, ErrorPassthroughRule, Group,
+		CommissionRule, CommissionSplitLog, ErrorPassthroughRule, ExchangeRate, Group,
 		IdempotencyRecord, NewsPost, NewsPostTranslation, PaymentAuditLog,
 		PaymentOrder, PaymentProviderInstance, PromoCode, PromoCodeUsage,
 		PromotionRelation, Proxy, RedeemCode, SecuritySecret, Setting,
@@ -5921,7 +6062,7 @@ type (
 	}
 	inters struct {
 		APIKey, Account, AccountGroup, Announcement, AnnouncementRead, CommissionLog,
-		CommissionRule, CommissionSplitLog, ErrorPassthroughRule, Group,
+		CommissionRule, CommissionSplitLog, ErrorPassthroughRule, ExchangeRate, Group,
 		IdempotencyRecord, NewsPost, NewsPostTranslation, PaymentAuditLog,
 		PaymentOrder, PaymentProviderInstance, PromoCode, PromoCodeUsage,
 		PromotionRelation, Proxy, RedeemCode, SecuritySecret, Setting,

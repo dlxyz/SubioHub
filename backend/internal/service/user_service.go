@@ -13,10 +13,11 @@ import (
 )
 
 var (
-	ErrUserNotFound            = infraerrors.NotFound("USER_NOT_FOUND", "user not found")
-	ErrPasswordIncorrect       = infraerrors.BadRequest("PASSWORD_INCORRECT", "current password is incorrect")
-	ErrInsufficientPerms       = infraerrors.Forbidden("INSUFFICIENT_PERMISSIONS", "insufficient permissions")
-	ErrNotifyCodeUserRateLimit = infraerrors.TooManyRequests("NOTIFY_CODE_USER_RATE_LIMIT", "too many verification codes requested, please try again later")
+	ErrUserNotFound             = infraerrors.NotFound("USER_NOT_FOUND", "user not found")
+	ErrPasswordIncorrect        = infraerrors.BadRequest("PASSWORD_INCORRECT", "current password is incorrect")
+	ErrInsufficientPerms        = infraerrors.Forbidden("INSUFFICIENT_PERMISSIONS", "insufficient permissions")
+	ErrNotifyCodeUserRateLimit  = infraerrors.TooManyRequests("NOTIFY_CODE_USER_RATE_LIMIT", "too many verification codes requested, please try again later")
+	ErrInvalidPreferredCurrency = infraerrors.BadRequest("INVALID_PREFERRED_CURRENCY", "unsupported preferred currency")
 )
 
 const (
@@ -80,6 +81,7 @@ type UpdateProfileRequest struct {
 	Concurrency            *int     `json:"concurrency"`
 	BalanceNotifyEnabled   *bool    `json:"balance_notify_enabled"`
 	BalanceNotifyThreshold *float64 `json:"balance_notify_threshold"`
+	PreferredCurrency      *string  `json:"preferred_currency"`
 }
 
 // ChangePasswordRequest 修改密码请求
@@ -113,6 +115,16 @@ func (s *UserService) GetFirstAdmin(ctx context.Context) (*User, error) {
 		return nil, fmt.Errorf("get first admin: %w", err)
 	}
 	return admin, nil
+}
+
+// normalizePreferredCurrency 归一化偏好展示币种，仅允许支持的币种（结算仍为 USD）。
+func normalizePreferredCurrency(currency string) string {
+	switch strings.ToUpper(strings.TrimSpace(currency)) {
+	case "USD", "CNY":
+		return strings.ToUpper(strings.TrimSpace(currency))
+	default:
+		return ""
+	}
 }
 
 // GetProfile 获取用户资料
@@ -162,6 +174,14 @@ func (s *UserService) UpdateProfile(ctx context.Context, userID int64, req Updat
 		} else {
 			user.BalanceNotifyThreshold = req.BalanceNotifyThreshold
 		}
+	}
+
+	if req.PreferredCurrency != nil {
+		cur := normalizePreferredCurrency(*req.PreferredCurrency)
+		if cur == "" {
+			return nil, ErrInvalidPreferredCurrency
+		}
+		user.PreferredCurrency = cur
 	}
 
 	if err := s.userRepo.Update(ctx, user); err != nil {

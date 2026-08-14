@@ -11,6 +11,10 @@ export const publicRoutePrefixes = [
   '/forgot-password',
   '/reset-password',
   '/news',
+  '/privacy',
+  '/terms',
+  '/refund',
+  '/contact',
 ] as const;
 
 export function isLocaleSegment(value: string): value is AppLocale {

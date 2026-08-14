@@ -1,0 +1,23 @@
+import type { Metadata } from 'next';
+import RefundPage from '../../refund/page';
+import { buildPublicMetadata } from '@/i18n/seo';
+import { defaultLocale } from '@/i18n/messages';
+import { isAppLocale } from '@/store/locale';
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const safeLocale = isAppLocale(locale) ? locale : defaultLocale;
+
+  return buildPublicMetadata({
+    locale: safeLocale,
+    pathname: '/refund',
+    title: 'Refund Policy',
+    description: 'SubioHub Refund Policy',
+  });
+}
+
+export default RefundPage;

@@ -17,6 +17,10 @@ func CreateProvider(providerKey string, instanceID string, config map[string]str
 		return NewWxpay(instanceID, config)
 	case payment.TypeStripe:
 		return NewStripe(instanceID, config)
+	case payment.TypeCreem:
+		return NewCreem(instanceID, config)
+	case payment.TypeTegro:
+		return NewTegro(instanceID, config)
 	default:
 		return nil, fmt.Errorf("unknown provider key: %s", providerKey)
 	}

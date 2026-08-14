@@ -41,6 +41,7 @@ export type CheckoutInfo = {
   help_text: string;
   help_image_url: string;
   stripe_publishable_key: string;
+  exchange_rates?: Record<string, number>;
 };
 
 export type CreateOrderPayload = {
@@ -127,6 +128,7 @@ type CurrentUserProfile = {
   balance: number;
   concurrency: number;
   invite_code?: string;
+  preferred_currency?: string;
 };
 
 function asRecord(value: unknown): Record<string, unknown> | null {
@@ -196,4 +198,42 @@ export async function getRefundEligibleProviders(): Promise<string[]> {
   const payload = (await api.get('/payment/orders/refund-eligible-providers')) as unknown;
   const record = asRecord(payload);
   return Array.isArray(record?.provider_instance_ids) ? (record.provider_instance_ids as string[]) : [];
+}
+
+export type PreferredCurrency = 'USD' | 'CNY';
+
+export function normalizeCurrency(currency?: string | null): PreferredCurrency {
+  return (currency || 'USD').toUpperCase() === 'CNY' ? 'CNY' : 'USD';
+}
+
+// 方案 A：根据界面语言推断展示币种（中文界面 -> CNY，其余 -> USD）。
+export function currencyFromLocale(locale?: string | null): PreferredCurrency {
+  return (locale || '').toLowerCase().startsWith('zh') ? 'CNY' : 'USD';
+}
+
+export function currencySymbol(currency?: string | null): string {
+  return normalizeCurrency(currency) === 'CNY' ? '¥' : '$';
+}
+
+// exchange_rates is "1 USD -> X currency"; displayRate returns the multiplier for
+// converting a USD amount into the user's preferred display currency.
+export function displayRate(currency?: string | null, rates?: Record<string, number>): number {
+  const rate = rates?.[normalizeCurrency(currency)] ?? 1;
+  return rate > 0 ? rate : 1;
+}
+
+export function usdToLocal(usd?: number | null, currency?: string | null, rates?: Record<string, number>): number {
+  return (usd ?? 0) * displayRate(currency, rates);
+}
+
+export function localToUSD(local: number, currency?: string | null, rates?: Record<string, number>): number {
+  return local / displayRate(currency, rates);
+}
+
+export function formatLocalAmount(value?: number | null, currency?: string | null, rates?: Record<string, number>): string {
+  return usdToLocal(value, currency, rates).toFixed(2);
+}
+
+export function formatMoney(value?: number | null, currency?: string | null, rates?: Record<string, number>): string {
+  return `${currencySymbol(currency)}${formatLocalAmount(value, currency, rates)}`;
 }

@@ -111,6 +111,9 @@ type SettingsForm = {
   payment_cancel_rate_limit_window: string;
   payment_cancel_rate_limit_unit: string;
   payment_cancel_rate_limit_window_mode: string;
+  exchange_rate_api_url: string;
+  exchange_rate_cron: string;
+  exchange_rate_fallback: string;
   balance_low_notify_enabled: boolean;
   balance_low_notify_threshold: string;
   balance_low_notify_recharge_url: string;
@@ -151,6 +154,8 @@ const PAYMENT_TYPES = [
   { value: 'alipay_direct', label: '支付宝直连' },
   { value: 'wxpay_direct', label: '微信直连' },
   { value: 'easypay', label: 'EasyPay' },
+  { value: 'creem', label: 'Creem' },
+  { value: 'tegro', label: 'Tegro.money' },
 ];
 
 const PROVIDER_KEY_OPTIONS: PaymentProviderOption[] = [
@@ -158,6 +163,8 @@ const PROVIDER_KEY_OPTIONS: PaymentProviderOption[] = [
   { value: 'alipay', label: '支付宝' },
   { value: 'wxpay', label: '微信支付' },
   { value: 'stripe', label: 'Stripe' },
+  { value: 'creem', label: 'Creem' },
+  { value: 'tegro', label: 'Tegro.money' },
 ];
 
 function buildEmptyProviderForm(providerKey = 'easypay'): ProviderFormState {
@@ -273,6 +280,9 @@ function buildForm(settings: SystemSettings): SettingsForm {
     payment_cancel_rate_limit_window: String(settings.payment_cancel_rate_limit_window ?? 24),
     payment_cancel_rate_limit_unit: String(settings.payment_cancel_rate_limit_unit || 'hour'),
     payment_cancel_rate_limit_window_mode: String(settings.payment_cancel_rate_limit_window_mode || 'rolling'),
+    exchange_rate_api_url: String(settings.exchange_rate_api_url || ''),
+    exchange_rate_cron: String(settings.exchange_rate_cron || '0 6 * * *'),
+    exchange_rate_fallback: String(settings.exchange_rate_fallback ?? 0.14),
     balance_low_notify_enabled: Boolean(settings.balance_low_notify_enabled),
     balance_low_notify_threshold: String(settings.balance_low_notify_threshold ?? 0),
     balance_low_notify_recharge_url: String(settings.balance_low_notify_recharge_url || ''),
@@ -420,6 +430,7 @@ export default function AdminSettingsPage() {
       { value: 'wxpay', label: '微信支付' },
       { value: 'card', label: '银行卡' },
       { value: 'link', label: 'Link' },
+      { value: 'creem', label: 'Creem' },
     ],
     []
   );
@@ -436,10 +447,13 @@ export default function AdminSettingsPage() {
     [providerForm.provider_key]
   );
   const currentProviderWebhookUrl = useMemo(() => {
-    if (providerForm.provider_key !== 'stripe' || typeof window === 'undefined') {
+    if (
+      (providerForm.provider_key !== 'stripe' && providerForm.provider_key !== 'creem') ||
+      typeof window === 'undefined'
+    ) {
       return '';
     }
-    return `${window.location.origin}${PROVIDER_WEBHOOK_PATHS.stripe}`;
+    return `${window.location.origin}${PROVIDER_WEBHOOK_PATHS[providerForm.provider_key]}`;
   }, [providerForm.provider_key]);
 
   const summary = useMemo(() => {
@@ -783,6 +797,9 @@ export default function AdminSettingsPage() {
         payment_cancel_rate_limit_window: Number(form.payment_cancel_rate_limit_window || 0),
         payment_cancel_rate_limit_unit: form.payment_cancel_rate_limit_unit.trim(),
         payment_cancel_rate_limit_window_mode: form.payment_cancel_rate_limit_window_mode.trim(),
+        exchange_rate_api_url: form.exchange_rate_api_url.trim(),
+        exchange_rate_cron: form.exchange_rate_cron.trim(),
+        exchange_rate_fallback: Number(form.exchange_rate_fallback || 0),
         balance_low_notify_enabled: form.balance_low_notify_enabled,
         balance_low_notify_threshold: Number(form.balance_low_notify_threshold || 0),
         balance_low_notify_recharge_url: form.balance_low_notify_recharge_url.trim(),
@@ -1616,6 +1633,43 @@ export default function AdminSettingsPage() {
         </div>
       </SummaryCard>
 
+      <SummaryCard title="多币种汇率配置">
+        <div className="rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-700 dark:border-blue-900/40 dark:bg-blue-900/20 dark:text-blue-300">
+          汇率用于将 CNY 等原币充值折算为 USD 入账。服务会按 cron 定时从汇率 API 拉取最新汇率，失败时回退到兜底汇率。
+        </div>
+        <div className="grid gap-4 md:grid-cols-2">
+          <div>
+            <FieldLabel>汇率 API 地址</FieldLabel>
+            <input
+              value={form.exchange_rate_api_url}
+              onChange={(e) => updateForm('exchange_rate_api_url', e.target.value)}
+              placeholder="https://open.er-api.com/v6/latest/USD"
+              className="w-full rounded-lg border border-gray-200 bg-transparent px-3 py-2 text-sm dark:border-gray-700 dark:text-white"
+            />
+          </div>
+          <div>
+            <FieldLabel>定时拉取 Cron</FieldLabel>
+            <input
+              value={form.exchange_rate_cron}
+              onChange={(e) => updateForm('exchange_rate_cron', e.target.value)}
+              placeholder="0 6 * * *"
+              className="w-full rounded-lg border border-gray-200 bg-transparent px-3 py-2 text-sm dark:border-gray-700 dark:text-white"
+            />
+          </div>
+          <div>
+            <FieldLabel>兜底汇率（1 CNY = ? USD）</FieldLabel>
+            <input
+              type="number"
+              min="0"
+              step="0.0001"
+              value={form.exchange_rate_fallback}
+              onChange={(e) => updateForm('exchange_rate_fallback', e.target.value)}
+              className="w-full rounded-lg border border-gray-200 bg-transparent px-3 py-2 text-sm dark:border-gray-700 dark:text-white"
+            />
+          </div>
+        </div>
+      </SummaryCard>
+
       <SummaryCard title="分销结算">
         <div className="rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-700 dark:border-blue-900/40 dark:bg-blue-900/20 dark:text-blue-300">
           自动结算用于在冻结期结束后自动把 `pending` 佣金转为 `settled`；手动打款后结算用于管理员线下完成打款后，再到分销管理页手动确认结算。
@@ -2211,7 +2265,7 @@ export default function AdminSettingsPage() {
 
             {currentProviderWebhookUrl ? (
               <div className="rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-700 dark:border-blue-900/40 dark:bg-blue-900/20 dark:text-blue-300">
-                Stripe Webhook 地址：<code className="break-all font-mono">{currentProviderWebhookUrl}</code>
+                {providerForm.provider_key === 'stripe' ? 'Stripe' : 'Creem'} Webhook 地址：<code className="break-all font-mono">{currentProviderWebhookUrl}</code>
               </div>
             ) : null}
 

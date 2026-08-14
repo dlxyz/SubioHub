@@ -15,12 +15,18 @@ import (
 // ──────────────────────────────────────────────────────────
 
 const (
-	EndpointMessages        = "/v1/messages"
-	EndpointChatCompletions = "/v1/chat/completions"
-	EndpointEmbeddings      = "/v1/embeddings"
-	EndpointRerank          = "/v1/rerank"
-	EndpointResponses       = "/v1/responses"
-	EndpointGeminiModels    = "/v1beta/models"
+	EndpointMessages            = "/v1/messages"
+	EndpointChatCompletions     = "/v1/chat/completions"
+	EndpointEmbeddings          = "/v1/embeddings"
+	EndpointRerank              = "/v1/rerank"
+	EndpointResponses           = "/v1/responses"
+	EndpointImages              = "/v1/images/generations"
+	EndpointImagesEdits         = "/v1/images/edits"
+	EndpointAudioSpeech         = "/v1/audio/speech"
+	EndpointAudioTranscriptions = "/v1/audio/transcriptions"
+	EndpointVideoGenerations    = "/v1/video/generations"
+	EndpointModerations         = "/v1/moderations"
+	EndpointGeminiModels        = "/v1beta/models"
 )
 
 // gin.Context keys used by the middleware and helpers below.
@@ -52,6 +58,18 @@ func NormalizeInboundEndpoint(path string) string {
 		return EndpointMessages
 	case strings.Contains(path, EndpointResponses):
 		return EndpointResponses
+	case strings.Contains(path, EndpointImagesEdits):
+		return EndpointImagesEdits
+	case strings.Contains(path, EndpointImages):
+		return EndpointImages
+	case strings.Contains(path, EndpointAudioSpeech):
+		return EndpointAudioSpeech
+	case strings.Contains(path, EndpointAudioTranscriptions):
+		return EndpointAudioTranscriptions
+	case strings.Contains(path, EndpointVideoGenerations):
+		return EndpointVideoGenerations
+	case strings.Contains(path, EndpointModerations):
+		return EndpointModerations
 	case strings.Contains(path, EndpointGeminiModels):
 		return EndpointGeminiModels
 	default:
@@ -80,6 +98,24 @@ func DeriveUpstreamEndpoint(inbound, rawRequestPath, platform string) string {
 		}
 		if inbound == EndpointRerank {
 			return EndpointRerank
+		}
+		if inbound == EndpointImages {
+			return EndpointImages
+		}
+		if inbound == EndpointImagesEdits {
+			return EndpointImagesEdits
+		}
+		if inbound == EndpointAudioSpeech {
+			return EndpointAudioSpeech
+		}
+		if inbound == EndpointAudioTranscriptions {
+			return EndpointAudioTranscriptions
+		}
+		if inbound == EndpointVideoGenerations {
+			return EndpointVideoGenerations
+		}
+		if inbound == EndpointModerations {
+			return EndpointModerations
 		}
 		// OpenAI forwards everything to the Responses API.
 		// Preserve subresource suffix (e.g. /v1/responses/compact).

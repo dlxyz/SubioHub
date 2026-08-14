@@ -39,6 +39,10 @@ const (
 	ProviderTypeZhipu                = "zhipu"
 	ProviderTypeKimi                 = "kimi"
 	ProviderTypeMiniMax              = "minimax"
+	ProviderTypeKling                = "kling"
+	ProviderTypeAliWan               = "ali_wan"
+	ProviderTypeJimeng               = "jimeng"
+	ProviderTypeVidu                 = "vidu"
 	ProviderTypeOpenAICompatDomestic = "openai_compat_domestic"
 	ProviderTypeCustomDomestic       = "custom_domestic"
 )
@@ -140,6 +144,33 @@ func (c *Channel) GetModelPricing(model string) *ChannelModelPricing {
 	}
 
 	return nil
+}
+
+// CoversModel 判断渠道是否覆盖该请求模型，即该模型是否应由本渠道处理。
+// 覆盖判定：
+//  1. 模型名命中渠道定价列表（ModelPricing.Models）
+//  2. 模型名是渠道级模型映射的源模型（src）或目标模型（dst）
+//
+// 未覆盖的模型将由上层 fallback 到订阅网关。
+func (c *Channel) CoversModel(model string) bool {
+	if c == nil {
+		return false
+	}
+	if c.GetModelPricing(model) != nil {
+		return true
+	}
+	m := strings.ToLower(strings.TrimSpace(model))
+	if m == "" {
+		return false
+	}
+	for _, mapping := range c.ModelMapping {
+		for src, dst := range mapping {
+			if strings.ToLower(src) == m || strings.ToLower(dst) == m {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 // FindMatchingInterval 在区间列表中查找匹配 totalTokens 的区间。

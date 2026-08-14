@@ -6,7 +6,17 @@ import { useSearchParams } from 'next/navigation';
 import { Check, ExternalLink, PackageCheck, QrCode, RefreshCw } from 'lucide-react';
 import { useI18n } from '@/i18n/use-i18n';
 import { cn } from '@/lib/utils';
-import { createPaymentOrder, getCheckoutInfo, type CheckoutInfo, type CheckoutPlan, type CreateOrderResult } from '@/lib/user-payments';
+import {
+  createPaymentOrder,
+  currencyFromLocale,
+  currencySymbol,
+  formatLocalAmount,
+  formatMoney,
+  getCheckoutInfo,
+  type CheckoutInfo,
+  type CheckoutPlan,
+  type CreateOrderResult,
+} from '@/lib/user-payments';
 import { listActiveUserSubscriptions, type UserSubscription } from '@/lib/user-subscriptions';
 
 function getErrorMessage(error: unknown, fallback: string) {
@@ -14,10 +24,6 @@ function getErrorMessage(error: unknown, fallback: string) {
     return error.message;
   }
   return fallback;
-}
-
-function formatMoney(value?: number | null) {
-  return `$${(value ?? 0).toFixed(2)}`;
 }
 
 function formatDateTime(value?: string | null) {
@@ -125,6 +131,8 @@ function getMethodLabel(type: string) {
       return 'WeChat Pay';
     case 'stripe':
       return 'Stripe';
+    case 'creem':
+      return 'Creem';
     case 'easypay':
       return 'EasyPay';
     case 'alipay_direct':
@@ -148,11 +156,15 @@ function PlanCard({
   isRenewal,
   onSelect,
   t,
+  currency,
+  rates,
 }: {
   plan: CheckoutPlan;
   isRenewal: boolean;
   onSelect: (plan: CheckoutPlan) => void;
   t: (key: string) => string;
+  currency?: string;
+  rates?: Record<string, number>;
 }) {
   const platform = plan.group_platform || '';
   const discountText =
@@ -190,13 +202,13 @@ function PlanCard({
           </div>
           <div className="shrink-0 text-right">
             <div className="flex items-baseline gap-1">
-              <span className="text-xs text-gray-400 dark:text-gray-500">$</span>
-              <span className={cn('text-2xl font-extrabold tracking-tight', platformTextClass(platform))}>{plan.price}</span>
+              <span className="text-xs text-gray-400 dark:text-gray-500">{currencySymbol(currency)}</span>
+              <span className={cn('text-2xl font-extrabold tracking-tight', platformTextClass(platform))}>{formatLocalAmount(plan.price, currency, rates)}</span>
             </div>
             <span className="text-[11px] text-gray-400 dark:text-gray-500">/ {getValiditySuffix(plan, t)}</span>
             {plan.original_price ? (
               <div className="mt-0.5 flex items-center justify-end gap-1.5">
-                <span className="text-xs text-gray-400 line-through dark:text-gray-500">${plan.original_price}</span>
+                <span className="text-xs text-gray-400 line-through dark:text-gray-500">{currencySymbol(currency)}{formatLocalAmount(plan.original_price, currency, rates)}</span>
                 {discountText ? <span className="rounded bg-gray-900 px-1 py-0.5 text-[10px] font-semibold text-white dark:bg-white dark:text-gray-900">{discountText}</span> : null}
               </div>
             ) : null}
@@ -211,19 +223,19 @@ function PlanCard({
           {plan.daily_limit_usd != null ? (
             <div className="flex items-center justify-between">
               <span className="text-gray-400 dark:text-gray-500">{t('dashboard.pages.plans.dailyLimit')}</span>
-              <span className="font-medium text-gray-700 dark:text-gray-300">${plan.daily_limit_usd}</span>
+              <span className="font-medium text-gray-700 dark:text-gray-300">{currencySymbol(currency)}{formatLocalAmount(plan.daily_limit_usd, currency, rates)}</span>
             </div>
           ) : null}
           {plan.weekly_limit_usd != null ? (
             <div className="flex items-center justify-between">
               <span className="text-gray-400 dark:text-gray-500">{t('dashboard.pages.plans.weeklyLimit')}</span>
-              <span className="font-medium text-gray-700 dark:text-gray-300">${plan.weekly_limit_usd}</span>
+              <span className="font-medium text-gray-700 dark:text-gray-300">{currencySymbol(currency)}{formatLocalAmount(plan.weekly_limit_usd, currency, rates)}</span>
             </div>
           ) : null}
           {plan.monthly_limit_usd != null ? (
             <div className="flex items-center justify-between">
               <span className="text-gray-400 dark:text-gray-500">{t('dashboard.pages.plans.monthlyLimit')}</span>
-              <span className="font-medium text-gray-700 dark:text-gray-300">${plan.monthly_limit_usd}</span>
+              <span className="font-medium text-gray-700 dark:text-gray-300">{currencySymbol(currency)}{formatLocalAmount(plan.monthly_limit_usd, currency, rates)}</span>
             </div>
           ) : null}
           {plan.daily_limit_usd == null && plan.weekly_limit_usd == null && plan.monthly_limit_usd == null ? (
@@ -281,10 +293,11 @@ const EMPTY_CHECKOUT: CheckoutInfo = {
   help_text: '',
   help_image_url: '',
   stripe_publishable_key: '',
+  exchange_rates: {},
 };
 
 export default function DashboardPlansPage() {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const searchParams = useSearchParams();
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -297,6 +310,8 @@ export default function DashboardPlansPage() {
   const [createdOrder, setCreatedOrder] = useState<CreateOrderResult | null>(null);
 
   const targetGroup = searchParams.get('group');
+  const preferredCurrency = currencyFromLocale(locale);
+  const rates = checkout.exchange_rates;
 
   const loadData = useCallback(async () => {
     setLoading(true);
@@ -480,8 +495,8 @@ export default function DashboardPlansPage() {
                 <h3 className="text-lg font-bold text-gray-900 dark:text-white">{selectedPlan.name}</h3>
               </div>
               <div className="flex items-baseline gap-2">
-                {selectedPlan.original_price ? <span className="text-sm text-gray-400 line-through dark:text-gray-500">${selectedPlan.original_price}</span> : null}
-                <span className={cn('text-3xl font-bold', platformTextClass(selectedPlan.group_platform || ''))}>${selectedPlan.price}</span>
+                {selectedPlan.original_price ? <span className="text-sm text-gray-400 line-through dark:text-gray-500">{currencySymbol(preferredCurrency)}{formatLocalAmount(selectedPlan.original_price, preferredCurrency, rates)}</span> : null}
+                <span className={cn('text-3xl font-bold', platformTextClass(selectedPlan.group_platform || ''))}>{currencySymbol(preferredCurrency)}{formatLocalAmount(selectedPlan.price, preferredCurrency, rates)}</span>
                 <span className="text-sm text-gray-500 dark:text-gray-400">/ {getValiditySuffix(selectedPlan, t)}</span>
               </div>
               {selectedPlan.description ? <p className="mt-2 text-sm leading-relaxed text-gray-500 dark:text-gray-400">{selectedPlan.description}</p> : null}
@@ -493,19 +508,19 @@ export default function DashboardPlansPage() {
                 {selectedPlan.daily_limit_usd != null ? (
                   <div>
                     <span className="text-xs text-gray-400 dark:text-gray-500">{t('dashboard.pages.plans.dailyLimit')}</span>
-                    <div className="text-lg font-semibold text-gray-800 dark:text-gray-200">${selectedPlan.daily_limit_usd}</div>
+                    <div className="text-lg font-semibold text-gray-800 dark:text-gray-200">{currencySymbol(preferredCurrency)}{formatLocalAmount(selectedPlan.daily_limit_usd, preferredCurrency, rates)}</div>
                   </div>
                 ) : null}
                 {selectedPlan.weekly_limit_usd != null ? (
                   <div>
                     <span className="text-xs text-gray-400 dark:text-gray-500">{t('dashboard.pages.plans.weeklyLimit')}</span>
-                    <div className="text-lg font-semibold text-gray-800 dark:text-gray-200">${selectedPlan.weekly_limit_usd}</div>
+                    <div className="text-lg font-semibold text-gray-800 dark:text-gray-200">{currencySymbol(preferredCurrency)}{formatLocalAmount(selectedPlan.weekly_limit_usd, preferredCurrency, rates)}</div>
                   </div>
                 ) : null}
                 {selectedPlan.monthly_limit_usd != null ? (
                   <div>
                     <span className="text-xs text-gray-400 dark:text-gray-500">{t('dashboard.pages.plans.monthlyLimit')}</span>
-                    <div className="text-lg font-semibold text-gray-800 dark:text-gray-200">${selectedPlan.monthly_limit_usd}</div>
+                    <div className="text-lg font-semibold text-gray-800 dark:text-gray-200">{currencySymbol(preferredCurrency)}{formatLocalAmount(selectedPlan.monthly_limit_usd, preferredCurrency, rates)}</div>
                   </div>
                 ) : null}
                 {selectedPlan.daily_limit_usd == null && selectedPlan.weekly_limit_usd == null && selectedPlan.monthly_limit_usd == null ? (
@@ -561,11 +576,11 @@ export default function DashboardPlansPage() {
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-gray-500 dark:text-gray-400">{t('dashboard.pages.plans.fee')}</span>
-                  <span className="font-medium text-gray-900 dark:text-white">{formatMoney(feeAmount)}</span>
+                  <span className="font-medium text-gray-900 dark:text-white">{formatMoney(feeAmount, preferredCurrency, rates)}</span>
                 </div>
                 <div className="flex items-center justify-between border-t border-gray-200 pt-2 dark:border-gray-700">
                   <span className="font-medium text-gray-700 dark:text-gray-200">{t('dashboard.pages.plans.actualPay')}</span>
-                  <span className="text-lg font-bold text-blue-600 dark:text-blue-300">{formatMoney(totalAmount)}</span>
+                  <span className="text-lg font-bold text-blue-600 dark:text-blue-300">{formatMoney(totalAmount, preferredCurrency, rates)}</span>
                 </div>
               </div>
               <button
@@ -601,7 +616,7 @@ export default function DashboardPlansPage() {
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-gray-500 dark:text-gray-400">{t('dashboard.pages.plans.payAmount')}</span>
-                    <span className="font-medium text-gray-900 dark:text-white">{formatMoney(createdOrder.pay_amount)}</span>
+                    <span className="font-medium text-gray-900 dark:text-white">{formatMoney(createdOrder.pay_amount, preferredCurrency, rates)}</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-gray-500 dark:text-gray-400">{t('dashboard.pages.plans.expiresAt')}</span>
@@ -649,6 +664,8 @@ export default function DashboardPlansPage() {
                 setSuccess('');
               }}
               t={t}
+              currency={preferredCurrency}
+              rates={rates}
             />
           ))}
         </div>

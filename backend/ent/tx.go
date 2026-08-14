@@ -32,6 +32,8 @@ type Tx struct {
 	CommissionSplitLog *CommissionSplitLogClient
 	// ErrorPassthroughRule is the client for interacting with the ErrorPassthroughRule builders.
 	ErrorPassthroughRule *ErrorPassthroughRuleClient
+	// ExchangeRate is the client for interacting with the ExchangeRate builders.
+	ExchangeRate *ExchangeRateClient
 	// Group is the client for interacting with the Group builders.
 	Group *GroupClient
 	// IdempotencyRecord is the client for interacting with the IdempotencyRecord builders.
@@ -218,6 +220,7 @@ func (tx *Tx) init() {
 	tx.CommissionRule = NewCommissionRuleClient(tx.config)
 	tx.CommissionSplitLog = NewCommissionSplitLogClient(tx.config)
 	tx.ErrorPassthroughRule = NewErrorPassthroughRuleClient(tx.config)
+	tx.ExchangeRate = NewExchangeRateClient(tx.config)
 	tx.Group = NewGroupClient(tx.config)
 	tx.IdempotencyRecord = NewIdempotencyRecordClient(tx.config)
 	tx.NewsPost = NewNewsPostClient(tx.config)

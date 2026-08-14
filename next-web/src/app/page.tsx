@@ -22,6 +22,10 @@ export default function HomePage() {
   const localizedLoginPath = localizePath('/login', locale);
   const localizedRegisterPath = localizePath('/register', locale);
   const localizedNewsPath = localizePath('/news', locale);
+  const localizedPrivacyPath = localizePath('/privacy', locale);
+  const localizedTermsPath = localizePath('/terms', locale);
+  const localizedRefundPath = localizePath('/refund', locale);
+  const localizedContactPath = localizePath('/contact', locale);
   const serverAddress = mounted ? window.location.origin : 'https://api.subio.com';
 
   useEffect(() => {
@@ -292,6 +296,20 @@ export default function HomePage() {
       </div>
 
       <footer className="py-8 text-center mt-auto">
+        <div className="mb-4 flex flex-wrap justify-center gap-x-6 gap-y-2">
+          <Link href={localizedPrivacyPath} className="text-sm text-gray-400 transition-colors hover:text-gray-900 dark:text-gray-500 dark:hover:text-white">
+            {t('legal.nav.privacy')}
+          </Link>
+          <Link href={localizedTermsPath} className="text-sm text-gray-400 transition-colors hover:text-gray-900 dark:text-gray-500 dark:hover:text-white">
+            {t('legal.nav.terms')}
+          </Link>
+          <Link href={localizedRefundPath} className="text-sm text-gray-400 transition-colors hover:text-gray-900 dark:text-gray-500 dark:hover:text-white">
+            {t('legal.nav.refund')}
+          </Link>
+          <Link href={localizedContactPath} className="text-sm text-gray-400 transition-colors hover:text-gray-900 dark:text-gray-500 dark:hover:text-white">
+            {t('legal.nav.contact')}
+          </Link>
+        </div>
         <p className="text-sm text-gray-400 dark:text-gray-500">
           &copy; {new Date().getFullYear()} SubioHub. {t('marketing.footer.tagline')}
         </p>

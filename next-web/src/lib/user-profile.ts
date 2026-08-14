@@ -23,12 +23,14 @@ export type UserProfile = {
   balance_notify_threshold?: number | null;
   balance_notify_extra_emails: NotifyEmailEntry[];
   total_recharged?: number;
+  preferred_currency?: string;
 };
 
 export type UpdateUserProfilePayload = {
   username?: string;
   balance_notify_enabled?: boolean;
   balance_notify_threshold?: number | null;
+  preferred_currency?: string;
 };
 
 export type TotpStatus = {

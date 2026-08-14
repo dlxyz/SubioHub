@@ -192,6 +192,8 @@ export default function DashboardOrdersPage() {
           return 'WeChat Pay';
         case 'stripe':
           return 'Stripe';
+        case 'creem':
+          return 'Creem';
         case 'easypay':
           return 'EasyPay';
         case 'alipay_direct':

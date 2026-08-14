@@ -5,10 +5,15 @@ import { ArrowRight, CreditCard, ExternalLink, Gift, QrCode, RefreshCw, Wallet }
 import { useI18n } from '@/i18n/use-i18n';
 import {
   createPaymentOrder,
+  currencyFromLocale,
+  currencySymbol,
+  formatMoney,
   getCheckoutInfo,
   getCurrentUserProfile,
   getRedeemHistory,
+  localToUSD,
   redeemCode,
+  usdToLocal,
   type CheckoutInfo,
   type CreateOrderResult,
 } from '@/lib/user-payments';
@@ -19,10 +24,6 @@ function getErrorMessage(error: unknown, fallback: string) {
     return error.message;
   }
   return fallback;
-}
-
-function formatMoney(value?: number | null) {
-  return `$${(value ?? 0).toFixed(2)}`;
 }
 
 function formatDateTime(value?: string | null) {
@@ -44,6 +45,8 @@ function getMethodLabel(type: string) {
       return 'WeChat Direct';
     case 'stripe':
       return 'Stripe';
+    case 'creem':
+      return 'Creem';
     case 'easypay':
       return 'EasyPay';
     default:
@@ -64,10 +67,11 @@ const EMPTY_CHECKOUT: CheckoutInfo = {
   help_text: '',
   help_image_url: '',
   stripe_publishable_key: '',
+  exchange_rates: {},
 };
 
 export default function FinancePage() {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const { user, updateUser } = useAuthStore();
   const [redeemInput, setRedeemInput] = useState('');
   const [redeemLoading, setRedeemLoading] = useState(false);
@@ -82,6 +86,9 @@ export default function FinancePage() {
     Array<{ id: number; code: string; type: string; value: number; used_at?: string | null; created_at: string }>
   >([]);
   const [createdOrder, setCreatedOrder] = useState<CreateOrderResult | null>(null);
+
+  const preferredCurrency = currencyFromLocale(locale);
+  const rates = checkout.exchange_rates;
 
   const loadFinanceData = useCallback(async () => {
     setLoading(true);
@@ -104,29 +111,34 @@ export default function FinancePage() {
     void loadFinanceData();
   }, [loadFinanceData]);
 
-  const amount = useMemo(() => {
+  const localAmount = useMemo(() => {
     const parsed = Number(amountInput);
-    return Number.isFinite(parsed) ? parsed : 0;
+    return Number.isFinite(parsed) && parsed >= 0 ? parsed : 0;
   }, [amountInput]);
+
+  const amountUSD = useMemo(
+    () => localToUSD(localAmount, preferredCurrency, rates),
+    [localAmount, preferredCurrency, rates]
+  );
 
   const availableMethods = useMemo(
     () =>
       Object.entries(checkout.methods).filter(([, method]) => {
         if (!method || method.available === false) return false;
-        if (amount <= 0) return true;
-        if (method.single_min > 0 && amount < method.single_min) return false;
-        if (method.single_max > 0 && amount > method.single_max) return false;
+        if (amountUSD <= 0) return true;
+        if (method.single_min > 0 && amountUSD < method.single_min) return false;
+        if (method.single_max > 0 && amountUSD > method.single_max) return false;
         return true;
       }),
-    [amount, checkout.methods]
+    [amountUSD, checkout.methods]
   );
 
   const selectedMethodMeta = selectedMethod ? checkout.methods[selectedMethod] : undefined;
   const effectiveFeeRate = selectedMethodMeta?.fee_rate ?? checkout.recharge_fee_rate ?? 0;
-  const feeAmount = amount > 0 && effectiveFeeRate > 0 ? Math.ceil(amount * effectiveFeeRate) / 100 : 0;
-  const actualPay = amount + feeAmount;
-  const creditedAmount = amount * (checkout.balance_recharge_multiplier > 0 ? checkout.balance_recharge_multiplier : 1);
-  const canCreateOrder = !checkout.balance_disabled && amount > 0 && !!selectedMethod && availableMethods.some(([key]) => key === selectedMethod);
+  const feeAmount = amountUSD > 0 && effectiveFeeRate > 0 ? Math.ceil(amountUSD * effectiveFeeRate) / 100 : 0;
+  const actualPayUSD = amountUSD + feeAmount;
+  const creditedAmountUSD = amountUSD * (checkout.balance_recharge_multiplier > 0 ? checkout.balance_recharge_multiplier : 1);
+  const canCreateOrder = !checkout.balance_disabled && amountUSD > 0 && !!selectedMethod && availableMethods.some(([key]) => key === selectedMethod);
 
   const refreshBalance = useCallback(async () => {
     try {
@@ -137,6 +149,7 @@ export default function FinancePage() {
         role: profile.role,
         balance: profile.balance,
         invite_code: profile.invite_code,
+        preferred_currency: profile.preferred_currency,
       });
     } catch (profileError) {
       console.error('refresh user profile failed', profileError);
@@ -174,7 +187,7 @@ export default function FinancePage() {
 
     try {
       const result = await createPaymentOrder({
-        amount,
+        amount: amountUSD,
         payment_type: selectedMethod,
         order_type: 'balance',
       });
@@ -234,7 +247,7 @@ export default function FinancePage() {
                 {t('dashboard.pages.finance.currentBalance')}
               </span>
             </div>
-            <div className="text-5xl font-extrabold tracking-tight text-gray-900 dark:text-white">{formatMoney(user?.balance)}</div>
+            <div className="text-5xl font-extrabold tracking-tight text-gray-900 dark:text-white">{formatMoney(user?.balance, preferredCurrency, rates)}</div>
             <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">{t('dashboard.pages.finance.balanceHint')}</p>
           </div>
 
@@ -309,36 +322,45 @@ export default function FinancePage() {
                 <div>
                   <div className="mb-3 text-sm font-medium text-gray-900 dark:text-white">{t('dashboard.pages.finance.amountLabel')}</div>
                   <div className="grid grid-cols-3 gap-3">
-                    {QUICK_AMOUNTS.map((quickAmount) => (
-                      <button
-                        key={quickAmount}
-                        type="button"
-                        onClick={() => setAmountInput(String(quickAmount))}
-                        className={`rounded-lg border px-4 py-3 text-sm font-medium transition-colors ${
-                          Number(amountInput) === quickAmount
-                            ? 'border-blue-500 bg-blue-50 text-blue-700 dark:bg-blue-950/30 dark:text-blue-300'
-                            : 'border-gray-200 text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-900/50'
-                        }`}
-                      >
-                        ${quickAmount}
-                      </button>
-                    ))}
+                    {QUICK_AMOUNTS.map((quickAmount) => {
+                      const quickLocal = usdToLocal(quickAmount, preferredCurrency, rates);
+                      const isActive = Math.abs(localAmount - quickLocal) < 0.01;
+                      return (
+                        <button
+                          key={quickAmount}
+                          type="button"
+                          onClick={() => setAmountInput(quickLocal.toFixed(2))}
+                          className={`rounded-lg border px-4 py-3 text-sm font-medium transition-colors ${
+                            isActive
+                              ? 'border-blue-500 bg-blue-50 text-blue-700 dark:bg-blue-950/30 dark:text-blue-300'
+                              : 'border-gray-200 text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-900/50'
+                          }`}
+                        >
+                          {formatMoney(quickAmount, preferredCurrency, rates)}
+                        </button>
+                      );
+                    })}
                   </div>
                   <div className="mt-3">
-                    <input
-                      type="number"
-                      min={checkout.global_min || 0}
-                      max={checkout.global_max || undefined}
-                      step="0.01"
-                      value={amountInput}
-                      onChange={(event) => setAmountInput(event.target.value)}
-                      placeholder={t('dashboard.pages.finance.amountPlaceholder')}
-                      className="block w-full rounded-lg border border-gray-300 px-4 py-3 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                    />
+                    <div className="relative">
+                      <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-sm text-gray-400">
+                        {currencySymbol(preferredCurrency)}
+                      </span>
+                      <input
+                        type="number"
+                        min={checkout.global_min ? usdToLocal(checkout.global_min, preferredCurrency, rates) : 0}
+                        max={checkout.global_max ? usdToLocal(checkout.global_max, preferredCurrency, rates) : undefined}
+                        step="0.01"
+                        value={amountInput}
+                        onChange={(event) => setAmountInput(event.target.value)}
+                        placeholder={t('dashboard.pages.finance.amountPlaceholder')}
+                        className="block w-full rounded-lg border border-gray-300 pl-7 pr-4 py-3 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                      />
+                    </div>
                     <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
                       {t('dashboard.pages.finance.availableRange', {
-                        min: checkout.global_min ? `$${checkout.global_min}` : '$0',
-                        max: checkout.global_max ? `$${checkout.global_max}` : '∞',
+                        min: checkout.global_min ? formatMoney(checkout.global_min, preferredCurrency, rates) : formatMoney(0, preferredCurrency, rates),
+                        max: checkout.global_max ? formatMoney(checkout.global_max, preferredCurrency, rates) : '∞',
                       })}
                     </p>
                   </div>
@@ -387,19 +409,19 @@ export default function FinancePage() {
                   <div className="space-y-2 text-sm">
                     <div className="flex items-center justify-between">
                       <span className="text-gray-500 dark:text-gray-400">{t('dashboard.pages.finance.amountLabel')}</span>
-                      <span className="text-gray-900 dark:text-white">${amount.toFixed(2)}</span>
+                      <span className="text-gray-900 dark:text-white">{formatMoney(amountUSD, preferredCurrency, rates)}</span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-gray-500 dark:text-gray-400">{t('dashboard.pages.finance.fee')}</span>
-                      <span className="text-gray-900 dark:text-white">${feeAmount.toFixed(2)}</span>
+                      <span className="text-gray-900 dark:text-white">{formatMoney(feeAmount, preferredCurrency, rates)}</span>
                     </div>
                     <div className="flex items-center justify-between border-t border-gray-200 pt-2 dark:border-gray-700">
                       <span className="font-medium text-gray-700 dark:text-gray-200">{t('dashboard.pages.finance.actualPay')}</span>
-                      <span className="text-lg font-bold text-blue-600 dark:text-blue-300">${actualPay.toFixed(2)}</span>
+                      <span className="text-lg font-bold text-blue-600 dark:text-blue-300">{formatMoney(actualPayUSD, preferredCurrency, rates)}</span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-gray-500 dark:text-gray-400">{t('dashboard.pages.finance.creditedBalance')}</span>
-                      <span className="font-medium text-gray-900 dark:text-white">${creditedAmount.toFixed(2)}</span>
+                      <span className="font-medium text-gray-900 dark:text-white">{formatMoney(creditedAmountUSD, preferredCurrency, rates)}</span>
                     </div>
                   </div>
                 </div>
@@ -429,7 +451,7 @@ export default function FinancePage() {
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-gray-500 dark:text-gray-400">{t('dashboard.pages.finance.payAmount')}</span>
-                  <span className="font-medium text-gray-900 dark:text-white">${createdOrder.pay_amount.toFixed(2)}</span>
+                  <span className="font-medium text-gray-900 dark:text-white">{formatMoney(createdOrder.pay_amount, preferredCurrency, rates)}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-gray-500 dark:text-gray-400">{t('dashboard.pages.finance.expiresAt')}</span>

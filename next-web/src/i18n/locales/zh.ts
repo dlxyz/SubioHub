@@ -655,6 +655,14 @@ const zhCN = {
       tagline: "统一的大模型接口网关.",
     },
   },
+  legal: {
+    nav: {
+      privacy: "隐私政策",
+      terms: "服务条款",
+      refund: "退款政策",
+      contact: "联系我们",
+    },
+  },
   publicAuth: {
     common: {
       backHome: "返回首页",
@@ -1358,6 +1366,7 @@ const zhCN = {
         easypay: "EasyPay",
         alipayDirect: "支付宝直连",
         wxpayDirect: "微信直连",
+        creem: "Creem",
       },
       loading: "正在加载订单列表...",
       empty: "当前筛选条件下暂无订单",

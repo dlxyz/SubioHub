@@ -999,6 +999,7 @@ export function DomesticChannelFormModal({
             <div className="mb-4 text-xs text-gray-500 dark:text-gray-400">
               接口管理这里只显示 `国内渠道组` 和 `混合组`。分组上的 `Anthropic / OpenAI / Gemini / Antigravity`
               仅表示原系统的主调度平台，不再作为接口分组的区分依据。
+              未勾选任何分组时，系统会自动绑定 `default` 组（国内渠道默认分组）。
             </div>
             <div className="space-y-4">
               {availableGroups.length === 0 ? (

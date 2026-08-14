@@ -150,6 +150,11 @@ func TotalRecharged(v float64) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldTotalRecharged, v))
 }
 
+// PreferredCurrency applies equality check predicate on the "preferred_currency" field. It's identical to PreferredCurrencyEQ.
+func PreferredCurrency(v string) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldPreferredCurrency, v))
+}
+
 // InviterID applies equality check predicate on the "inviter_id" field. It's identical to InviterIDEQ.
 func InviterID(v int64) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldInviterID, v))
@@ -1178,6 +1183,71 @@ func TotalRechargedLT(v float64) predicate.User {
 // TotalRechargedLTE applies the LTE predicate on the "total_recharged" field.
 func TotalRechargedLTE(v float64) predicate.User {
 	return predicate.User(sql.FieldLTE(FieldTotalRecharged, v))
+}
+
+// PreferredCurrencyEQ applies the EQ predicate on the "preferred_currency" field.
+func PreferredCurrencyEQ(v string) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldPreferredCurrency, v))
+}
+
+// PreferredCurrencyNEQ applies the NEQ predicate on the "preferred_currency" field.
+func PreferredCurrencyNEQ(v string) predicate.User {
+	return predicate.User(sql.FieldNEQ(FieldPreferredCurrency, v))
+}
+
+// PreferredCurrencyIn applies the In predicate on the "preferred_currency" field.
+func PreferredCurrencyIn(vs ...string) predicate.User {
+	return predicate.User(sql.FieldIn(FieldPreferredCurrency, vs...))
+}
+
+// PreferredCurrencyNotIn applies the NotIn predicate on the "preferred_currency" field.
+func PreferredCurrencyNotIn(vs ...string) predicate.User {
+	return predicate.User(sql.FieldNotIn(FieldPreferredCurrency, vs...))
+}
+
+// PreferredCurrencyGT applies the GT predicate on the "preferred_currency" field.
+func PreferredCurrencyGT(v string) predicate.User {
+	return predicate.User(sql.FieldGT(FieldPreferredCurrency, v))
+}
+
+// PreferredCurrencyGTE applies the GTE predicate on the "preferred_currency" field.
+func PreferredCurrencyGTE(v string) predicate.User {
+	return predicate.User(sql.FieldGTE(FieldPreferredCurrency, v))
+}
+
+// PreferredCurrencyLT applies the LT predicate on the "preferred_currency" field.
+func PreferredCurrencyLT(v string) predicate.User {
+	return predicate.User(sql.FieldLT(FieldPreferredCurrency, v))
+}
+
+// PreferredCurrencyLTE applies the LTE predicate on the "preferred_currency" field.
+func PreferredCurrencyLTE(v string) predicate.User {
+	return predicate.User(sql.FieldLTE(FieldPreferredCurrency, v))
+}
+
+// PreferredCurrencyContains applies the Contains predicate on the "preferred_currency" field.
+func PreferredCurrencyContains(v string) predicate.User {
+	return predicate.User(sql.FieldContains(FieldPreferredCurrency, v))
+}
+
+// PreferredCurrencyHasPrefix applies the HasPrefix predicate on the "preferred_currency" field.
+func PreferredCurrencyHasPrefix(v string) predicate.User {
+	return predicate.User(sql.FieldHasPrefix(FieldPreferredCurrency, v))
+}
+
+// PreferredCurrencyHasSuffix applies the HasSuffix predicate on the "preferred_currency" field.
+func PreferredCurrencyHasSuffix(v string) predicate.User {
+	return predicate.User(sql.FieldHasSuffix(FieldPreferredCurrency, v))
+}
+
+// PreferredCurrencyEqualFold applies the EqualFold predicate on the "preferred_currency" field.
+func PreferredCurrencyEqualFold(v string) predicate.User {
+	return predicate.User(sql.FieldEqualFold(FieldPreferredCurrency, v))
+}
+
+// PreferredCurrencyContainsFold applies the ContainsFold predicate on the "preferred_currency" field.
+func PreferredCurrencyContainsFold(v string) predicate.User {
+	return predicate.User(sql.FieldContainsFold(FieldPreferredCurrency, v))
 }
 
 // InviterIDEQ applies the EQ predicate on the "inviter_id" field.

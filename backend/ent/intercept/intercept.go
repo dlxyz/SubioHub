@@ -17,6 +17,7 @@ import (
 	"github.com/dlxyz/SubioHub/ent/commissionrule"
 	"github.com/dlxyz/SubioHub/ent/commissionsplitlog"
 	"github.com/dlxyz/SubioHub/ent/errorpassthroughrule"
+	"github.com/dlxyz/SubioHub/ent/exchangerate"
 	"github.com/dlxyz/SubioHub/ent/group"
 	"github.com/dlxyz/SubioHub/ent/idempotencyrecord"
 	"github.com/dlxyz/SubioHub/ent/newspost"
@@ -340,6 +341,33 @@ func (f TraverseErrorPassthroughRule) Traverse(ctx context.Context, q ent.Query)
 		return f(ctx, q)
 	}
 	return fmt.Errorf("unexpected query type %T. expect *ent.ErrorPassthroughRuleQuery", q)
+}
+
+// The ExchangeRateFunc type is an adapter to allow the use of ordinary function as a Querier.
+type ExchangeRateFunc func(context.Context, *ent.ExchangeRateQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f ExchangeRateFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.ExchangeRateQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.ExchangeRateQuery", q)
+}
+
+// The TraverseExchangeRate type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseExchangeRate func(context.Context, *ent.ExchangeRateQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseExchangeRate) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseExchangeRate) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.ExchangeRateQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.ExchangeRateQuery", q)
 }
 
 // The GroupFunc type is an adapter to allow the use of ordinary function as a Querier.
@@ -984,6 +1012,8 @@ func NewQuery(q ent.Query) (Query, error) {
 		return &query[*ent.CommissionSplitLogQuery, predicate.CommissionSplitLog, commissionsplitlog.OrderOption]{typ: ent.TypeCommissionSplitLog, tq: q}, nil
 	case *ent.ErrorPassthroughRuleQuery:
 		return &query[*ent.ErrorPassthroughRuleQuery, predicate.ErrorPassthroughRule, errorpassthroughrule.OrderOption]{typ: ent.TypeErrorPassthroughRule, tq: q}, nil
+	case *ent.ExchangeRateQuery:
+		return &query[*ent.ExchangeRateQuery, predicate.ExchangeRate, exchangerate.OrderOption]{typ: ent.TypeExchangeRate, tq: q}, nil
 	case *ent.GroupQuery:
 		return &query[*ent.GroupQuery, predicate.Group, group.OrderOption]{typ: ent.TypeGroup, tq: q}, nil
 	case *ent.IdempotencyRecordQuery:

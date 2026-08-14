@@ -82,6 +82,48 @@ func (_c *PaymentOrderCreate) SetNillableFeeRate(v *float64) *PaymentOrderCreate
 	return _c
 }
 
+// SetCurrency sets the "currency" field.
+func (_c *PaymentOrderCreate) SetCurrency(v string) *PaymentOrderCreate {
+	_c.mutation.SetCurrency(v)
+	return _c
+}
+
+// SetNillableCurrency sets the "currency" field if the given value is not nil.
+func (_c *PaymentOrderCreate) SetNillableCurrency(v *string) *PaymentOrderCreate {
+	if v != nil {
+		_c.SetCurrency(*v)
+	}
+	return _c
+}
+
+// SetExchangeRate sets the "exchange_rate" field.
+func (_c *PaymentOrderCreate) SetExchangeRate(v float64) *PaymentOrderCreate {
+	_c.mutation.SetExchangeRate(v)
+	return _c
+}
+
+// SetNillableExchangeRate sets the "exchange_rate" field if the given value is not nil.
+func (_c *PaymentOrderCreate) SetNillableExchangeRate(v *float64) *PaymentOrderCreate {
+	if v != nil {
+		_c.SetExchangeRate(*v)
+	}
+	return _c
+}
+
+// SetBaseAmount sets the "base_amount" field.
+func (_c *PaymentOrderCreate) SetBaseAmount(v float64) *PaymentOrderCreate {
+	_c.mutation.SetBaseAmount(v)
+	return _c
+}
+
+// SetNillableBaseAmount sets the "base_amount" field if the given value is not nil.
+func (_c *PaymentOrderCreate) SetNillableBaseAmount(v *float64) *PaymentOrderCreate {
+	if v != nil {
+		_c.SetBaseAmount(*v)
+	}
+	return _c
+}
+
 // SetRechargeCode sets the "recharge_code" field.
 func (_c *PaymentOrderCreate) SetRechargeCode(v string) *PaymentOrderCreate {
 	_c.mutation.SetRechargeCode(v)
@@ -513,6 +555,18 @@ func (_c *PaymentOrderCreate) defaults() {
 		v := paymentorder.DefaultFeeRate
 		_c.mutation.SetFeeRate(v)
 	}
+	if _, ok := _c.mutation.Currency(); !ok {
+		v := paymentorder.DefaultCurrency
+		_c.mutation.SetCurrency(v)
+	}
+	if _, ok := _c.mutation.ExchangeRate(); !ok {
+		v := paymentorder.DefaultExchangeRate
+		_c.mutation.SetExchangeRate(v)
+	}
+	if _, ok := _c.mutation.BaseAmount(); !ok {
+		v := paymentorder.DefaultBaseAmount
+		_c.mutation.SetBaseAmount(v)
+	}
 	if _, ok := _c.mutation.OutTradeNo(); !ok {
 		v := paymentorder.DefaultOutTradeNo
 		_c.mutation.SetOutTradeNo(v)
@@ -572,6 +626,20 @@ func (_c *PaymentOrderCreate) check() error {
 	}
 	if _, ok := _c.mutation.FeeRate(); !ok {
 		return &ValidationError{Name: "fee_rate", err: errors.New(`ent: missing required field "PaymentOrder.fee_rate"`)}
+	}
+	if _, ok := _c.mutation.Currency(); !ok {
+		return &ValidationError{Name: "currency", err: errors.New(`ent: missing required field "PaymentOrder.currency"`)}
+	}
+	if v, ok := _c.mutation.Currency(); ok {
+		if err := paymentorder.CurrencyValidator(v); err != nil {
+			return &ValidationError{Name: "currency", err: fmt.Errorf(`ent: validator failed for field "PaymentOrder.currency": %w`, err)}
+		}
+	}
+	if _, ok := _c.mutation.ExchangeRate(); !ok {
+		return &ValidationError{Name: "exchange_rate", err: errors.New(`ent: missing required field "PaymentOrder.exchange_rate"`)}
+	}
+	if _, ok := _c.mutation.BaseAmount(); !ok {
+		return &ValidationError{Name: "base_amount", err: errors.New(`ent: missing required field "PaymentOrder.base_amount"`)}
 	}
 	if _, ok := _c.mutation.RechargeCode(); !ok {
 		return &ValidationError{Name: "recharge_code", err: errors.New(`ent: missing required field "PaymentOrder.recharge_code"`)}
@@ -715,6 +783,18 @@ func (_c *PaymentOrderCreate) createSpec() (*PaymentOrder, *sqlgraph.CreateSpec)
 	if value, ok := _c.mutation.FeeRate(); ok {
 		_spec.SetField(paymentorder.FieldFeeRate, field.TypeFloat64, value)
 		_node.FeeRate = value
+	}
+	if value, ok := _c.mutation.Currency(); ok {
+		_spec.SetField(paymentorder.FieldCurrency, field.TypeString, value)
+		_node.Currency = value
+	}
+	if value, ok := _c.mutation.ExchangeRate(); ok {
+		_spec.SetField(paymentorder.FieldExchangeRate, field.TypeFloat64, value)
+		_node.ExchangeRate = value
+	}
+	if value, ok := _c.mutation.BaseAmount(); ok {
+		_spec.SetField(paymentorder.FieldBaseAmount, field.TypeFloat64, value)
+		_node.BaseAmount = value
 	}
 	if value, ok := _c.mutation.RechargeCode(); ok {
 		_spec.SetField(paymentorder.FieldRechargeCode, field.TypeString, value)
@@ -1026,6 +1106,54 @@ func (u *PaymentOrderUpsert) UpdateFeeRate() *PaymentOrderUpsert {
 // AddFeeRate adds v to the "fee_rate" field.
 func (u *PaymentOrderUpsert) AddFeeRate(v float64) *PaymentOrderUpsert {
 	u.Add(paymentorder.FieldFeeRate, v)
+	return u
+}
+
+// SetCurrency sets the "currency" field.
+func (u *PaymentOrderUpsert) SetCurrency(v string) *PaymentOrderUpsert {
+	u.Set(paymentorder.FieldCurrency, v)
+	return u
+}
+
+// UpdateCurrency sets the "currency" field to the value that was provided on create.
+func (u *PaymentOrderUpsert) UpdateCurrency() *PaymentOrderUpsert {
+	u.SetExcluded(paymentorder.FieldCurrency)
+	return u
+}
+
+// SetExchangeRate sets the "exchange_rate" field.
+func (u *PaymentOrderUpsert) SetExchangeRate(v float64) *PaymentOrderUpsert {
+	u.Set(paymentorder.FieldExchangeRate, v)
+	return u
+}
+
+// UpdateExchangeRate sets the "exchange_rate" field to the value that was provided on create.
+func (u *PaymentOrderUpsert) UpdateExchangeRate() *PaymentOrderUpsert {
+	u.SetExcluded(paymentorder.FieldExchangeRate)
+	return u
+}
+
+// AddExchangeRate adds v to the "exchange_rate" field.
+func (u *PaymentOrderUpsert) AddExchangeRate(v float64) *PaymentOrderUpsert {
+	u.Add(paymentorder.FieldExchangeRate, v)
+	return u
+}
+
+// SetBaseAmount sets the "base_amount" field.
+func (u *PaymentOrderUpsert) SetBaseAmount(v float64) *PaymentOrderUpsert {
+	u.Set(paymentorder.FieldBaseAmount, v)
+	return u
+}
+
+// UpdateBaseAmount sets the "base_amount" field to the value that was provided on create.
+func (u *PaymentOrderUpsert) UpdateBaseAmount() *PaymentOrderUpsert {
+	u.SetExcluded(paymentorder.FieldBaseAmount)
+	return u
+}
+
+// AddBaseAmount adds v to the "base_amount" field.
+func (u *PaymentOrderUpsert) AddBaseAmount(v float64) *PaymentOrderUpsert {
+	u.Add(paymentorder.FieldBaseAmount, v)
 	return u
 }
 
@@ -1671,6 +1799,62 @@ func (u *PaymentOrderUpsertOne) AddFeeRate(v float64) *PaymentOrderUpsertOne {
 func (u *PaymentOrderUpsertOne) UpdateFeeRate() *PaymentOrderUpsertOne {
 	return u.Update(func(s *PaymentOrderUpsert) {
 		s.UpdateFeeRate()
+	})
+}
+
+// SetCurrency sets the "currency" field.
+func (u *PaymentOrderUpsertOne) SetCurrency(v string) *PaymentOrderUpsertOne {
+	return u.Update(func(s *PaymentOrderUpsert) {
+		s.SetCurrency(v)
+	})
+}
+
+// UpdateCurrency sets the "currency" field to the value that was provided on create.
+func (u *PaymentOrderUpsertOne) UpdateCurrency() *PaymentOrderUpsertOne {
+	return u.Update(func(s *PaymentOrderUpsert) {
+		s.UpdateCurrency()
+	})
+}
+
+// SetExchangeRate sets the "exchange_rate" field.
+func (u *PaymentOrderUpsertOne) SetExchangeRate(v float64) *PaymentOrderUpsertOne {
+	return u.Update(func(s *PaymentOrderUpsert) {
+		s.SetExchangeRate(v)
+	})
+}
+
+// AddExchangeRate adds v to the "exchange_rate" field.
+func (u *PaymentOrderUpsertOne) AddExchangeRate(v float64) *PaymentOrderUpsertOne {
+	return u.Update(func(s *PaymentOrderUpsert) {
+		s.AddExchangeRate(v)
+	})
+}
+
+// UpdateExchangeRate sets the "exchange_rate" field to the value that was provided on create.
+func (u *PaymentOrderUpsertOne) UpdateExchangeRate() *PaymentOrderUpsertOne {
+	return u.Update(func(s *PaymentOrderUpsert) {
+		s.UpdateExchangeRate()
+	})
+}
+
+// SetBaseAmount sets the "base_amount" field.
+func (u *PaymentOrderUpsertOne) SetBaseAmount(v float64) *PaymentOrderUpsertOne {
+	return u.Update(func(s *PaymentOrderUpsert) {
+		s.SetBaseAmount(v)
+	})
+}
+
+// AddBaseAmount adds v to the "base_amount" field.
+func (u *PaymentOrderUpsertOne) AddBaseAmount(v float64) *PaymentOrderUpsertOne {
+	return u.Update(func(s *PaymentOrderUpsert) {
+		s.AddBaseAmount(v)
+	})
+}
+
+// UpdateBaseAmount sets the "base_amount" field to the value that was provided on create.
+func (u *PaymentOrderUpsertOne) UpdateBaseAmount() *PaymentOrderUpsertOne {
+	return u.Update(func(s *PaymentOrderUpsert) {
+		s.UpdateBaseAmount()
 	})
 }
 
@@ -2561,6 +2745,62 @@ func (u *PaymentOrderUpsertBulk) AddFeeRate(v float64) *PaymentOrderUpsertBulk {
 func (u *PaymentOrderUpsertBulk) UpdateFeeRate() *PaymentOrderUpsertBulk {
 	return u.Update(func(s *PaymentOrderUpsert) {
 		s.UpdateFeeRate()
+	})
+}
+
+// SetCurrency sets the "currency" field.
+func (u *PaymentOrderUpsertBulk) SetCurrency(v string) *PaymentOrderUpsertBulk {
+	return u.Update(func(s *PaymentOrderUpsert) {
+		s.SetCurrency(v)
+	})
+}
+
+// UpdateCurrency sets the "currency" field to the value that was provided on create.
+func (u *PaymentOrderUpsertBulk) UpdateCurrency() *PaymentOrderUpsertBulk {
+	return u.Update(func(s *PaymentOrderUpsert) {
+		s.UpdateCurrency()
+	})
+}
+
+// SetExchangeRate sets the "exchange_rate" field.
+func (u *PaymentOrderUpsertBulk) SetExchangeRate(v float64) *PaymentOrderUpsertBulk {
+	return u.Update(func(s *PaymentOrderUpsert) {
+		s.SetExchangeRate(v)
+	})
+}
+
+// AddExchangeRate adds v to the "exchange_rate" field.
+func (u *PaymentOrderUpsertBulk) AddExchangeRate(v float64) *PaymentOrderUpsertBulk {
+	return u.Update(func(s *PaymentOrderUpsert) {
+		s.AddExchangeRate(v)
+	})
+}
+
+// UpdateExchangeRate sets the "exchange_rate" field to the value that was provided on create.
+func (u *PaymentOrderUpsertBulk) UpdateExchangeRate() *PaymentOrderUpsertBulk {
+	return u.Update(func(s *PaymentOrderUpsert) {
+		s.UpdateExchangeRate()
+	})
+}
+
+// SetBaseAmount sets the "base_amount" field.
+func (u *PaymentOrderUpsertBulk) SetBaseAmount(v float64) *PaymentOrderUpsertBulk {
+	return u.Update(func(s *PaymentOrderUpsert) {
+		s.SetBaseAmount(v)
+	})
+}
+
+// AddBaseAmount adds v to the "base_amount" field.
+func (u *PaymentOrderUpsertBulk) AddBaseAmount(v float64) *PaymentOrderUpsertBulk {
+	return u.Update(func(s *PaymentOrderUpsert) {
+		s.AddBaseAmount(v)
+	})
+}
+
+// UpdateBaseAmount sets the "base_amount" field to the value that was provided on create.
+func (u *PaymentOrderUpsertBulk) UpdateBaseAmount() *PaymentOrderUpsertBulk {
+	return u.Update(func(s *PaymentOrderUpsert) {
+		s.UpdateBaseAmount()
 	})
 }
 

@@ -29,6 +29,7 @@ type User struct {
 	BalanceNotifyThreshold     *float64           `json:"balance_notify_threshold"`
 	BalanceNotifyExtraEmails   []NotifyEmailEntry `json:"balance_notify_extra_emails"`
 	TotalRecharged             float64            `json:"total_recharged"`
+	PreferredCurrency          string             `json:"preferred_currency"`
 
 	APIKeys       []APIKey           `json:"api_keys,omitempty"`
 	Subscriptions []UserSubscription `json:"subscriptions,omitempty"`

@@ -14,26 +14,29 @@ import (
 )
 
 const (
-	SettingPaymentEnabled      = "payment_enabled"
-	SettingMinRechargeAmount   = "MIN_RECHARGE_AMOUNT"
-	SettingMaxRechargeAmount   = "MAX_RECHARGE_AMOUNT"
-	SettingDailyRechargeLimit  = "DAILY_RECHARGE_LIMIT"
-	SettingOrderTimeoutMinutes = "ORDER_TIMEOUT_MINUTES"
-	SettingMaxPendingOrders    = "MAX_PENDING_ORDERS"
-	SettingEnabledPaymentTypes = "ENABLED_PAYMENT_TYPES"
-	SettingLoadBalanceStrategy = "LOAD_BALANCE_STRATEGY"
-	SettingBalancePayDisabled  = "BALANCE_PAYMENT_DISABLED"
-	SettingBalanceRechargeMult = "BALANCE_RECHARGE_MULTIPLIER"
-	SettingRechargeFeeRate     = "RECHARGE_FEE_RATE"
-	SettingProductNamePrefix   = "PRODUCT_NAME_PREFIX"
-	SettingProductNameSuffix   = "PRODUCT_NAME_SUFFIX"
-	SettingHelpImageURL        = "PAYMENT_HELP_IMAGE_URL"
-	SettingHelpText            = "PAYMENT_HELP_TEXT"
-	SettingCancelRateLimitOn   = "CANCEL_RATE_LIMIT_ENABLED"
-	SettingCancelRateLimitMax  = "CANCEL_RATE_LIMIT_MAX"
-	SettingCancelWindowSize    = "CANCEL_RATE_LIMIT_WINDOW"
-	SettingCancelWindowUnit    = "CANCEL_RATE_LIMIT_UNIT"
-	SettingCancelWindowMode    = "CANCEL_RATE_LIMIT_WINDOW_MODE"
+	SettingPaymentEnabled       = "payment_enabled"
+	SettingMinRechargeAmount    = "MIN_RECHARGE_AMOUNT"
+	SettingMaxRechargeAmount    = "MAX_RECHARGE_AMOUNT"
+	SettingDailyRechargeLimit   = "DAILY_RECHARGE_LIMIT"
+	SettingOrderTimeoutMinutes  = "ORDER_TIMEOUT_MINUTES"
+	SettingMaxPendingOrders     = "MAX_PENDING_ORDERS"
+	SettingEnabledPaymentTypes  = "ENABLED_PAYMENT_TYPES"
+	SettingLoadBalanceStrategy  = "LOAD_BALANCE_STRATEGY"
+	SettingBalancePayDisabled   = "BALANCE_PAYMENT_DISABLED"
+	SettingBalanceRechargeMult  = "BALANCE_RECHARGE_MULTIPLIER"
+	SettingRechargeFeeRate      = "RECHARGE_FEE_RATE"
+	SettingProductNamePrefix    = "PRODUCT_NAME_PREFIX"
+	SettingProductNameSuffix    = "PRODUCT_NAME_SUFFIX"
+	SettingHelpImageURL         = "PAYMENT_HELP_IMAGE_URL"
+	SettingHelpText             = "PAYMENT_HELP_TEXT"
+	SettingCancelRateLimitOn    = "CANCEL_RATE_LIMIT_ENABLED"
+	SettingCancelRateLimitMax   = "CANCEL_RATE_LIMIT_MAX"
+	SettingCancelWindowSize     = "CANCEL_RATE_LIMIT_WINDOW"
+	SettingCancelWindowUnit     = "CANCEL_RATE_LIMIT_UNIT"
+	SettingCancelWindowMode     = "CANCEL_RATE_LIMIT_WINDOW_MODE"
+	SettingExchangeRateAPIURL   = "EXCHANGE_RATE_API_URL"
+	SettingExchangeRateCron     = "EXCHANGE_RATE_CRON"
+	SettingExchangeRateFallback = "EXCHANGE_RATE_FALLBACK"
 )
 
 // Default values for payment configuration settings.
@@ -67,6 +70,11 @@ type PaymentConfig struct {
 	CancelRateLimitWindow  int    `json:"cancel_rate_limit_window"`
 	CancelRateLimitUnit    string `json:"cancel_rate_limit_unit"`
 	CancelRateLimitMode    string `json:"cancel_rate_limit_window_mode"`
+
+	// Multi-currency exchange rate settings
+	ExchangeRateAPIURL   string  `json:"exchange_rate_api_url"`
+	ExchangeRateCron     string  `json:"exchange_rate_cron"`
+	ExchangeRateFallback float64 `json:"exchange_rate_fallback"`
 }
 
 // UpdatePaymentConfigRequest contains fields to update payment configuration.
@@ -93,6 +101,11 @@ type UpdatePaymentConfigRequest struct {
 	CancelRateLimitWindow  *int    `json:"cancel_rate_limit_window"`
 	CancelRateLimitUnit    *string `json:"cancel_rate_limit_unit"`
 	CancelRateLimitMode    *string `json:"cancel_rate_limit_window_mode"`
+
+	// Multi-currency exchange rate settings
+	ExchangeRateAPIURL   *string  `json:"exchange_rate_api_url"`
+	ExchangeRateCron     *string  `json:"exchange_rate_cron"`
+	ExchangeRateFallback *float64 `json:"exchange_rate_fallback"`
 }
 
 // MethodLimits holds per-payment-type limits.
@@ -196,6 +209,7 @@ func (s *PaymentConfigService) GetPaymentConfig(ctx context.Context) (*PaymentCo
 		SettingHelpImageURL, SettingHelpText,
 		SettingCancelRateLimitOn, SettingCancelRateLimitMax,
 		SettingCancelWindowSize, SettingCancelWindowUnit, SettingCancelWindowMode,
+		SettingExchangeRateAPIURL, SettingExchangeRateCron, SettingExchangeRateFallback,
 	}
 	vals, err := s.settingRepo.GetMultiple(ctx, keys)
 	if err != nil {
@@ -229,6 +243,10 @@ func (s *PaymentConfigService) parsePaymentConfig(vals map[string]string) *Payme
 		CancelRateLimitWindow:  pcParseInt(vals[SettingCancelWindowSize], 1),
 		CancelRateLimitUnit:    vals[SettingCancelWindowUnit],
 		CancelRateLimitMode:    vals[SettingCancelWindowMode],
+
+		ExchangeRateAPIURL:   vals[SettingExchangeRateAPIURL],
+		ExchangeRateCron:     vals[SettingExchangeRateCron],
+		ExchangeRateFallback: pcParseFloat(vals[SettingExchangeRateFallback], defaultExchangeRateFallback),
 	}
 	if cfg.LoadBalanceStrategy == "" {
 		cfg.LoadBalanceStrategy = payment.DefaultLoadBalanceStrategy
@@ -282,25 +300,28 @@ func (s *PaymentConfigService) UpdatePaymentConfig(ctx context.Context, req Upda
 		}
 	}
 	m := map[string]string{
-		SettingPaymentEnabled:      formatBoolOrEmpty(req.Enabled),
-		SettingMinRechargeAmount:   formatPositiveFloat(req.MinAmount),
-		SettingMaxRechargeAmount:   formatPositiveFloat(req.MaxAmount),
-		SettingDailyRechargeLimit:  formatPositiveFloat(req.DailyLimit),
-		SettingOrderTimeoutMinutes: formatPositiveInt(req.OrderTimeoutMin),
-		SettingMaxPendingOrders:    formatPositiveInt(req.MaxPendingOrders),
-		SettingBalancePayDisabled:  formatBoolOrEmpty(req.BalanceDisabled),
-		SettingBalanceRechargeMult: formatPositiveFloat(req.BalanceRechargeMultiplier),
-		SettingRechargeFeeRate:     formatNonNegativeFloat(req.RechargeFeeRate),
-		SettingLoadBalanceStrategy: derefStr(req.LoadBalanceStrategy),
-		SettingProductNamePrefix:   derefStr(req.ProductNamePrefix),
-		SettingProductNameSuffix:   derefStr(req.ProductNameSuffix),
-		SettingHelpImageURL:        derefStr(req.HelpImageURL),
-		SettingHelpText:            derefStr(req.HelpText),
-		SettingCancelRateLimitOn:   formatBoolOrEmpty(req.CancelRateLimitEnabled),
-		SettingCancelRateLimitMax:  formatPositiveInt(req.CancelRateLimitMax),
-		SettingCancelWindowSize:    formatPositiveInt(req.CancelRateLimitWindow),
-		SettingCancelWindowUnit:    derefStr(req.CancelRateLimitUnit),
-		SettingCancelWindowMode:    derefStr(req.CancelRateLimitMode),
+		SettingPaymentEnabled:       formatBoolOrEmpty(req.Enabled),
+		SettingMinRechargeAmount:    formatPositiveFloat(req.MinAmount),
+		SettingMaxRechargeAmount:    formatPositiveFloat(req.MaxAmount),
+		SettingDailyRechargeLimit:   formatPositiveFloat(req.DailyLimit),
+		SettingOrderTimeoutMinutes:  formatPositiveInt(req.OrderTimeoutMin),
+		SettingMaxPendingOrders:     formatPositiveInt(req.MaxPendingOrders),
+		SettingBalancePayDisabled:   formatBoolOrEmpty(req.BalanceDisabled),
+		SettingBalanceRechargeMult:  formatPositiveFloat(req.BalanceRechargeMultiplier),
+		SettingRechargeFeeRate:      formatNonNegativeFloat(req.RechargeFeeRate),
+		SettingLoadBalanceStrategy:  derefStr(req.LoadBalanceStrategy),
+		SettingProductNamePrefix:    derefStr(req.ProductNamePrefix),
+		SettingProductNameSuffix:    derefStr(req.ProductNameSuffix),
+		SettingHelpImageURL:         derefStr(req.HelpImageURL),
+		SettingHelpText:             derefStr(req.HelpText),
+		SettingCancelRateLimitOn:    formatBoolOrEmpty(req.CancelRateLimitEnabled),
+		SettingCancelRateLimitMax:   formatPositiveInt(req.CancelRateLimitMax),
+		SettingCancelWindowSize:     formatPositiveInt(req.CancelRateLimitWindow),
+		SettingCancelWindowUnit:     derefStr(req.CancelRateLimitUnit),
+		SettingCancelWindowMode:     derefStr(req.CancelRateLimitMode),
+		SettingExchangeRateAPIURL:   derefStr(req.ExchangeRateAPIURL),
+		SettingExchangeRateCron:     derefStr(req.ExchangeRateCron),
+		SettingExchangeRateFallback: formatNonNegativeFloat(req.ExchangeRateFallback),
 	}
 	if req.EnabledTypes != nil {
 		m[SettingEnabledPaymentTypes] = strings.Join(req.EnabledTypes, ",")

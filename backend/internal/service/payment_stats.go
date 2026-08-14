@@ -49,17 +49,27 @@ func (s *PaymentService) GetDashboardStats(ctx context.Context, days int) (*Dash
 	st.DailySeries = buildDailySeries(orders, since, days)
 	st.PaymentMethods = buildMethodDistribution(orders)
 	st.TopUsers = buildTopUsers(orders)
+	st.CurrencyBreakdown = buildCurrencyBreakdown(orders)
 
 	return st, nil
+}
+
+// orderStatUSD 返回用于统计聚合的 USD 归一化金额。
+// 新订单以 base_amount（已折算 USD）为准；存量订单 base_amount 为 0 时回退原币支付金额，保持历史口径。
+func orderStatUSD(o *dbent.PaymentOrder) float64 {
+	if o.BaseAmount > 0 {
+		return o.BaseAmount
+	}
+	return o.PayAmount
 }
 
 func computeBasicStats(st *DashboardStats, orders []*dbent.PaymentOrder, todayStart time.Time) {
 	var totalAmount, todayAmount float64
 	var todayCount int
 	for _, o := range orders {
-		totalAmount += o.PayAmount
+		totalAmount += orderStatUSD(o)
 		if o.PaidAt != nil && !o.PaidAt.Before(todayStart) {
-			todayAmount += o.PayAmount
+			todayAmount += orderStatUSD(o)
 			todayCount++
 		}
 	}
@@ -84,7 +94,7 @@ func buildDailySeries(orders []*dbent.PaymentOrder, since time.Time, days int) [
 			ds = &DailyStats{Date: date}
 			dailyMap[date] = ds
 		}
-		ds.Amount += o.PayAmount
+		ds.Amount += orderStatUSD(o)
 		ds.Count++
 	}
 	series := make([]DailyStats, 0, days)
@@ -108,7 +118,7 @@ func buildMethodDistribution(orders []*dbent.PaymentOrder) []PaymentMethodStat {
 			ms = &PaymentMethodStat{Type: o.PaymentType}
 			methodMap[o.PaymentType] = ms
 		}
-		ms.Amount += o.PayAmount
+		ms.Amount += orderStatUSD(o)
 		ms.Count++
 	}
 	methods := make([]PaymentMethodStat, 0, len(methodMap))
@@ -127,7 +137,7 @@ func buildTopUsers(orders []*dbent.PaymentOrder) []TopUserStat {
 			us = &TopUserStat{UserID: o.UserID, Email: o.UserEmail}
 			userMap[o.UserID] = us
 		}
-		us.Amount += o.PayAmount
+		us.Amount += orderStatUSD(o)
 	}
 	userList := make([]*TopUserStat, 0, len(userMap))
 	for _, us := range userMap {
@@ -146,6 +156,33 @@ func buildTopUsers(orders []*dbent.PaymentOrder) []TopUserStat {
 		result = append(result, *userList[i])
 	}
 	return result
+}
+
+// buildCurrencyBreakdown 按原币种分组统计原始充值额，保留原币明细用于对账。
+func buildCurrencyBreakdown(orders []*dbent.PaymentOrder) []CurrencyStat {
+	currencyMap := make(map[string]*CurrencyStat)
+	for _, o := range orders {
+		currency := o.Currency
+		if currency == "" {
+			currency = "CNY"
+		}
+		cs, ok := currencyMap[currency]
+		if !ok {
+			cs = &CurrencyStat{Currency: currency}
+			currencyMap[currency] = cs
+		}
+		cs.Amount += o.Amount
+		cs.Count++
+	}
+	breakdown := make([]CurrencyStat, 0, len(currencyMap))
+	for _, cs := range currencyMap {
+		cs.Amount = math.Round(cs.Amount*100) / 100
+		breakdown = append(breakdown, *cs)
+	}
+	sort.Slice(breakdown, func(i, j int) bool {
+		return breakdown[i].Currency < breakdown[j].Currency
+	})
+	return breakdown
 }
 
 // --- Audit Logs ---

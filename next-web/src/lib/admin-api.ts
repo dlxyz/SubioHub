@@ -645,6 +645,9 @@ export interface SystemSettings {
   payment_cancel_rate_limit_window?: number;
   payment_cancel_rate_limit_unit?: string;
   payment_cancel_rate_limit_window_mode?: string;
+  exchange_rate_api_url?: string;
+  exchange_rate_cron?: string;
+  exchange_rate_fallback?: number;
   balance_low_notify_enabled?: boolean;
   balance_low_notify_threshold?: number;
   balance_low_notify_recharge_url?: string;

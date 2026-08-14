@@ -93,6 +93,10 @@ func (s *DomesticChannelExecutionService) TestResponses(
 		return nil, err
 	}
 	adapter := newDomesticProviderAdapter(providerType)
+	chatAdapter, ok := adapter.(DomesticChatAdapter)
+	if !ok {
+		return nil, errors.New("provider does not support chat completions")
+	}
 
 	testModel = strings.TrimSpace(testModel)
 	if testModel == "" {
@@ -126,7 +130,7 @@ func (s *DomesticChannelExecutionService) TestResponses(
 	if err != nil {
 		return nil, err
 	}
-	chatBody, err = adapter.PrepareChatCompletionsBody(cfg, chatBody)
+	chatBody, err = chatAdapter.PrepareChatCompletionsBody(cfg, chatBody)
 	if err != nil {
 		return nil, err
 	}
@@ -219,6 +223,10 @@ func (s *DomesticChannelExecutionService) TestMessages(
 		return nil, err
 	}
 	adapter := newDomesticProviderAdapter(providerType)
+	chatAdapter, ok := adapter.(DomesticChatAdapter)
+	if !ok {
+		return nil, errors.New("provider does not support chat completions")
+	}
 
 	testModel = strings.TrimSpace(testModel)
 	if testModel == "" {
@@ -251,7 +259,7 @@ func (s *DomesticChannelExecutionService) TestMessages(
 	if err != nil {
 		return nil, err
 	}
-	chatBody, err = adapter.PrepareChatCompletionsBody(cfg, chatBody)
+	chatBody, err = chatAdapter.PrepareChatCompletionsBody(cfg, chatBody)
 	if err != nil {
 		return nil, err
 	}
@@ -443,6 +451,10 @@ func (s *DomesticChannelExecutionService) TestEmbeddings(
 		return nil, err
 	}
 	adapter := newDomesticProviderAdapter(providerType)
+	embeddingAdapter, ok := adapter.(DomesticEmbeddingAdapter)
+	if !ok {
+		return nil, errors.New("provider does not support embeddings")
+	}
 
 	testModel = strings.TrimSpace(testModel)
 	if testModel == "" {
@@ -459,7 +471,7 @@ func (s *DomesticChannelExecutionService) TestEmbeddings(
 	if err != nil {
 		return nil, err
 	}
-	requestBody, err = adapter.PrepareEmbeddingsBody(cfg, requestBody)
+	requestBody, err = embeddingAdapter.PrepareEmbeddingsBody(cfg, requestBody)
 	if err != nil {
 		return nil, err
 	}
@@ -546,6 +558,10 @@ func (s *DomesticChannelExecutionService) TestRerank(
 		return nil, err
 	}
 	adapter := newDomesticProviderAdapter(providerType)
+	rerankAdapter, ok := adapter.(DomesticRerankAdapter)
+	if !ok {
+		return nil, errors.New("provider does not support rerank")
+	}
 
 	testModel = strings.TrimSpace(testModel)
 	if testModel == "" {
@@ -564,7 +580,7 @@ func (s *DomesticChannelExecutionService) TestRerank(
 	if err != nil {
 		return nil, err
 	}
-	requestBody, err = adapter.PrepareRerankBody(cfg, requestBody)
+	requestBody, err = rerankAdapter.PrepareRerankBody(cfg, requestBody)
 	if err != nil {
 		return nil, err
 	}
@@ -784,6 +800,145 @@ func isDomesticRerankEndpointPath(endpointPath string) bool {
 	return trimmed != "" && strings.Contains(trimmed, "/rerank")
 }
 
+func buildDomesticImagesURL(cfg *domesticProviderRuntimeConfig, providerType string, model string) string {
+	if normalizeProviderType(providerType) == ProviderTypeQwen {
+		return buildQwenImagesURL(cfg, model)
+	}
+	endpointPath := defaultDomesticImagesPath(strings.TrimSpace(cfg.EndpointPath), providerType)
+	return buildDomesticRequestURL(cfg.BaseURL, endpointPath)
+}
+
+func buildDomesticModerationsURL(cfg *domesticProviderRuntimeConfig) string {
+	return buildDomesticRequestURL(cfg.BaseURL, "/v1/moderations")
+}
+
+func buildDomesticAudioSpeechURL(cfg *domesticProviderRuntimeConfig, providerType string) string {
+	endpointPath := defaultDomesticAudioSpeechPath(strings.TrimSpace(cfg.EndpointPath), providerType)
+	return buildDomesticRequestURL(cfg.BaseURL, endpointPath)
+}
+
+func buildDomesticAudioTranscriptionURL(cfg *domesticProviderRuntimeConfig, providerType string) string {
+	endpointPath := defaultDomesticAudioTranscriptionPath(strings.TrimSpace(cfg.EndpointPath), providerType)
+	return buildDomesticRequestURL(cfg.BaseURL, endpointPath)
+}
+
+func defaultDomesticAudioTranscriptionPath(endpointPath string, providerType string) string {
+	trimmed := strings.TrimSpace(endpointPath)
+	switch {
+	case isDomesticAudioTranscriptionEndpointPath(trimmed):
+		return trimmed
+	case strings.HasSuffix(trimmed, "/chat/completions"):
+		return strings.TrimSuffix(trimmed, "/chat/completions") + "/audio/transcriptions"
+	case strings.HasSuffix(trimmed, "/v1/chat/completions"):
+		return strings.TrimSuffix(trimmed, "/chat/completions") + "/audio/transcriptions"
+	}
+
+	switch normalizeProviderType(providerType) {
+	case ProviderTypeMiniMax:
+		return "/v1/audio/transcriptions"
+	default:
+		return "/v1/audio/transcriptions"
+	}
+}
+
+func isDomesticAudioTranscriptionEndpointPath(endpointPath string) bool {
+	trimmed := strings.ToLower(strings.TrimSpace(endpointPath))
+	return trimmed != "" && strings.Contains(trimmed, "/audio/transcriptions")
+}
+
+func defaultDomesticAudioSpeechPath(endpointPath string, providerType string) string {
+	trimmed := strings.TrimSpace(endpointPath)
+	switch {
+	case isDomesticAudioSpeechEndpointPath(trimmed):
+		return trimmed
+	case strings.HasSuffix(trimmed, "/chat/completions"):
+		return strings.TrimSuffix(trimmed, "/chat/completions") + "/audio/speech"
+	case strings.HasSuffix(trimmed, "/v1/chat/completions"):
+		return strings.TrimSuffix(trimmed, "/chat/completions") + "/audio/speech"
+	}
+
+	switch normalizeProviderType(providerType) {
+	case ProviderTypeMiniMax:
+		return "/v1/t2a_v2"
+	default:
+		return "/v1/audio/speech"
+	}
+}
+
+func isDomesticAudioSpeechEndpointPath(endpointPath string) bool {
+	trimmed := strings.ToLower(strings.TrimSpace(endpointPath))
+	return trimmed != "" && (strings.Contains(trimmed, "/audio/speech") || strings.Contains(trimmed, "/t2a_v2"))
+}
+
+func buildQwenImagesURL(cfg *domesticProviderRuntimeConfig, model string) string {
+	endpointPath := "/api/v1/services/aigc/text2image/image-synthesis"
+	if isQwenSyncImageModel(model) {
+		endpointPath = "/api/v1/services/aigc/multimodal-generation/generation"
+	}
+	return buildDomesticRequestURL(qwenDashScopeBaseURL(cfg), endpointPath)
+}
+
+// qwenDashScopeBaseURL returns the native DashScope root for image/task endpoints.
+// Chat flows use the /compatible-mode base; image generation and task polling live
+// on the root instead, so strip that suffix when present.
+func qwenDashScopeBaseURL(cfg *domesticProviderRuntimeConfig) string {
+	baseURL := strings.TrimSpace(cfg.BaseURL)
+	baseURL = strings.TrimSuffix(baseURL, "/compatible-mode/v1")
+	baseURL = strings.TrimSuffix(baseURL, "/compatible-mode")
+	return baseURL
+}
+
+// qwenSyncImageModels mirrors new-api's default sync image model list. Models that
+// contain one of these tokens use DashScope's synchronous multimodal-generation
+// endpoint; everything else uses the async text2image task flow.
+var qwenSyncImageModels = []string{
+	"z-image",
+	"qwen-image",
+	"wan2.6",
+	"wan2.7",
+	"qwen-image-edit",
+	"qwen-image-edit-max",
+	"qwen-image-edit-max-2026-01-16",
+	"qwen-image-edit-plus",
+	"qwen-image-edit-plus-2025-12-15",
+	"qwen-image-edit-plus-2025-10-30",
+}
+
+func isQwenSyncImageModel(model string) bool {
+	for _, m := range qwenSyncImageModels {
+		if strings.Contains(model, m) {
+			return true
+		}
+	}
+	return false
+}
+
+func defaultDomesticImagesPath(endpointPath string, providerType string) string {
+	trimmed := strings.TrimSpace(endpointPath)
+	switch {
+	case isDomesticImagesEndpointPath(trimmed):
+		return trimmed
+	case strings.HasSuffix(trimmed, "/chat/completions"):
+		return strings.TrimSuffix(trimmed, "/chat/completions") + "/images/generations"
+	case strings.HasSuffix(trimmed, "/v1/chat/completions"):
+		return strings.TrimSuffix(trimmed, "/chat/completions") + "/images/generations"
+	}
+
+	switch normalizeProviderType(providerType) {
+	case ProviderTypeMiniMax:
+		return "/v1/image_generation"
+	case ProviderTypeDoubao, ProviderTypeZhipu:
+		return "/images/generations"
+	default:
+		return "/v1/images/generations"
+	}
+}
+
+func isDomesticImagesEndpointPath(endpointPath string) bool {
+	trimmed := strings.ToLower(strings.TrimSpace(endpointPath))
+	return trimmed != "" && (strings.Contains(trimmed, "/images/generations") || strings.Contains(trimmed, "/image_generation"))
+}
+
 func defaultDomesticEmbeddingsModel(providerType string) string {
 	switch normalizeProviderType(providerType) {
 	case ProviderTypeQwen:
@@ -913,6 +1068,7 @@ func fallbackDomesticKnownModels(providerType string) []string {
 			"Doubao-pro-128k",
 			"Doubao-lite-128k",
 			"doubao-seed-1-6-thinking-250715",
+			"doubao-seedream-4-0-250828",
 			"doubao-embedding-vision-251215",
 			"doubao-embedding",
 		}
@@ -1034,11 +1190,13 @@ func buildDomesticCapabilityModelMap(catalog []DomesticFetchedModelMetadata, pro
 		"chat":       {},
 		"embeddings": {},
 		"rerank":     {},
+		"image":      {},
 	}
 	seen := map[string]map[string]struct{}{
 		"chat":       {},
 		"embeddings": {},
 		"rerank":     {},
+		"image":      {},
 	}
 	for _, item := range catalog {
 		model := strings.TrimSpace(firstNonEmpty(item.ID, item.Name))
@@ -1095,6 +1253,9 @@ func inferDomesticModelCapabilities(providerType string, modelID string, name st
 	if strings.Contains(joined, "rerank") || strings.Contains(joined, "retrieval") {
 		appendCapability("rerank")
 	}
+	if isDomesticImageModelName(joined) {
+		appendCapability("image")
+	}
 	if len(capabilities) == 0 && couldBeDomesticChatModel(providerType, joined) {
 		appendCapability("chat")
 	}
@@ -1107,6 +1268,9 @@ func inferDomesticModelCapabilities(providerType string, modelID string, name st
 }
 
 func couldBeDomesticChatModel(providerType string, joined string) bool {
+	if isDomesticImageModelName(joined) {
+		return false
+	}
 	if strings.Contains(joined, "textgeneration") ||
 		strings.Contains(joined, "chat") ||
 		strings.Contains(joined, "llm") ||
@@ -1130,6 +1294,18 @@ func couldBeDomesticChatModel(providerType string, joined string) bool {
 	default:
 		return false
 	}
+}
+
+// isDomesticImageModelName reports whether a model should be classified as image
+// generation based on its name or task metadata. Currently only Doubao Seedream is
+// recognized; Qwen image / Zhipu CogView / MiniMax image can be added as needed.
+func isDomesticImageModelName(joined string) bool {
+	for _, token := range []string{"seedream", "text2image", "imagegeneration", "image-generation"} {
+		if strings.Contains(joined, token) {
+			return true
+		}
+	}
+	return false
 }
 
 func firstNonEmpty(values ...string) string {

@@ -682,6 +682,14 @@ const enUS = {
       tagline: "Unified LLM API Gateway.",
     },
   },
+  legal: {
+    nav: {
+      privacy: "Privacy Policy",
+      terms: "Terms of Service",
+      refund: "Refund Policy",
+      contact: "Contact",
+    },
+  },
   publicAuth: {
     common: {
       backHome: "Back Home",
@@ -1414,6 +1422,7 @@ const enUS = {
         easypay: "EasyPay",
         alipayDirect: "Alipay Direct",
         wxpayDirect: "WeChat Direct",
+        creem: "Creem",
       },
       loading: "Loading order list...",
       empty: "No orders found for the current filters",

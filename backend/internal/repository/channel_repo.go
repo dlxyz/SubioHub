@@ -578,3 +578,19 @@ func (r *channelRepository) GetGroupPlatforms(ctx context.Context, groupIDs []in
 	}
 	return result, nil
 }
+
+// GetGroupIDByName 按名称查询未软删除分组 ID，不存在时返回 0。
+func (r *channelRepository) GetGroupIDByName(ctx context.Context, name string) (int64, error) {
+	var id int64
+	err := r.db.QueryRowContext(ctx,
+		`SELECT id FROM groups WHERE name = $1 AND deleted_at IS NULL LIMIT 1`,
+		name,
+	).Scan(&id)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return 0, nil
+		}
+		return 0, fmt.Errorf("get group id by name: %w", err)
+	}
+	return id, nil
+}

@@ -217,6 +217,9 @@ func (h *SettingHandler) GetSettings(c *gin.Context) {
 		PaymentCancelRateLimitWindow:             paymentCfg.CancelRateLimitWindow,
 		PaymentCancelRateLimitUnit:               paymentCfg.CancelRateLimitUnit,
 		PaymentCancelRateLimitMode:               paymentCfg.CancelRateLimitMode,
+		ExchangeRateAPIURL:                       paymentCfg.ExchangeRateAPIURL,
+		ExchangeRateCron:                         paymentCfg.ExchangeRateCron,
+		ExchangeRateFallback:                     paymentCfg.ExchangeRateFallback,
 	})
 }
 
@@ -375,6 +378,11 @@ type UpdateSettingsRequest struct {
 	PaymentCancelRateLimitWindow  *int    `json:"payment_cancel_rate_limit_window"`
 	PaymentCancelRateLimitUnit    *string `json:"payment_cancel_rate_limit_unit"`
 	PaymentCancelRateLimitMode    *string `json:"payment_cancel_rate_limit_window_mode"`
+
+	// Exchange rate (multi-currency billing)
+	ExchangeRateAPIURL   *string  `json:"exchange_rate_api_url"`
+	ExchangeRateCron     *string  `json:"exchange_rate_cron"`
+	ExchangeRateFallback *float64 `json:"exchange_rate_fallback"`
 }
 
 // UpdateSettings 更新系统设置
@@ -1098,6 +1106,9 @@ func (h *SettingHandler) UpdateSettings(c *gin.Context) {
 			CancelRateLimitWindow:     req.PaymentCancelRateLimitWindow,
 			CancelRateLimitUnit:       req.PaymentCancelRateLimitUnit,
 			CancelRateLimitMode:       req.PaymentCancelRateLimitMode,
+			ExchangeRateAPIURL:        req.ExchangeRateAPIURL,
+			ExchangeRateCron:          req.ExchangeRateCron,
+			ExchangeRateFallback:      req.ExchangeRateFallback,
 		}
 		if err := h.paymentConfigService.UpdatePaymentConfig(c.Request.Context(), paymentReq); err != nil {
 			response.ErrorFrom(c, err)
@@ -1257,6 +1268,9 @@ func (h *SettingHandler) UpdateSettings(c *gin.Context) {
 		PaymentCancelRateLimitWindow:             updatedPaymentCfg.CancelRateLimitWindow,
 		PaymentCancelRateLimitUnit:               updatedPaymentCfg.CancelRateLimitUnit,
 		PaymentCancelRateLimitMode:               updatedPaymentCfg.CancelRateLimitMode,
+		ExchangeRateAPIURL:                       updatedPaymentCfg.ExchangeRateAPIURL,
+		ExchangeRateCron:                         updatedPaymentCfg.ExchangeRateCron,
+		ExchangeRateFallback:                     updatedPaymentCfg.ExchangeRateFallback,
 	})
 }
 
@@ -1271,7 +1285,8 @@ func hasPaymentFields(req UpdateSettingsRequest) bool {
 		req.PaymentProductNameSuffix != nil || req.PaymentHelpImageURL != nil ||
 		req.PaymentHelpText != nil || req.PaymentCancelRateLimitEnabled != nil ||
 		req.PaymentCancelRateLimitMax != nil || req.PaymentCancelRateLimitWindow != nil ||
-		req.PaymentCancelRateLimitUnit != nil || req.PaymentCancelRateLimitMode != nil
+		req.PaymentCancelRateLimitUnit != nil || req.PaymentCancelRateLimitMode != nil ||
+		req.ExchangeRateAPIURL != nil || req.ExchangeRateCron != nil || req.ExchangeRateFallback != nil
 }
 
 func (h *SettingHandler) auditSettingsUpdate(c *gin.Context, before *service.SystemSettings, after *service.SystemSettings, req UpdateSettingsRequest) {

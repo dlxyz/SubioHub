@@ -50,6 +50,16 @@ func (PaymentOrder) Fields() []ent.Field {
 		field.Float("fee_rate").
 			SchemaType(map[string]string{dialect.Postgres: "decimal(10,4)"}).
 			Default(0),
+		// 多币种计费：原币种、原币→USD 汇率快照、折算后 USD 金额
+		field.String("currency").
+			MaxLen(10).
+			Default("CNY"),
+		field.Float("exchange_rate").
+			SchemaType(map[string]string{dialect.Postgres: "decimal(20,10)"}).
+			Default(1),
+		field.Float("base_amount").
+			SchemaType(map[string]string{dialect.Postgres: "decimal(20,10)"}).
+			Default(0),
 		field.String("recharge_code").
 			MaxLen(64),
 

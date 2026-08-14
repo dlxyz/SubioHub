@@ -484,6 +484,7 @@ var ProviderSet = wire.NewSet(
 	ProvidePaymentConfigService,
 	ProvidePaymentOrderExpiryService,
 	ProvideBalanceNotifyService,
+	ProvideExchangeRateService,
 )
 
 // ProvidePaymentConfigService wraps NewPaymentConfigService to accept the named
@@ -500,6 +501,13 @@ func ProvideBalanceNotifyService(emailService *EmailService, settingRepo Setting
 // ProvidePaymentOrderExpiryService creates and starts PaymentOrderExpiryService.
 func ProvidePaymentOrderExpiryService(paymentSvc *PaymentService) *PaymentOrderExpiryService {
 	svc := NewPaymentOrderExpiryService(paymentSvc, 60*time.Second)
+	svc.Start()
+	return svc
+}
+
+// ProvideExchangeRateService creates and starts ExchangeRateService.
+func ProvideExchangeRateService(entClient *dbent.Client, rdb *redis.Client, settingRepo SettingRepository, cfg *config.Config) *ExchangeRateService {
+	svc := NewExchangeRateService(entClient, rdb, settingRepo, cfg)
 	svc.Start()
 	return svc
 }

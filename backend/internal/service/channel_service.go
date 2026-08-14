@@ -43,6 +43,8 @@ type ChannelRepository interface {
 
 	// 分组平台查询
 	GetGroupPlatforms(ctx context.Context, groupIDs []int64) (map[int64]string, error)
+	// 按名称查询分组 ID（用于未选组时自动绑定 default 组），不存在返回 0
+	GetGroupIDByName(ctx context.Context, name string) (int64, error)
 
 	// 模型定价
 	ListModelPricing(ctx context.Context, channelID int64) ([]ChannelModelPricing, error)
@@ -674,7 +676,18 @@ func (s *ChannelService) Create(ctx context.Context, input *CreateChannelInput) 
 		return nil, ErrChannelExists
 	}
 
-	if err := s.checkGroupConflicts(ctx, 0, input.GroupIDs); err != nil {
+	// 未指定分组时，自动绑定全局 default（国内渠道专用）组，实现开箱即用。
+	// 若 default 组已被其他渠道占用，则回退为不绑定（保持空组，可后续手动调整）。
+	effectiveGroupIDs := input.GroupIDs
+	if len(effectiveGroupIDs) == 0 {
+		if defaultID, err := s.repo.GetGroupIDByName(ctx, "default"); err == nil && defaultID > 0 {
+			if chID, err := s.repo.GetChannelIDByGroupID(ctx, defaultID); err == nil && chID == 0 {
+				effectiveGroupIDs = []int64{defaultID}
+			}
+		}
+	}
+
+	if err := s.checkGroupConflicts(ctx, 0, effectiveGroupIDs); err != nil {
 		return nil, err
 	}
 
@@ -686,7 +699,7 @@ func (s *ChannelService) Create(ctx context.Context, input *CreateChannelInput) 
 		RestrictModels:             input.RestrictModels,
 		ProviderType:               normalizeProviderType(input.ProviderType),
 		ProviderConfig:             input.ProviderConfig,
-		GroupIDs:                   input.GroupIDs,
+		GroupIDs:                   effectiveGroupIDs,
 		ModelPricing:               input.ModelPricing,
 		ModelMapping:               input.ModelMapping,
 		Features:                   input.Features,

@@ -8,6 +8,7 @@ interface UserInfo {
   balance: number;
   concurrency?: number;
   invite_code?: string;
+  preferred_currency?: string;
 }
 
 interface AuthState {

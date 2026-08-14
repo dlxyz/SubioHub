@@ -91,7 +91,12 @@ func (s *DomesticChannelExecutionService) ForwardOpenAIChatCompletions(
 		return nil, ErrDomesticResponseWritten
 	}
 	adapter := newDomesticProviderAdapter(providerType)
-	body, err = adapter.PrepareChatCompletionsBody(cfg, body)
+	chatAdapter, ok := adapter.(DomesticChatAdapter)
+	if !ok {
+		writeChatCompletionsError(c, http.StatusBadRequest, "invalid_request_error", "Provider does not support chat completions")
+		return nil, ErrDomesticResponseWritten
+	}
+	body, err = chatAdapter.PrepareChatCompletionsBody(cfg, body)
 	if err != nil {
 		writeChatCompletionsError(c, http.StatusBadRequest, "invalid_request_error", "Failed to normalize upstream request")
 		return nil, ErrDomesticResponseWritten
@@ -156,7 +161,12 @@ func (s *DomesticChannelExecutionService) ForwardOpenAIEmbeddings(
 		return nil, ErrDomesticResponseWritten
 	}
 	adapter := newDomesticProviderAdapter(providerType)
-	body, err = adapter.PrepareEmbeddingsBody(cfg, body)
+	embeddingAdapter, ok := adapter.(DomesticEmbeddingAdapter)
+	if !ok {
+		writeChatCompletionsError(c, http.StatusBadRequest, "invalid_request_error", "Provider does not support embeddings")
+		return nil, ErrDomesticResponseWritten
+	}
+	body, err = embeddingAdapter.PrepareEmbeddingsBody(cfg, body)
 	if err != nil {
 		writeChatCompletionsError(c, http.StatusBadRequest, "invalid_request_error", "Failed to normalize upstream request")
 		return nil, ErrDomesticResponseWritten
@@ -255,7 +265,12 @@ func (s *DomesticChannelExecutionService) ForwardOpenAIRerank(
 		return nil, ErrDomesticResponseWritten
 	}
 	adapter := newDomesticProviderAdapter(providerType)
-	body, err = adapter.PrepareRerankBody(cfg, body)
+	rerankAdapter, ok := adapter.(DomesticRerankAdapter)
+	if !ok {
+		writeChatCompletionsError(c, http.StatusBadRequest, "invalid_request_error", "Provider does not support rerank")
+		return nil, ErrDomesticResponseWritten
+	}
+	body, err = rerankAdapter.PrepareRerankBody(cfg, body)
 	if err != nil {
 		writeChatCompletionsError(c, http.StatusBadRequest, "invalid_request_error", "Failed to normalize upstream request")
 		return nil, ErrDomesticResponseWritten
@@ -326,6 +341,677 @@ func (s *DomesticChannelExecutionService) ForwardOpenAIRerank(
 	return result, nil
 }
 
+func (s *DomesticChannelExecutionService) ForwardOpenAIImages(
+	ctx context.Context,
+	c *gin.Context,
+	channel *Channel,
+	body []byte,
+	requestedModel string,
+	edits bool,
+) (*OpenAIForwardResult, error) {
+	if s == nil || s.httpUpstream == nil {
+		writeChatCompletionsError(c, http.StatusServiceUnavailable, "api_error", "Domestic channel executor unavailable")
+		return nil, ErrDomesticResponseWritten
+	}
+	if channel == nil {
+		writeChatCompletionsError(c, http.StatusBadRequest, "invalid_request_error", "Domestic channel not configured")
+		return nil, ErrDomesticResponseWritten
+	}
+
+	providerType := normalizeProviderType(channel.ProviderType)
+	cfg, err := parseDomesticProviderRuntimeConfig(providerType, channel.ProviderConfig)
+	if err != nil {
+		writeChatCompletionsError(c, http.StatusBadRequest, "invalid_request_error", err.Error())
+		return nil, ErrDomesticResponseWritten
+	}
+	adapter := newDomesticProviderAdapter(providerType)
+	imageAdapter, ok := adapter.(DomesticImageAdapter)
+	if !ok {
+		writeChatCompletionsError(c, http.StatusBadRequest, "invalid_request_error", "Provider does not support image generation")
+		return nil, ErrDomesticResponseWritten
+	}
+	if edits {
+		if editAdapter, ok := adapter.(DomesticImageEditAdapter); ok {
+			body, err = editAdapter.PrepareImagesEditsBody(cfg, body)
+		} else {
+			body, err = imageAdapter.PrepareImagesBody(cfg, body)
+		}
+	} else {
+		body, err = imageAdapter.PrepareImagesBody(cfg, body)
+	}
+	if err != nil {
+		writeChatCompletionsError(c, http.StatusBadRequest, "invalid_request_error", "Failed to normalize upstream image request")
+		return nil, ErrDomesticResponseWritten
+	}
+	upstreamModel := strings.TrimSpace(gjson.GetBytes(body, "model").String())
+	if upstreamModel == "" {
+		upstreamModel = requestedModel
+	}
+
+	req, err := s.buildDomesticJSONRequest(ctx, c, adapter, cfg, buildDomesticImagesURL(cfg, providerType, upstreamModel), body, false)
+	if err != nil {
+		writeChatCompletionsError(c, http.StatusBadGateway, "upstream_error", "Failed to create upstream request")
+		return nil, ErrDomesticResponseWritten
+	}
+	if normalizeProviderType(providerType) == ProviderTypeQwen && !isQwenSyncImageModel(upstreamModel) {
+		req.Header.Set("X-DashScope-Async", "enable")
+	}
+
+	startTime := time.Now()
+	resp, err := s.httpUpstream.Do(req, "", 0, 0)
+	if err != nil {
+		writeChatCompletionsError(c, http.StatusBadGateway, "upstream_error", "Upstream request failed")
+		return nil, ErrDomesticResponseWritten
+	}
+	defer func() { _ = resp.Body.Close() }()
+
+	bodyBytes, err := io.ReadAll(io.LimitReader(resp.Body, 16<<20))
+	if err != nil {
+		writeChatCompletionsError(c, http.StatusBadGateway, "upstream_error", "Failed to read upstream response")
+		return nil, ErrDomesticResponseWritten
+	}
+	if businessErr := adapter.ExtractBusinessError(bodyBytes); businessErr != nil {
+		writeChatCompletionsError(c, businessErr.StatusCode, businessErr.Code, businessErr.Message)
+		return nil, ErrDomesticResponseWritten
+	}
+	if resp.StatusCode >= 400 {
+		statusCode, code, message := normalizeResponsesUpstreamError(resp.StatusCode, providerType, bodyBytes)
+		writeChatCompletionsError(c, statusCode, code, message)
+		return nil, ErrDomesticResponseWritten
+	}
+	if normalizeProviderType(providerType) == ProviderTypeQwen && !isQwenSyncImageModel(upstreamModel) {
+		bodyBytes, err = s.pollQwenImageTask(ctx, cfg, bodyBytes)
+		if err != nil {
+			writeChatCompletionsError(c, http.StatusBadGateway, "upstream_error", err.Error())
+			return nil, ErrDomesticResponseWritten
+		}
+		if status := strings.TrimSpace(gjson.GetBytes(bodyBytes, "output.task_status").String()); status != "" && status != "SUCCEEDED" {
+			message := strings.TrimSpace(gjson.GetBytes(bodyBytes, "output.message").String())
+			if message == "" {
+				message = "Ali async image task failed with status " + status
+			}
+			writeChatCompletionsError(c, http.StatusBadGateway, "upstream_error", message)
+			return nil, ErrDomesticResponseWritten
+		}
+	}
+	bodyBytes, err = imageAdapter.NormalizeImagesResponse(bodyBytes)
+	if err != nil {
+		writeChatCompletionsError(c, http.StatusBadGateway, "upstream_error", "Failed to normalize upstream image response")
+		return nil, ErrDomesticResponseWritten
+	}
+
+	responseheaders.WriteFilteredHeaders(c.Writer.Header(), resp.Header, nil)
+	c.Data(resp.StatusCode, strings.TrimSpace(resp.Header.Get("Content-Type")), bodyBytes)
+
+	result := &OpenAIForwardResult{
+		RequestID:     strings.TrimSpace(resp.Header.Get("x-request-id")),
+		Model:         requestedModel,
+		UpstreamModel: upstreamModel,
+		Stream:        false,
+		Duration:      time.Since(startTime),
+	}
+	if model := strings.TrimSpace(gjson.GetBytes(bodyBytes, "model").String()); model != "" {
+		result.UpstreamModel = model
+	}
+	if requestID := strings.TrimSpace(gjson.GetBytes(bodyBytes, "request_id").String()); requestID != "" && result.RequestID == "" {
+		result.RequestID = requestID
+	}
+	if result.RequestID == "" {
+		result.RequestID = strings.TrimSpace(gjson.GetBytes(bodyBytes, "id").String())
+	}
+
+	imageTokens := int(gjson.GetBytes(bodyBytes, "usage.image_tokens").Int())
+	if imageTokens == 0 {
+		imageTokens = int(gjson.GetBytes(bodyBytes, "usage.image_output_tokens").Int())
+	}
+	result.Usage = OpenAIUsage{ImageOutputTokens: imageTokens}
+	return result, nil
+}
+
+// ForwardOpenAIModerations forwards an OpenAI-compatible /v1/moderations request
+// to a domestic OpenAI-compatible upstream. The body is passed through unchanged
+// (matching new-api's pass-through behaviour) since there is no provider-specific
+// moderation payload conversion yet.
+func (s *DomesticChannelExecutionService) ForwardOpenAIModerations(
+	ctx context.Context,
+	c *gin.Context,
+	channel *Channel,
+	body []byte,
+	requestedModel string,
+) (*OpenAIForwardResult, error) {
+	if s == nil || s.httpUpstream == nil {
+		writeChatCompletionsError(c, http.StatusServiceUnavailable, "api_error", "Domestic channel executor unavailable")
+		return nil, ErrDomesticResponseWritten
+	}
+	if channel == nil {
+		writeChatCompletionsError(c, http.StatusBadRequest, "invalid_request_error", "Domestic channel not configured")
+		return nil, ErrDomesticResponseWritten
+	}
+
+	providerType := normalizeProviderType(channel.ProviderType)
+	cfg, err := parseDomesticProviderRuntimeConfig(providerType, channel.ProviderConfig)
+	if err != nil {
+		writeChatCompletionsError(c, http.StatusBadRequest, "invalid_request_error", err.Error())
+		return nil, ErrDomesticResponseWritten
+	}
+	adapter := newDomesticProviderAdapter(providerType)
+
+	upstreamModel := strings.TrimSpace(gjson.GetBytes(body, "model").String())
+	if upstreamModel == "" {
+		upstreamModel = requestedModel
+	}
+
+	req, err := s.buildDomesticJSONRequest(ctx, c, adapter, cfg, buildDomesticModerationsURL(cfg), body, false)
+	if err != nil {
+		writeChatCompletionsError(c, http.StatusBadGateway, "upstream_error", "Failed to create upstream request")
+		return nil, ErrDomesticResponseWritten
+	}
+
+	startTime := time.Now()
+	resp, err := s.httpUpstream.Do(req, "", 0, 0)
+	if err != nil {
+		writeChatCompletionsError(c, http.StatusBadGateway, "upstream_error", "Upstream request failed")
+		return nil, ErrDomesticResponseWritten
+	}
+	defer func() { _ = resp.Body.Close() }()
+
+	bodyBytes, err := io.ReadAll(io.LimitReader(resp.Body, 16<<20))
+	if err != nil {
+		writeChatCompletionsError(c, http.StatusBadGateway, "upstream_error", "Failed to read upstream response")
+		return nil, ErrDomesticResponseWritten
+	}
+	if businessErr := adapter.ExtractBusinessError(bodyBytes); businessErr != nil {
+		writeChatCompletionsError(c, businessErr.StatusCode, businessErr.Code, businessErr.Message)
+		return nil, ErrDomesticResponseWritten
+	}
+	if resp.StatusCode >= 400 {
+		statusCode, code, message := normalizeResponsesUpstreamError(resp.StatusCode, providerType, bodyBytes)
+		writeChatCompletionsError(c, statusCode, code, message)
+		return nil, ErrDomesticResponseWritten
+	}
+
+	responseheaders.WriteFilteredHeaders(c.Writer.Header(), resp.Header, nil)
+	c.Data(resp.StatusCode, strings.TrimSpace(resp.Header.Get("Content-Type")), bodyBytes)
+
+	result := &OpenAIForwardResult{
+		RequestID:     strings.TrimSpace(resp.Header.Get("x-request-id")),
+		Model:         requestedModel,
+		UpstreamModel: upstreamModel,
+		Stream:        false,
+		Duration:      time.Since(startTime),
+	}
+	if model := strings.TrimSpace(gjson.GetBytes(bodyBytes, "model").String()); model != "" {
+		result.UpstreamModel = model
+	}
+	if requestID := strings.TrimSpace(gjson.GetBytes(bodyBytes, "request_id").String()); requestID != "" && result.RequestID == "" {
+		result.RequestID = requestID
+	}
+	if result.RequestID == "" {
+		result.RequestID = strings.TrimSpace(gjson.GetBytes(bodyBytes, "id").String())
+	}
+	return result, nil
+}
+
+func (s *DomesticChannelExecutionService) ForwardOpenAIAudioSpeech(
+	ctx context.Context,
+	c *gin.Context,
+	channel *Channel,
+	body []byte,
+	requestedModel string,
+) (*OpenAIForwardResult, error) {
+	if s == nil || s.httpUpstream == nil {
+		writeChatCompletionsError(c, http.StatusServiceUnavailable, "api_error", "Domestic channel executor unavailable")
+		return nil, ErrDomesticResponseWritten
+	}
+	if channel == nil {
+		writeChatCompletionsError(c, http.StatusBadRequest, "invalid_request_error", "Domestic channel not configured")
+		return nil, ErrDomesticResponseWritten
+	}
+
+	providerType := normalizeProviderType(channel.ProviderType)
+	cfg, err := parseDomesticProviderRuntimeConfig(providerType, channel.ProviderConfig)
+	if err != nil {
+		writeChatCompletionsError(c, http.StatusBadRequest, "invalid_request_error", err.Error())
+		return nil, ErrDomesticResponseWritten
+	}
+	adapter := newDomesticProviderAdapter(providerType)
+	audioAdapter, ok := adapter.(DomesticAudioSpeechAdapter)
+	if !ok {
+		writeChatCompletionsError(c, http.StatusBadRequest, "invalid_request_error", "Provider does not support audio speech")
+		return nil, ErrDomesticResponseWritten
+	}
+
+	responseFormat := strings.TrimSpace(gjson.GetBytes(body, "response_format").String())
+	if responseFormat == "" {
+		responseFormat = "mp3"
+	}
+
+	body, err = audioAdapter.PrepareAudioSpeechBody(cfg, body)
+	if err != nil {
+		writeChatCompletionsError(c, http.StatusBadRequest, "invalid_request_error", "Failed to normalize upstream audio speech request")
+		return nil, ErrDomesticResponseWritten
+	}
+	upstreamModel := strings.TrimSpace(gjson.GetBytes(body, "model").String())
+	if upstreamModel == "" {
+		upstreamModel = requestedModel
+	}
+
+	req, err := s.buildDomesticJSONRequest(ctx, c, adapter, cfg, buildDomesticAudioSpeechURL(cfg, providerType), body, false)
+	if err != nil {
+		writeChatCompletionsError(c, http.StatusBadGateway, "upstream_error", "Failed to create upstream request")
+		return nil, ErrDomesticResponseWritten
+	}
+
+	startTime := time.Now()
+	resp, err := s.httpUpstream.Do(req, "", 0, 0)
+	if err != nil {
+		writeChatCompletionsError(c, http.StatusBadGateway, "upstream_error", "Upstream request failed")
+		return nil, ErrDomesticResponseWritten
+	}
+	defer func() { _ = resp.Body.Close() }()
+
+	bodyBytes, err := io.ReadAll(io.LimitReader(resp.Body, 32<<20))
+	if err != nil {
+		writeChatCompletionsError(c, http.StatusBadGateway, "upstream_error", "Failed to read upstream response")
+		return nil, ErrDomesticResponseWritten
+	}
+	if businessErr := adapter.ExtractBusinessError(bodyBytes); businessErr != nil {
+		writeChatCompletionsError(c, businessErr.StatusCode, businessErr.Code, businessErr.Message)
+		return nil, ErrDomesticResponseWritten
+	}
+	if resp.StatusCode >= 400 {
+		statusCode, code, message := normalizeResponsesUpstreamError(resp.StatusCode, providerType, bodyBytes)
+		writeChatCompletionsError(c, statusCode, code, message)
+		return nil, ErrDomesticResponseWritten
+	}
+
+	audioData, contentType, err := audioAdapter.NormalizeAudioSpeechResponse(bodyBytes, responseFormat)
+	if err != nil {
+		writeChatCompletionsError(c, http.StatusBadGateway, "upstream_error", "Failed to normalize upstream audio speech response")
+		return nil, ErrDomesticResponseWritten
+	}
+
+	responseheaders.WriteFilteredHeaders(c.Writer.Header(), resp.Header, nil)
+	c.Data(http.StatusOK, contentType, audioData)
+
+	result := &OpenAIForwardResult{
+		RequestID:     strings.TrimSpace(resp.Header.Get("x-request-id")),
+		Model:         requestedModel,
+		UpstreamModel: upstreamModel,
+		Stream:        false,
+		Duration:      time.Since(startTime),
+	}
+	if result.RequestID == "" {
+		result.RequestID = strings.TrimSpace(gjson.GetBytes(bodyBytes, "trace_id").String())
+	}
+	// Audio billing is not token-based; leave Usage empty until audio pricing is wired.
+	return result, nil
+}
+
+func (s *DomesticChannelExecutionService) ForwardOpenAIAudioTranscription(
+	ctx context.Context,
+	c *gin.Context,
+	channel *Channel,
+	requestedModel string,
+	upstreamModel string,
+) (*OpenAIForwardResult, error) {
+	if s == nil || s.httpUpstream == nil {
+		writeChatCompletionsError(c, http.StatusServiceUnavailable, "api_error", "Domestic channel executor unavailable")
+		return nil, ErrDomesticResponseWritten
+	}
+	if channel == nil {
+		writeChatCompletionsError(c, http.StatusBadRequest, "invalid_request_error", "Domestic channel not configured")
+		return nil, ErrDomesticResponseWritten
+	}
+
+	providerType := normalizeProviderType(channel.ProviderType)
+	cfg, err := parseDomesticProviderRuntimeConfig(providerType, channel.ProviderConfig)
+	if err != nil {
+		writeChatCompletionsError(c, http.StatusBadRequest, "invalid_request_error", err.Error())
+		return nil, ErrDomesticResponseWritten
+	}
+	adapter := newDomesticProviderAdapter(providerType)
+	audioAdapter, ok := adapter.(DomesticAudioTranscriptionAdapter)
+	if !ok {
+		writeChatCompletionsError(c, http.StatusBadRequest, "invalid_request_error", "Provider does not support audio transcription")
+		return nil, ErrDomesticResponseWritten
+	}
+
+	form, err := c.MultipartForm()
+	if err != nil {
+		writeChatCompletionsError(c, http.StatusBadRequest, "invalid_request_error", "Failed to parse multipart form")
+		return nil, ErrDomesticResponseWritten
+	}
+	contentType, requestBody, err := audioAdapter.BuildAudioTranscriptionRequest(form, cfg, upstreamModel)
+	if err != nil {
+		writeChatCompletionsError(c, http.StatusBadRequest, "invalid_request_error", "Failed to normalize upstream audio transcription request")
+		return nil, ErrDomesticResponseWritten
+	}
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, buildDomesticAudioTranscriptionURL(cfg, providerType), requestBody)
+	if err != nil {
+		writeChatCompletionsError(c, http.StatusBadGateway, "upstream_error", "Failed to create upstream request")
+		return nil, ErrDomesticResponseWritten
+	}
+	req.Header.Set("Content-Type", contentType)
+	req.Header.Set("Accept", "application/json")
+	if ua := strings.TrimSpace(c.Request.Header.Get("User-Agent")); ua != "" {
+		req.Header.Set("User-Agent", ua)
+	}
+	if cfg.APIKey != "" {
+		req.Header.Set("Authorization", "Bearer "+cfg.APIKey)
+	}
+	for key, value := range cfg.Headers {
+		if strings.TrimSpace(key) == "" || strings.TrimSpace(value) == "" {
+			continue
+		}
+		req.Header.Set(key, value)
+	}
+	if adapter != nil {
+		adapter.ApplyRequestHeaders(req, cfg, false)
+	}
+
+	startTime := time.Now()
+	resp, err := s.httpUpstream.Do(req, "", 0, 0)
+	if err != nil {
+		writeChatCompletionsError(c, http.StatusBadGateway, "upstream_error", "Upstream request failed")
+		return nil, ErrDomesticResponseWritten
+	}
+	defer func() { _ = resp.Body.Close() }()
+
+	bodyBytes, err := io.ReadAll(io.LimitReader(resp.Body, 32<<20))
+	if err != nil {
+		writeChatCompletionsError(c, http.StatusBadGateway, "upstream_error", "Failed to read upstream response")
+		return nil, ErrDomesticResponseWritten
+	}
+	if businessErr := adapter.ExtractBusinessError(bodyBytes); businessErr != nil {
+		writeChatCompletionsError(c, businessErr.StatusCode, businessErr.Code, businessErr.Message)
+		return nil, ErrDomesticResponseWritten
+	}
+	if resp.StatusCode >= 400 {
+		statusCode, code, message := normalizeResponsesUpstreamError(resp.StatusCode, providerType, bodyBytes)
+		writeChatCompletionsError(c, statusCode, code, message)
+		return nil, ErrDomesticResponseWritten
+	}
+
+	responseContentType := strings.TrimSpace(resp.Header.Get("Content-Type"))
+	if responseContentType == "" {
+		responseContentType = "application/json"
+	}
+	responseheaders.WriteFilteredHeaders(c.Writer.Header(), resp.Header, nil)
+	c.Data(resp.StatusCode, responseContentType, bodyBytes)
+
+	result := &OpenAIForwardResult{
+		RequestID:     strings.TrimSpace(resp.Header.Get("x-request-id")),
+		Model:         requestedModel,
+		UpstreamModel: upstreamModel,
+		Stream:        false,
+		Duration:      time.Since(startTime),
+	}
+	if result.RequestID == "" {
+		result.RequestID = strings.TrimSpace(gjson.GetBytes(bodyBytes, "trace_id").String())
+	}
+	// Audio transcription billing is not wired yet; leave Usage empty.
+	return result, nil
+}
+
+func (s *DomesticChannelExecutionService) ForwardOpenAIVideoGeneration(
+	ctx context.Context,
+	c *gin.Context,
+	channel *Channel,
+	body []byte,
+	requestedModel string,
+) (*OpenAIForwardResult, error) {
+	if s == nil || s.httpUpstream == nil {
+		writeChatCompletionsError(c, http.StatusServiceUnavailable, "api_error", "Domestic channel executor unavailable")
+		return nil, ErrDomesticResponseWritten
+	}
+	if channel == nil {
+		writeChatCompletionsError(c, http.StatusBadRequest, "invalid_request_error", "Domestic channel not configured")
+		return nil, ErrDomesticResponseWritten
+	}
+
+	providerType := normalizeProviderType(channel.ProviderType)
+	cfg, err := parseDomesticProviderRuntimeConfig(providerType, channel.ProviderConfig)
+	if err != nil {
+		writeChatCompletionsError(c, http.StatusBadRequest, "invalid_request_error", err.Error())
+		return nil, ErrDomesticResponseWritten
+	}
+	adapter := newDomesticProviderAdapter(providerType)
+	videoAdapter, ok := adapter.(DomesticVideoAdapter)
+	if !ok {
+		writeChatCompletionsError(c, http.StatusBadRequest, "invalid_request_error", "Provider does not support video generation")
+		return nil, ErrDomesticResponseWritten
+	}
+
+	body, err = videoAdapter.PrepareVideoGenerationBody(cfg, body)
+	if err != nil {
+		writeChatCompletionsError(c, http.StatusBadRequest, "invalid_request_error", "Failed to normalize upstream video request")
+		return nil, ErrDomesticResponseWritten
+	}
+	upstreamModel := strings.TrimSpace(gjson.GetBytes(body, "model").String())
+	if upstreamModel == "" {
+		upstreamModel = strings.TrimSpace(gjson.GetBytes(body, "model_name").String())
+	}
+	if upstreamModel == "" {
+		upstreamModel = requestedModel
+	}
+
+	req, err := s.buildDomesticJSONRequest(ctx, c, adapter, cfg, videoAdapter.VideoSubmitURL(cfg, body), body, false)
+	if err != nil {
+		writeChatCompletionsError(c, http.StatusBadGateway, "upstream_error", "Failed to create upstream request")
+		return nil, ErrDomesticResponseWritten
+	}
+
+	startTime := time.Now()
+	resp, err := s.httpUpstream.Do(req, "", 0, 0)
+	if err != nil {
+		writeChatCompletionsError(c, http.StatusBadGateway, "upstream_error", "Upstream request failed")
+		return nil, ErrDomesticResponseWritten
+	}
+	submitBody, readErr := io.ReadAll(io.LimitReader(resp.Body, 16<<20))
+	_ = resp.Body.Close()
+	if readErr != nil {
+		writeChatCompletionsError(c, http.StatusBadGateway, "upstream_error", "Failed to read upstream response")
+		return nil, ErrDomesticResponseWritten
+	}
+	if businessErr := adapter.ExtractBusinessError(submitBody); businessErr != nil {
+		writeChatCompletionsError(c, businessErr.StatusCode, businessErr.Code, businessErr.Message)
+		return nil, ErrDomesticResponseWritten
+	}
+	if resp.StatusCode >= 400 {
+		statusCode, code, message := normalizeResponsesUpstreamError(resp.StatusCode, providerType, submitBody)
+		writeChatCompletionsError(c, statusCode, code, message)
+		return nil, ErrDomesticResponseWritten
+	}
+
+	taskID, err := videoAdapter.ParseVideoSubmitResponse(submitBody)
+	if err != nil {
+		writeChatCompletionsError(c, http.StatusBadGateway, "upstream_error", err.Error())
+		return nil, ErrDomesticResponseWritten
+	}
+
+	ref, err := s.pollDomesticVideoTask(ctx, cfg, taskID, body, videoAdapter)
+	if err != nil {
+		writeChatCompletionsError(c, http.StatusBadGateway, "upstream_error", err.Error())
+		return nil, ErrDomesticResponseWritten
+	}
+
+	downloadURL := ref
+	var resultHeaders http.Header
+	if videoAdapter.VideoUsesSeparateRetrieve() {
+		retrieveReq, err := http.NewRequestWithContext(ctx, http.MethodGet, videoAdapter.VideoRetrieveURL(cfg, ref), nil)
+		if err != nil {
+			writeChatCompletionsError(c, http.StatusBadGateway, "upstream_error", "Failed to create upstream request")
+			return nil, ErrDomesticResponseWritten
+		}
+		retrieveReq.Header.Set("Accept", "application/json")
+		if cfg.APIKey != "" {
+			retrieveReq.Header.Set("Authorization", "Bearer "+cfg.APIKey)
+		}
+		adapter.ApplyRequestHeaders(retrieveReq, cfg, false)
+		retrieveResp, err := s.httpUpstream.Do(retrieveReq, "", 0, 0)
+		if err != nil {
+			writeChatCompletionsError(c, http.StatusBadGateway, "upstream_error", "Upstream request failed")
+			return nil, ErrDomesticResponseWritten
+		}
+		retrieveBody, readErr := io.ReadAll(io.LimitReader(retrieveResp.Body, 16<<20))
+		_ = retrieveResp.Body.Close()
+		if readErr != nil {
+			writeChatCompletionsError(c, http.StatusBadGateway, "upstream_error", "Failed to read upstream response")
+			return nil, ErrDomesticResponseWritten
+		}
+		if businessErr := adapter.ExtractBusinessError(retrieveBody); businessErr != nil {
+			writeChatCompletionsError(c, businessErr.StatusCode, businessErr.Code, businessErr.Message)
+			return nil, ErrDomesticResponseWritten
+		}
+		downloadURL, err = videoAdapter.ParseVideoRetrieveResponse(retrieveBody)
+		if err != nil {
+			writeChatCompletionsError(c, http.StatusBadGateway, "upstream_error", err.Error())
+			return nil, ErrDomesticResponseWritten
+		}
+		resultHeaders = retrieveResp.Header
+	}
+
+	if downloadURL == "" {
+		writeChatCompletionsError(c, http.StatusBadGateway, "upstream_error", "Video task completed without a downloadable URL")
+		return nil, ErrDomesticResponseWritten
+	}
+
+	normalized, err := videoAdapter.NormalizeVideoGenerationResponse(requestedModel, taskID, downloadURL)
+	if err != nil {
+		writeChatCompletionsError(c, http.StatusBadGateway, "upstream_error", "Failed to normalize upstream video response")
+		return nil, ErrDomesticResponseWritten
+	}
+
+	if resultHeaders != nil {
+		responseheaders.WriteFilteredHeaders(c.Writer.Header(), resultHeaders, nil)
+	}
+	c.Data(http.StatusOK, "application/json", normalized)
+
+	result := &OpenAIForwardResult{
+		RequestID:     strings.TrimSpace(resp.Header.Get("x-request-id")),
+		Model:         requestedModel,
+		UpstreamModel: upstreamModel,
+		Stream:        false,
+		Duration:      time.Since(startTime),
+	}
+	if result.RequestID == "" {
+		result.RequestID = taskID
+	}
+	// Video billing is not wired yet; leave Usage empty.
+	return result, nil
+}
+
+func (s *DomesticChannelExecutionService) pollDomesticVideoTask(ctx context.Context, cfg *domesticProviderRuntimeConfig, taskID string, submitBody []byte, adapter DomesticVideoAdapter) (string, error) {
+	const (
+		initialWait  = 5 * time.Second
+		waitInterval = 10 * time.Second
+		maxSteps     = 60
+	)
+	time.Sleep(initialWait)
+
+	method := http.MethodGet
+	var queryBody []byte
+	if pollAdapter, ok := adapter.(DomesticVideoPollAdapter); ok {
+		if m := strings.TrimSpace(pollAdapter.VideoQueryMethod()); m != "" {
+			method = m
+		}
+		queryBody = pollAdapter.VideoQueryBody(taskID, submitBody)
+	}
+
+	for step := 0; step < maxSteps; step++ {
+		var req *http.Request
+		var err error
+		if len(queryBody) > 0 {
+			req, err = http.NewRequestWithContext(ctx, method, adapter.VideoQueryURL(cfg, taskID, submitBody), bytes.NewReader(queryBody))
+		} else {
+			req, err = http.NewRequestWithContext(ctx, method, adapter.VideoQueryURL(cfg, taskID, submitBody), nil)
+		}
+		if err != nil {
+			return "", err
+		}
+		req.Header.Set("Accept", "application/json")
+		if len(queryBody) > 0 {
+			req.Header.Set("Content-Type", "application/json")
+		}
+		if cfg.APIKey != "" {
+			req.Header.Set("Authorization", "Bearer "+cfg.APIKey)
+		}
+		adapter.ApplyRequestHeaders(req, cfg, false)
+		resp, err := s.httpUpstream.Do(req, "", 0, 0)
+		if err != nil {
+			time.Sleep(waitInterval)
+			continue
+		}
+		pollBody, readErr := io.ReadAll(io.LimitReader(resp.Body, 16<<20))
+		_ = resp.Body.Close()
+		if readErr != nil {
+			time.Sleep(waitInterval)
+			continue
+		}
+		if businessErr := adapter.ExtractBusinessError(pollBody); businessErr != nil {
+			return "", errors.New(businessErr.Message)
+		}
+		status, ref, parseErr := adapter.ParseVideoPollResponse(pollBody)
+		if parseErr != nil {
+			time.Sleep(waitInterval)
+			continue
+		}
+		switch status {
+		case domesticVideoStatusSucceeded:
+			return ref, nil
+		case domesticVideoStatusFailed:
+			return "", errors.New("video task failed")
+		}
+		time.Sleep(waitInterval)
+	}
+	return "", errors.New("video task polling timed out")
+}
+
+func (s *DomesticChannelExecutionService) pollQwenImageTask(ctx context.Context, cfg *domesticProviderRuntimeConfig, body []byte) ([]byte, error) {
+	taskID := strings.TrimSpace(gjson.GetBytes(body, "output.task_id").String())
+	if taskID == "" {
+		return nil, errors.New("ali async image task did not return task_id")
+	}
+	taskURL := buildDomesticRequestURL(qwenDashScopeBaseURL(cfg), "/api/v1/tasks/"+taskID)
+
+	const (
+		initialWait  = 5 * time.Second
+		waitInterval = 10 * time.Second
+		maxSteps     = 20
+	)
+	time.Sleep(initialWait)
+
+	for step := 0; step < maxSteps; step++ {
+		req, err := http.NewRequestWithContext(ctx, http.MethodGet, taskURL, nil)
+		if err != nil {
+			return nil, err
+		}
+		req.Header.Set("Accept", "application/json")
+		if cfg.APIKey != "" {
+			req.Header.Set("Authorization", "Bearer "+cfg.APIKey)
+		}
+		resp, err := s.httpUpstream.Do(req, "", 0, 0)
+		if err != nil {
+			time.Sleep(waitInterval)
+			continue
+		}
+		taskBody, readErr := io.ReadAll(io.LimitReader(resp.Body, 16<<20))
+		_ = resp.Body.Close()
+		if readErr != nil {
+			time.Sleep(waitInterval)
+			continue
+		}
+		switch status := strings.TrimSpace(gjson.GetBytes(taskBody, "output.task_status").String()); status {
+		case "SUCCEEDED", "FAILED", "CANCELED", "UNKNOWN":
+			return taskBody, nil
+		}
+		time.Sleep(waitInterval)
+	}
+	return nil, errors.New("ali async image task polling timed out")
+}
+
 func (s *DomesticChannelExecutionService) ForwardOpenAIResponses(
 	ctx context.Context,
 	c *gin.Context,
@@ -349,6 +1035,11 @@ func (s *DomesticChannelExecutionService) ForwardOpenAIResponses(
 		return nil, ErrDomesticResponseWritten
 	}
 	adapter := newDomesticProviderAdapter(providerType)
+	chatAdapter, ok := adapter.(DomesticChatAdapter)
+	if !ok {
+		writeResponsesError(c, http.StatusBadRequest, "invalid_request_error", "Provider does not support chat completions")
+		return nil, ErrDomesticResponseWritten
+	}
 
 	var responsesReq apicompat.ResponsesRequest
 	if err := json.Unmarshal(body, &responsesReq); err != nil {
@@ -365,7 +1056,7 @@ func (s *DomesticChannelExecutionService) ForwardOpenAIResponses(
 		writeResponsesError(c, http.StatusBadGateway, "api_error", "Failed to encode upstream request")
 		return nil, ErrDomesticResponseWritten
 	}
-	chatBody, err = adapter.PrepareChatCompletionsBody(cfg, chatBody)
+	chatBody, err = chatAdapter.PrepareChatCompletionsBody(cfg, chatBody)
 	if err != nil {
 		writeResponsesError(c, http.StatusBadRequest, "invalid_request_error", "Failed to normalize upstream request")
 		return nil, ErrDomesticResponseWritten
@@ -426,6 +1117,11 @@ func (s *DomesticChannelExecutionService) ForwardAnthropicMessages(
 		return nil, ErrDomesticResponseWritten
 	}
 	adapter := newDomesticProviderAdapter(providerType)
+	chatAdapter, ok := adapter.(DomesticChatAdapter)
+	if !ok {
+		writeAnthropicError(c, http.StatusBadRequest, "invalid_request_error", "Provider does not support chat completions")
+		return nil, ErrDomesticResponseWritten
+	}
 
 	var anthropicReq apicompat.AnthropicRequest
 	if err := json.Unmarshal(body, &anthropicReq); err != nil {
@@ -449,7 +1145,7 @@ func (s *DomesticChannelExecutionService) ForwardAnthropicMessages(
 		writeAnthropicError(c, http.StatusBadGateway, "api_error", "Failed to encode upstream request")
 		return nil, ErrDomesticResponseWritten
 	}
-	chatBody, err = adapter.PrepareChatCompletionsBody(cfg, chatBody)
+	chatBody, err = chatAdapter.PrepareChatCompletionsBody(cfg, chatBody)
 	if err != nil {
 		writeAnthropicError(c, http.StatusBadRequest, "invalid_request_error", "Failed to normalize upstream request")
 		return nil, ErrDomesticResponseWritten
@@ -541,6 +1237,10 @@ func (s *DomesticChannelExecutionService) TestConnection(
 		return nil, err
 	}
 	adapter := newDomesticProviderAdapter(providerType)
+	chatAdapter, ok := adapter.(DomesticChatAdapter)
+	if !ok {
+		return nil, errors.New("provider does not support chat completions")
+	}
 
 	testModel = strings.TrimSpace(testModel)
 	if testModel == "" {
@@ -566,7 +1266,7 @@ func (s *DomesticChannelExecutionService) TestConnection(
 	if err != nil {
 		return nil, err
 	}
-	requestBody, err = adapter.PrepareChatCompletionsBody(cfg, requestBody)
+	requestBody, err = chatAdapter.PrepareChatCompletionsBody(cfg, requestBody)
 	if err != nil {
 		return nil, err
 	}
@@ -699,6 +1399,22 @@ func parseDomesticProviderRuntimeConfig(providerType string, raw map[string]any)
 		}
 		if cfg.EndpointPath == "" {
 			cfg.EndpointPath = "/v1/text/chatcompletion_v2"
+		}
+	case ProviderTypeKling:
+		if cfg.BaseURL == "" {
+			cfg.BaseURL = "https://api-beijing.klingai.com"
+		}
+	case ProviderTypeAliWan:
+		if cfg.BaseURL == "" {
+			cfg.BaseURL = "https://dashscope.aliyuncs.com"
+		}
+	case ProviderTypeJimeng:
+		if cfg.BaseURL == "" {
+			cfg.BaseURL = "https://visual.volcengineapi.com"
+		}
+	case ProviderTypeVidu:
+		if cfg.BaseURL == "" {
+			cfg.BaseURL = "https://api.vidu.cn"
 		}
 	case ProviderTypeOpenAICompatDomestic, ProviderTypeCustomDomestic:
 	default:

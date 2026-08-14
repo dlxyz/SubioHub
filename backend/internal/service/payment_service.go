@@ -129,9 +129,10 @@ type DashboardStats struct {
 	AvgAmount     float64 `json:"avg_amount"`
 	PendingOrders int     `json:"pending_orders"`
 
-	DailySeries    []DailyStats        `json:"daily_series"`
-	PaymentMethods []PaymentMethodStat `json:"payment_methods"`
-	TopUsers       []TopUserStat       `json:"top_users"`
+	DailySeries       []DailyStats        `json:"daily_series"`
+	PaymentMethods    []PaymentMethodStat `json:"payment_methods"`
+	TopUsers          []TopUserStat       `json:"top_users"`
+	CurrencyBreakdown []CurrencyStat      `json:"currency_breakdown"`
 }
 
 type DailyStats struct {
@@ -152,6 +153,12 @@ type TopUserStat struct {
 	Amount float64 `json:"amount"`
 }
 
+type CurrencyStat struct {
+	Currency string  `json:"currency"`
+	Amount   float64 `json:"amount"`
+	Count    int     `json:"count"`
+}
+
 // --- Service ---
 
 type PaymentService struct {
@@ -165,10 +172,25 @@ type PaymentService struct {
 	configService   *PaymentConfigService
 	userRepo        UserRepository
 	groupRepo       GroupRepository
+	exchangeRate    *ExchangeRateService
 }
 
-func NewPaymentService(entClient *dbent.Client, registry *payment.Registry, loadBalancer payment.LoadBalancer, redeemService *RedeemService, subscriptionSvc *SubscriptionService, configService *PaymentConfigService, userRepo UserRepository, groupRepo GroupRepository) *PaymentService {
-	return &PaymentService{entClient: entClient, registry: registry, loadBalancer: loadBalancer, redeemService: redeemService, subscriptionSvc: subscriptionSvc, configService: configService, userRepo: userRepo, groupRepo: groupRepo}
+func NewPaymentService(entClient *dbent.Client, registry *payment.Registry, loadBalancer payment.LoadBalancer, redeemService *RedeemService, subscriptionSvc *SubscriptionService, configService *PaymentConfigService, userRepo UserRepository, groupRepo GroupRepository, exchangeRate *ExchangeRateService) *PaymentService {
+	return &PaymentService{entClient: entClient, registry: registry, loadBalancer: loadBalancer, redeemService: redeemService, subscriptionSvc: subscriptionSvc, configService: configService, userRepo: userRepo, groupRepo: groupRepo, exchangeRate: exchangeRate}
+}
+
+// GetDisplayRates returns "1 USD = X currency" display rates for the currencies
+// the frontend can render in (currently USD and CNY). Settlement stays in USD;
+// these values are presentation-only.
+func (s *PaymentService) GetDisplayRates(ctx context.Context) map[string]float64 {
+	rates := map[string]float64{"USD": 1}
+	if s.exchangeRate == nil {
+		return rates
+	}
+	if cny, err := s.exchangeRate.FromUSD(ctx, "CNY"); err == nil && cny > 0 {
+		rates["CNY"] = cny
+	}
+	return rates
 }
 
 // --- Provider Registry ---

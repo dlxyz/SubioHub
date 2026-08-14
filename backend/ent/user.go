@@ -55,6 +55,8 @@ type User struct {
 	BalanceNotifyExtraEmails string `json:"balance_notify_extra_emails,omitempty"`
 	// TotalRecharged holds the value of the "total_recharged" field.
 	TotalRecharged float64 `json:"total_recharged,omitempty"`
+	// User preferred display currency (settlement remains USD)
+	PreferredCurrency string `json:"preferred_currency,omitempty"`
 	// Direct inviter user ID
 	InviterID *int64 `json:"inviter_id,omitempty"`
 	// User invite code
@@ -333,7 +335,7 @@ func (*User) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullFloat64)
 		case user.FieldID, user.FieldConcurrency, user.FieldInviterID, user.FieldChannelPartnerID, user.FieldAgentOwnerID, user.FieldDistributorOwnerID:
 			values[i] = new(sql.NullInt64)
-		case user.FieldEmail, user.FieldPasswordHash, user.FieldRole, user.FieldStatus, user.FieldUsername, user.FieldNotes, user.FieldTotpSecretEncrypted, user.FieldBalanceNotifyThresholdType, user.FieldBalanceNotifyExtraEmails, user.FieldInviteCode, user.FieldKeyAccountLevel, user.FieldKeyAccountManagerNotes:
+		case user.FieldEmail, user.FieldPasswordHash, user.FieldRole, user.FieldStatus, user.FieldUsername, user.FieldNotes, user.FieldTotpSecretEncrypted, user.FieldBalanceNotifyThresholdType, user.FieldBalanceNotifyExtraEmails, user.FieldPreferredCurrency, user.FieldInviteCode, user.FieldKeyAccountLevel, user.FieldKeyAccountManagerNotes:
 			values[i] = new(sql.NullString)
 		case user.FieldCreatedAt, user.FieldUpdatedAt, user.FieldDeletedAt, user.FieldTotpEnabledAt:
 			values[i] = new(sql.NullTime)
@@ -475,6 +477,12 @@ func (_m *User) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field total_recharged", values[i])
 			} else if value.Valid {
 				_m.TotalRecharged = value.Float64
+			}
+		case user.FieldPreferredCurrency:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field preferred_currency", values[i])
+			} else if value.Valid {
+				_m.PreferredCurrency = value.String
 			}
 		case user.FieldInviterID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
@@ -758,6 +766,9 @@ func (_m *User) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("total_recharged=")
 	builder.WriteString(fmt.Sprintf("%v", _m.TotalRecharged))
+	builder.WriteString(", ")
+	builder.WriteString("preferred_currency=")
+	builder.WriteString(_m.PreferredCurrency)
 	builder.WriteString(", ")
 	if v := _m.InviterID; v != nil {
 		builder.WriteString("inviter_id=")

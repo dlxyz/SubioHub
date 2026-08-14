@@ -14,7 +14,7 @@ import (
 
 // Stripe constants.
 const (
-	stripeCurrency            = "cny"
+	stripeCurrency            = "usd"
 	stripeEventPaymentSuccess = "payment_intent.succeeded"
 	stripeEventPaymentFailed  = "payment_intent.payment_failed"
 )

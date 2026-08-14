@@ -360,6 +360,12 @@ func (s *APIKeyService) Create(ctx context.Context, userID int64, req CreateAPIK
 		}
 	}
 
+	// 未指定分组时，自动绑定默认组（开箱即用，避免空组导致无法走渠道）。
+	effectiveGroupID := req.GroupID
+	if effectiveGroupID == nil {
+		effectiveGroupID = s.resolveDefaultGroupID(ctx, user)
+	}
+
 	var key string
 
 	// 判断是否使用自定义Key
@@ -400,7 +406,7 @@ func (s *APIKeyService) Create(ctx context.Context, userID int64, req CreateAPIK
 		UserID:      userID,
 		Key:         key,
 		Name:        req.Name,
-		GroupID:     req.GroupID,
+		GroupID:     effectiveGroupID,
 		Status:      StatusActive,
 		IPWhitelist: req.IPWhitelist,
 		IPBlacklist: req.IPBlacklist,
@@ -783,6 +789,44 @@ func (s *APIKeyService) canUserBindGroupInternal(user *User, group *Group, subsc
 	}
 	// 标准类型分组：使用原有逻辑
 	return user.CanBindGroup(group.ID, group.IsExclusive)
+}
+
+// resolveDefaultGroupID 在用户未显式选择分组时，解析出应自动绑定的默认组。
+// 优先返回名为 "default" 的全局默认组，否则回退到用户可绑定的第一个活跃分组。
+func (s *APIKeyService) resolveDefaultGroupID(ctx context.Context, user *User) *int64 {
+	if s.groupRepo == nil || user == nil {
+		return nil
+	}
+
+	allGroups, err := s.groupRepo.ListActive(ctx)
+	if err != nil || len(allGroups) == 0 {
+		return nil
+	}
+
+	subscribedGroupIDs := make(map[int64]bool)
+	if s.userSubRepo != nil {
+		if subs, subErr := s.userSubRepo.ListActiveByUserID(ctx, user.ID); subErr == nil {
+			for _, sub := range subs {
+				subscribedGroupIDs[sub.GroupID] = true
+			}
+		}
+	}
+
+	var firstID *int64
+	for i := range allGroups {
+		if !s.canUserBindGroupInternal(user, &allGroups[i], subscribedGroupIDs) {
+			continue
+		}
+		if firstID == nil {
+			id := allGroups[i].ID
+			firstID = &id
+		}
+		if strings.EqualFold(allGroups[i].Name, "default") {
+			id := allGroups[i].ID
+			return &id
+		}
+	}
+	return firstID
 }
 
 func (s *APIKeyService) SearchAPIKeys(ctx context.Context, userID int64, keyword string, limit int) ([]APIKey, error) {

@@ -79,6 +79,10 @@ func (User) Fields() []ent.Field {
 		field.Float("total_recharged").
 			SchemaType(map[string]string{dialect.Postgres: "decimal(20,8)"}).
 			Default(0),
+		field.String("preferred_currency").
+			MaxLen(10).
+			Default("USD").
+			Comment("User preferred display currency (settlement remains USD)"),
 		field.Int64("inviter_id").
 			Optional().
 			Nillable().

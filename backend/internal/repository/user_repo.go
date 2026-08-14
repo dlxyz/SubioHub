@@ -178,6 +178,7 @@ func (r *userRepository) Update(ctx context.Context, userIn *service.User) error
 		SetNillableBalanceNotifyThreshold(userIn.BalanceNotifyThreshold).
 		SetBalanceNotifyExtraEmails(marshalExtraEmails(userIn.BalanceNotifyExtraEmails)).
 		SetTotalRecharged(userIn.TotalRecharged).
+		SetPreferredCurrency(userIn.PreferredCurrency).
 		SetIsKeyAccount(userIn.IsKeyAccount).
 		SetKeyAccountLevel(userIn.KeyAccountLevel).
 		SetKeyAccountDiscountRate(userIn.KeyAccountDiscountRate).
@@ -649,6 +650,7 @@ func applyUserEntityToService(dst *service.User, src *dbent.User) {
 	dst.CommissionRate = src.CommissionRate
 	dst.CommissionBalance = src.CommissionBalance
 	dst.TotalCommissionEarned = src.TotalCommissionEarned
+	dst.PreferredCurrency = src.PreferredCurrency
 	dst.ChannelPartnerID = src.ChannelPartnerID
 	dst.AgentOwnerID = src.AgentOwnerID
 	dst.DistributorOwnerID = src.DistributorOwnerID

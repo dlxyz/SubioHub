@@ -25,6 +25,8 @@ export const PROVIDER_SUPPORTED_TYPES: Record<string, string[]> = {
   alipay: ['alipay'],
   wxpay: ['wxpay'],
   stripe: ['card', 'alipay', 'wxpay', 'link'],
+  creem: ['creem'],
+  tegro: ['tegro'],
 };
 
 export const PROVIDER_WEBHOOK_PATHS: Record<string, string> = {
@@ -32,6 +34,8 @@ export const PROVIDER_WEBHOOK_PATHS: Record<string, string> = {
   alipay: '/api/v1/payment/webhook/alipay',
   wxpay: '/api/v1/payment/webhook/wxpay',
   stripe: '/api/v1/payment/webhook/stripe',
+  creem: '/api/v1/payment/webhook/creem',
+  tegro: '/api/v1/payment/webhook/tegro',
 };
 
 export const PROVIDER_CALLBACK_PATHS: Record<string, PaymentProviderCallbackPaths> = {
@@ -74,6 +78,20 @@ export const PROVIDER_CONFIG_FIELDS: Record<string, PaymentProviderConfigField[]
     { key: 'secretKey', label: 'Secret Key', sensitive: true },
     { key: 'publishableKey', label: 'Publishable Key', sensitive: false },
     { key: 'webhookSecret', label: 'Webhook Secret', sensitive: true },
+  ],
+  creem: [
+    { key: 'apiKey', label: 'API Key', sensitive: true },
+    { key: 'webhookSecret', label: 'Webhook Secret', sensitive: true },
+    { key: 'productAmounts', label: '面额映射 (金额=产品ID，逗号分隔)', sensitive: false },
+    { key: 'successUrl', label: 'Success URL', sensitive: false, optional: true },
+    { key: 'testMode', label: '测试模式 (true/false)', sensitive: false, optional: true, defaultValue: 'false' },
+  ],
+  tegro: [
+    { key: 'shopId', label: 'Shop ID', sensitive: false },
+    { key: 'secretKey', label: 'Secret Key', sensitive: true },
+    { key: 'paymentSystem', label: '支付系统 ID (payment_system)', sensitive: false },
+    { key: 'currency', label: '币种 (USD/RUB/EUR)', sensitive: false, optional: true, defaultValue: 'USD' },
+    { key: 'rate', label: '汇率 (1 USD = ? currency)', sensitive: false, optional: true, defaultValue: '1' },
   ],
 };
 

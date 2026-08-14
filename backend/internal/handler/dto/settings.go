@@ -157,6 +157,11 @@ type SystemSettings struct {
 	PaymentCancelRateLimitUnit    string `json:"payment_cancel_rate_limit_unit"`
 	PaymentCancelRateLimitMode    string `json:"payment_cancel_rate_limit_window_mode"`
 
+	// Exchange rate (multi-currency billing)
+	ExchangeRateAPIURL   string  `json:"exchange_rate_api_url"`
+	ExchangeRateCron     string  `json:"exchange_rate_cron"`
+	ExchangeRateFallback float64 `json:"exchange_rate_fallback"`
+
 	// Balance low notification
 	BalanceLowNotifyEnabled     bool               `json:"balance_low_notify_enabled"`
 	BalanceLowNotifyThreshold   float64            `json:"balance_low_notify_threshold"`

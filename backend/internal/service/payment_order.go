@@ -54,7 +54,21 @@ func (s *PaymentService) CreateOrder(ctx context.Context, req CreateOrderRequest
 	feeRate := cfg.RechargeFeeRate
 	payAmountStr := payment.CalculatePayAmount(limitAmount, feeRate)
 	payAmount, _ := strconv.ParseFloat(payAmountStr, 64)
-	order, err := s.createOrderInTx(ctx, req, user, plan, cfg, orderAmount, limitAmount, feeRate, payAmount)
+
+	currency := CurrencyForPaymentType(req.PaymentType)
+	var rate float64
+	if s.exchangeRate != nil {
+		rate, err = s.exchangeRate.ToUSD(ctx, currency)
+		if err != nil {
+			return nil, infraerrors.ServiceUnavailable("EXCHANGE_RATE_UNAVAILABLE", "exchange rate service is temporarily unavailable")
+		}
+	} else {
+		// 未注入汇率服务时降级为 1:1，避免破坏既有测试与流程。
+		rate = 1
+	}
+	baseAmount := orderAmount * rate
+
+	order, err := s.createOrderInTx(ctx, req, user, plan, cfg, orderAmount, limitAmount, feeRate, payAmount, currency, rate, baseAmount)
 	if err != nil {
 		return nil, err
 	}
@@ -103,7 +117,7 @@ func (s *PaymentService) validateSubOrder(ctx context.Context, req CreateOrderRe
 	return plan, nil
 }
 
-func (s *PaymentService) createOrderInTx(ctx context.Context, req CreateOrderRequest, user *User, plan *dbent.SubscriptionPlan, cfg *PaymentConfig, orderAmount, limitAmount, feeRate, payAmount float64) (*dbent.PaymentOrder, error) {
+func (s *PaymentService) createOrderInTx(ctx context.Context, req CreateOrderRequest, user *User, plan *dbent.SubscriptionPlan, cfg *PaymentConfig, orderAmount, limitAmount, feeRate, payAmount float64, currency string, rate float64, baseAmount float64) (*dbent.PaymentOrder, error) {
 	tx, err := s.entClient.Tx(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("begin transaction: %w", err)
@@ -128,6 +142,9 @@ func (s *PaymentService) createOrderInTx(ctx context.Context, req CreateOrderReq
 		SetAmount(orderAmount).
 		SetPayAmount(payAmount).
 		SetFeeRate(feeRate).
+		SetCurrency(currency).
+		SetExchangeRate(rate).
+		SetBaseAmount(baseAmount).
 		SetRechargeCode("").
 		SetOutTradeNo(generateOutTradeNo()).
 		SetPaymentType(req.PaymentType).

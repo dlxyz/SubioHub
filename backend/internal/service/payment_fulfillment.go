@@ -199,7 +199,12 @@ func (s *PaymentService) doBalance(ctx context.Context, o *dbent.PaymentOrder) e
 		// Code already created and redeemed — just mark completed
 		return s.markCompleted(ctx, o, "RECHARGE_SUCCESS")
 	case redeemActionCreate:
-		rc := &RedeemCode{Code: o.RechargeCode, Type: RedeemTypeBalance, Value: o.Amount, Status: StatusUnused}
+		// 余额入账以 USD 基准金额为准（多币种折算）；存量订单 base_amount 为 0 时回退原币金额。
+		creditedValue := o.BaseAmount
+		if creditedValue <= 0 {
+			creditedValue = o.Amount
+		}
+		rc := &RedeemCode{Code: o.RechargeCode, Type: RedeemTypeBalance, Value: creditedValue, Status: StatusUnused}
 		if err := s.redeemService.CreateCode(ctx, rc); err != nil {
 			return fmt.Errorf("create redeem code: %w", err)
 		}
