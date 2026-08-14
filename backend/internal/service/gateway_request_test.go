@@ -1088,21 +1088,21 @@ func buildSmallJSON() []byte {
 // buildLargeJSON 构建 ~50KB 的大型测试 JSON（大量 messages）
 func buildLargeJSON() []byte {
 	var b strings.Builder
-	b.WriteString(`{"model":"claude-sonnet-4-5","stream":true,"max_tokens":8192,"metadata":{"user_id":"user-xyz789"},"system":[{"type":"text","text":"You are a detailed assistant.","cache_control":{"type":"ephemeral"}}],"messages":[`)
+	_, _ = b.WriteString(`{"model":"claude-sonnet-4-5","stream":true,"max_tokens":8192,"metadata":{"user_id":"user-xyz789"},"system":[{"type":"text","text":"You are a detailed assistant.","cache_control":{"type":"ephemeral"}}],"messages":[`)
 
 	msgCount := 200
 	for i := 0; i < msgCount; i++ {
 		if i > 0 {
-			b.WriteByte(',')
+			_ = b.WriteByte(',')
 		}
 		if i%2 == 0 {
-			b.WriteString(fmt.Sprintf(`{"role":"user","content":"This is user message number %d with some extra padding text to make the message reasonably long for benchmarking purposes. Lorem ipsum dolor sit amet."}`, i))
+			_, _ = b.WriteString(fmt.Sprintf(`{"role":"user","content":"This is user message number %d with some extra padding text to make the message reasonably long for benchmarking purposes. Lorem ipsum dolor sit amet."}`, i))
 		} else {
-			b.WriteString(fmt.Sprintf(`{"role":"assistant","content":[{"type":"text","text":"This is assistant response number %d. I will provide a detailed answer with multiple sentences to simulate real conversation content for benchmark testing."}]}`, i))
+			_, _ = b.WriteString(fmt.Sprintf(`{"role":"assistant","content":[{"type":"text","text":"This is assistant response number %d. I will provide a detailed answer with multiple sentences to simulate real conversation content for benchmark testing."}]}`, i))
 		}
 	}
 
-	b.WriteString(`]}`)
+	_, _ = b.WriteString(`]}`)
 	return []byte(b.String())
 }
 

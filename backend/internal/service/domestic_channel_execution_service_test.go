@@ -503,7 +503,8 @@ func TestKimiProviderAdapter_PrepareChatCompletionsBody(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	adapter := newDomesticProviderAdapter(ProviderTypeKimi).(DomesticChatAdapter)
+	adapter, ok := newDomesticProviderAdapter(ProviderTypeKimi).(DomesticChatAdapter)
+	require.True(t, ok)
 
 	t.Run("reasoning_effort none disables thinking and normalizes developer role", func(t *testing.T) {
 		body, err := adapter.PrepareChatCompletionsBody(cfg, []byte(`{
@@ -544,7 +545,8 @@ func TestKimiProviderAdapter_PrepareEmbeddingsBody(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	adapter := newDomesticProviderAdapter(ProviderTypeKimi).(DomesticEmbeddingAdapter)
+	adapter, ok := newDomesticProviderAdapter(ProviderTypeKimi).(DomesticEmbeddingAdapter)
+	require.True(t, ok)
 	body, err := adapter.PrepareEmbeddingsBody(cfg, []byte(`{
 		"model":"kimi-embedding",
 		"input":"hello",
@@ -570,7 +572,8 @@ func TestKimiProviderAdapter_PrepareRerankBody(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	adapter := newDomesticProviderAdapter(ProviderTypeKimi).(DomesticRerankAdapter)
+	adapter, ok := newDomesticProviderAdapter(ProviderTypeKimi).(DomesticRerankAdapter)
+	require.True(t, ok)
 	body, err := adapter.PrepareRerankBody(cfg, []byte(`{
 		"model":"kimi-rerank",
 		"query":"ping",
@@ -597,7 +600,8 @@ func TestZhipuProviderAdapter_PrepareEmbeddingsBody(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	adapter := newDomesticProviderAdapter(ProviderTypeZhipu).(DomesticEmbeddingAdapter)
+	adapter, ok := newDomesticProviderAdapter(ProviderTypeZhipu).(DomesticEmbeddingAdapter)
+	require.True(t, ok)
 	body, err := adapter.PrepareEmbeddingsBody(cfg, []byte(`{
 		"model":"embedding-3",
 		"input":"hello",
@@ -621,7 +625,8 @@ func TestZhipuProviderAdapter_PrepareRerankBody(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	adapter := newDomesticProviderAdapter(ProviderTypeZhipu).(DomesticRerankAdapter)
+	adapter, ok := newDomesticProviderAdapter(ProviderTypeZhipu).(DomesticRerankAdapter)
+	require.True(t, ok)
 	body, err := adapter.PrepareRerankBody(cfg, []byte(`{
 		"model":"rerank",
 		"query":"ping",
@@ -648,7 +653,8 @@ func TestDoubaoProviderAdapter_PrepareEmbeddingsBody(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	adapter := newDomesticProviderAdapter(ProviderTypeDoubao).(DomesticEmbeddingAdapter)
+	adapter, ok := newDomesticProviderAdapter(ProviderTypeDoubao).(DomesticEmbeddingAdapter)
+	require.True(t, ok)
 	body, err := adapter.PrepareEmbeddingsBody(cfg, []byte(`{
 		"model":"doubao-embedding-vision-251215",
 		"input":"hello",
@@ -674,7 +680,8 @@ func TestDoubaoProviderAdapter_PrepareRerankBody(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	adapter := newDomesticProviderAdapter(ProviderTypeDoubao).(DomesticRerankAdapter)
+	adapter, ok := newDomesticProviderAdapter(ProviderTypeDoubao).(DomesticRerankAdapter)
+	require.True(t, ok)
 	body, err := adapter.PrepareRerankBody(cfg, []byte(`{
 		"model":"Doubao-rerank",
 		"query":"ping",
@@ -701,7 +708,8 @@ func TestMiniMaxProviderAdapter_PrepareEmbeddingsBody(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	adapter := newDomesticProviderAdapter(ProviderTypeMiniMax).(DomesticEmbeddingAdapter)
+	adapter, ok := newDomesticProviderAdapter(ProviderTypeMiniMax).(DomesticEmbeddingAdapter)
+	require.True(t, ok)
 	body, err := adapter.PrepareEmbeddingsBody(cfg, []byte(`{
 		"model":"MiniMax-embedding",
 		"input":"hello",
@@ -731,7 +739,8 @@ func TestMiniMaxProviderAdapter_PrepareRerankBody(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	adapter := newDomesticProviderAdapter(ProviderTypeMiniMax).(DomesticRerankAdapter)
+	adapter, ok := newDomesticProviderAdapter(ProviderTypeMiniMax).(DomesticRerankAdapter)
+	require.True(t, ok)
 	body, err := adapter.PrepareRerankBody(cfg, []byte(`{
 		"model":"MiniMax-rerank",
 		"query":"ping",

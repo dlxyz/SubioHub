@@ -2212,10 +2212,10 @@ func jimengSignRequest(req *http.Request, accessKey, secretKey string) error {
 
 	var canonicalHeaders strings.Builder
 	for _, k := range signedHeaderKeys {
-		canonicalHeaders.WriteString(k)
-		canonicalHeaders.WriteString(":")
-		canonicalHeaders.WriteString(strings.TrimSpace(headersToSign[k]))
-		canonicalHeaders.WriteString("\n")
+		_, _ = canonicalHeaders.WriteString(k)
+		_, _ = canonicalHeaders.WriteString(":")
+		_, _ = canonicalHeaders.WriteString(strings.TrimSpace(headersToSign[k]))
+		_, _ = canonicalHeaders.WriteString("\n")
 	}
 	signedHeaders := strings.Join(signedHeaderKeys, ";")
 
