@@ -45,8 +45,8 @@ func readAllMigrations(t *testing.T) string {
 	for _, name := range files {
 		content, err := fs.ReadFile(migrations.FS, name)
 		require.NoError(t, err)
-		builder.Write(content)
-		builder.WriteString("\n")
+		_, _ = builder.Write(content)
+		_, _ = builder.WriteString("\n")
 	}
 	return builder.String()
 }

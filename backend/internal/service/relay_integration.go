@@ -105,9 +105,9 @@ type RelayAccountSummary struct {
 // RelayIntegrationDetail 是接入详情。
 type RelayIntegrationDetail struct {
 	*RelayIntegration
-	GroupName   string                 `json:"group_name"`
-	ChannelName string                 `json:"channel_name"`
-	Accounts    []RelayAccountSummary  `json:"accounts"`
+	GroupName   string                `json:"group_name"`
+	ChannelName string                `json:"channel_name"`
+	Accounts    []RelayAccountSummary `json:"accounts"`
 }
 
 // CreateRelayIntegrationInput 是创建第三方接入的输入。
@@ -240,15 +240,15 @@ func (s *RelayIntegrationService) Create(ctx context.Context, input *CreateRelay
 	}
 
 	account, err := s.adminSvc.CreateAccount(ctx, &CreateAccountInput{
-		Name:            input.Name + " 主 Key",
-		Platform:        PlatformOpenAI,
-		Type:            AccountTypeAPIKey,
-		Credentials:     credentials,
-		Extra:           extra,
-		ProxyID:         input.ProxyID,
-		Concurrency:     input.Concurrency,
-		Priority:        input.Priority,
-		GroupIDs:        []int64{group.ID},
+		Name:                  input.Name + " 主 Key",
+		Platform:              PlatformOpenAI,
+		Type:                  AccountTypeAPIKey,
+		Credentials:           credentials,
+		Extra:                 extra,
+		ProxyID:               input.ProxyID,
+		Concurrency:           input.Concurrency,
+		Priority:              input.Priority,
+		GroupIDs:              []int64{group.ID},
 		SkipMixedChannelCheck: true,
 	})
 	if err != nil {
@@ -268,14 +268,14 @@ func (s *RelayIntegrationService) Create(ctx context.Context, input *CreateRelay
 	}
 
 	channel, err := s.channelSvc.Create(ctx, &CreateChannelInput{
-		Name:                       input.Name,
-		Description:                "第三方中转站：" + normalizedBaseURL,
-		GroupIDs:                   []int64{group.ID},
-		ModelPricing:               pricing,
-		ModelMapping:               map[string]map[string]string{PlatformOpenAI: {}},
-		BillingModelSource:         BillingModelSourceChannelMapped,
-		RestrictModels:             true,
-		ProviderType:               ProviderTypeStandard,
+		Name:               input.Name,
+		Description:        "第三方中转站：" + normalizedBaseURL,
+		GroupIDs:           []int64{group.ID},
+		ModelPricing:       pricing,
+		ModelMapping:       map[string]map[string]string{PlatformOpenAI: {}},
+		BillingModelSource: BillingModelSourceChannelMapped,
+		RestrictModels:     true,
+		ProviderType:       ProviderTypeStandard,
 		ProviderConfig: map[string]any{
 			"relay":        true,
 			"provider_key": input.ProviderKey,
