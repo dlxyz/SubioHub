@@ -268,15 +268,20 @@ func (s *PaymentService) recordPendingCommissionIfNeeded(ctx context.Context, o 
 }
 
 func (s *PaymentService) markCompleted(ctx context.Context, o *dbent.PaymentOrder, auditAction string) error {
-	if err := s.recordCommissionSplitsIfNeeded(ctx, o); err != nil {
+	hasSplitRelation, err := s.recordCommissionSplitsIfNeeded(ctx, o)
+	if err != nil {
 		return err
 	}
-	if err := s.recordPendingCommissionIfNeeded(ctx, o); err != nil {
-		return err
+	// commission_split_logs 是唯一分润账本：只要用户存在推广关系，就不再写旧 commission_logs，
+	// 避免同一订单在结算时被两套账本各返一次佣金。
+	if !hasSplitRelation {
+		if err := s.recordPendingCommissionIfNeeded(ctx, o); err != nil {
+			return err
+		}
 	}
 
 	now := time.Now()
-	_, err := s.entClient.PaymentOrder.Update().Where(paymentorder.IDEQ(o.ID), paymentorder.StatusEQ(OrderStatusRecharging)).SetStatus(OrderStatusCompleted).SetCompletedAt(now).Save(ctx)
+	_, err = s.entClient.PaymentOrder.Update().Where(paymentorder.IDEQ(o.ID), paymentorder.StatusEQ(OrderStatusRecharging)).SetStatus(OrderStatusCompleted).SetCompletedAt(now).Save(ctx)
 	if err != nil {
 		return fmt.Errorf("mark completed: %w", err)
 	}
@@ -289,12 +294,15 @@ func (s *PaymentService) markCompleted(ctx context.Context, o *dbent.PaymentOrde
 	return nil
 }
 
-func (s *PaymentService) recordCommissionSplitsIfNeeded(ctx context.Context, o *dbent.PaymentOrder) error {
+// recordCommissionSplitsIfNeeded 写入补差法分润记录。
+// 返回 true 表示用户存在推广关系（此时 commission_split_logs 为唯一账本），
+// 调用方不应再写入旧 commission_logs。
+func (s *PaymentService) recordCommissionSplitsIfNeeded(ctx context.Context, o *dbent.PaymentOrder) (bool, error) {
 	if s.entClient == nil || o == nil {
-		return nil
+		return false, nil
 	}
 	if o.OrderType != payment.OrderTypeBalance && o.OrderType != payment.OrderTypeSubscription {
-		return nil
+		return false, nil
 	}
 
 	relation, err := s.entClient.PromotionRelation.Query().
@@ -302,20 +310,23 @@ func (s *PaymentService) recordCommissionSplitsIfNeeded(ctx context.Context, o *
 		Only(ctx)
 	if err != nil {
 		if dbent.IsNotFound(err) {
-			return nil
+			return false, nil
 		}
-		return fmt.Errorf("query promotion relation: %w", err)
+		return false, fmt.Errorf("query promotion relation: %w", err)
 	}
 
 	rule, err := getActiveGlobalCommissionRule(ctx, s.entClient)
 	if err != nil {
-		return err
+		return true, err
 	}
 	if rule == nil {
-		return nil
+		return true, nil
 	}
 
-	return upsertCommissionSplitLogsForOrder(ctx, s.entClient, o, relation, rule)
+	if err := upsertCommissionSplitLogsForOrder(ctx, s.entClient, o, relation, rule); err != nil {
+		return true, err
+	}
+	return true, nil
 }
 
 func (s *PaymentService) ExecuteSubscriptionFulfillment(ctx context.Context, oid int64) error {

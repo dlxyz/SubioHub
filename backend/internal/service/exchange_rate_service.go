@@ -34,7 +34,7 @@ const (
 // 阶段一约定：国内渠道（支付宝/微信/易支付）为 CNY，海外渠道（Creem/Stripe/Tegro）为 USD。
 func CurrencyForPaymentType(paymentType string) string {
 	switch payment.GetBasePaymentType(paymentType) {
-	case payment.TypeCreem, payment.TypeStripe, payment.TypeCard, payment.TypeLink, payment.TypeTegro:
+	case payment.TypeCreem, payment.TypeStripe, payment.TypeCard, payment.TypeLink, payment.TypeTegro, payment.TypeWaffo:
 		return "USD"
 	default:
 		return "CNY"
@@ -97,6 +97,9 @@ func (s *ExchangeRateService) Start() {
 		defer cancel()
 		if err := s.RefreshRates(ctx); err != nil {
 			logger.LegacyPrintf("service.exchange_rate", "初始化拉取汇率失败: %v", err)
+		}
+		if s.getFallbackRate(context.Background()) <= 0 {
+			logger.LegacyPrintf("service.exchange_rate", "未配置显式兜底汇率 EXCHANGE_RATE_FALLBACK，汇率不可用时将拒绝创建订单")
 		}
 	}()
 }
@@ -242,13 +245,23 @@ func (s *ExchangeRateService) getAPIURL(ctx context.Context) string {
 	return defaultExchangeRateAPIURL
 }
 
+// getFallbackRate 返回显式配置的兜底汇率。
+// 只有后台明确配置了 EXCHANGE_RATE_FALLBACK 时才生效；
+// 未配置或配置非法时返回 0，由 ToUSD 直接报错，避免静默按错误汇率入账。
 func (s *ExchangeRateService) getFallbackRate(ctx context.Context) float64 {
-	if v, err := s.getSetting(ctx, SettingExchangeRateFallback); err == nil && v != "" {
-		if f, perr := strconv.ParseFloat(v, 64); perr == nil {
-			return f
-		}
+	v, err := s.getSetting(ctx, SettingExchangeRateFallback)
+	if err != nil {
+		return 0
 	}
-	return defaultExchangeRateFallback
+	trimmed := strings.TrimSpace(v)
+	if trimmed == "" {
+		return 0
+	}
+	f, perr := strconv.ParseFloat(trimmed, 64)
+	if perr != nil || f <= 0 {
+		return 0
+	}
+	return f
 }
 
 func (s *ExchangeRateService) getSetting(ctx context.Context, key string) (string, error) {

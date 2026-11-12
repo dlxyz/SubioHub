@@ -92,6 +92,9 @@ func RegisterAdminRoutes(
 		// 渠道管理
 		registerChannelRoutes(admin, h)
 
+		// 第三方中转站接入
+		registerRelayIntegrationRoutes(admin, h)
+
 		// 分销与佣金系统管理
 		registerAffiliateRoutes(admin, h)
 	}
@@ -586,6 +589,21 @@ func registerChannelRoutes(admin *gin.RouterGroup, h *handler.Handlers) {
 		channels.POST("", h.Admin.Channel.Create)
 		channels.PUT("/:id", h.Admin.Channel.Update)
 		channels.DELETE("/:id", h.Admin.Channel.Delete)
+	}
+}
+
+func registerRelayIntegrationRoutes(admin *gin.RouterGroup, h *handler.Handlers) {
+	relay := admin.Group("/relay-integrations")
+	{
+		relay.POST("/preview-models", h.Admin.RelayIntegration.PreviewModels)
+		relay.GET("", h.Admin.RelayIntegration.List)
+		relay.POST("", h.Admin.RelayIntegration.Create)
+		relay.GET("/:id", h.Admin.RelayIntegration.Get)
+		relay.POST("/:id/sync", h.Admin.RelayIntegration.Sync)
+		relay.PUT("/:id/models", h.Admin.RelayIntegration.ApplyModels)
+		relay.POST("/:id/test", h.Admin.RelayIntegration.Test)
+		relay.PATCH("/:id/status", h.Admin.RelayIntegration.UpdateStatus)
+		relay.DELETE("/:id", h.Admin.RelayIntegration.Delete)
 	}
 }
 

@@ -35,6 +35,7 @@ func ProvideAdminHandlers(
 	apiKeyHandler *admin.AdminAPIKeyHandler,
 	scheduledTestHandler *admin.ScheduledTestHandler,
 	channelHandler *admin.ChannelHandler,
+	relayIntegrationHandler *admin.RelayIntegrationHandler,
 	paymentHandler *admin.PaymentHandler,
 	affiliateHandler *admin.AffiliateHandler,
 ) *AdminHandlers {
@@ -65,6 +66,7 @@ func ProvideAdminHandlers(
 		APIKey:                apiKeyHandler,
 		ScheduledTest:         scheduledTestHandler,
 		Channel:               channelHandler,
+		RelayIntegration:      relayIntegrationHandler,
 		Payment:               paymentHandler,
 		Affiliate:             affiliateHandler,
 	}
@@ -174,6 +176,7 @@ var ProviderSet = wire.NewSet(
 	admin.NewAdminAPIKeyHandler,
 	admin.NewScheduledTestHandler,
 	admin.NewChannelHandler,
+	admin.NewRelayIntegrationHandler,
 	admin.NewPaymentHandler,
 	admin.NewAffiliateHandler,
 

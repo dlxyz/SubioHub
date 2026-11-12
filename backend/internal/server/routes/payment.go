@@ -62,6 +62,7 @@ func RegisterPaymentRoutes(
 		webhook.POST("/stripe", webhookHandler.StripeWebhook)
 		webhook.POST("/creem", webhookHandler.CreemWebhook)
 		webhook.POST("/tegro", webhookHandler.TegroWebhook)
+		webhook.POST("/waffo", webhookHandler.WaffoWebhook)
 	}
 
 	// --- Admin payment endpoints (admin auth) ---

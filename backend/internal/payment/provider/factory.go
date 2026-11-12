@@ -21,6 +21,8 @@ func CreateProvider(providerKey string, instanceID string, config map[string]str
 		return NewCreem(instanceID, config)
 	case payment.TypeTegro:
 		return NewTegro(instanceID, config)
+	case payment.TypeWaffo:
+		return NewWaffo(instanceID, config)
 	default:
 		return nil, fmt.Errorf("unknown provider key: %s", providerKey)
 	}

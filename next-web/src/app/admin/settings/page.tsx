@@ -156,6 +156,7 @@ const PAYMENT_TYPES = [
   { value: 'easypay', label: 'EasyPay' },
   { value: 'creem', label: 'Creem' },
   { value: 'tegro', label: 'Tegro.money' },
+  { value: 'waffo', label: 'Waffo' },
 ];
 
 const PROVIDER_KEY_OPTIONS: PaymentProviderOption[] = [
@@ -165,7 +166,12 @@ const PROVIDER_KEY_OPTIONS: PaymentProviderOption[] = [
   { value: 'stripe', label: 'Stripe' },
   { value: 'creem', label: 'Creem' },
   { value: 'tegro', label: 'Tegro.money' },
+  { value: 'waffo', label: 'Waffo' },
 ];
+
+const PROVIDER_LABELS: Record<string, string> = Object.fromEntries(
+  PROVIDER_KEY_OPTIONS.map((option) => [option.value, option.label])
+);
 
 function buildEmptyProviderForm(providerKey = 'easypay'): ProviderFormState {
   const configDefaults = Object.fromEntries(
@@ -431,6 +437,7 @@ export default function AdminSettingsPage() {
       { value: 'card', label: '银行卡' },
       { value: 'link', label: 'Link' },
       { value: 'creem', label: 'Creem' },
+      { value: 'waffo', label: 'Waffo' },
     ],
     []
   );
@@ -448,7 +455,9 @@ export default function AdminSettingsPage() {
   );
   const currentProviderWebhookUrl = useMemo(() => {
     if (
-      (providerForm.provider_key !== 'stripe' && providerForm.provider_key !== 'creem') ||
+      (providerForm.provider_key !== 'stripe' &&
+        providerForm.provider_key !== 'creem' &&
+        providerForm.provider_key !== 'waffo') ||
       typeof window === 'undefined'
     ) {
       return '';
@@ -2265,7 +2274,7 @@ export default function AdminSettingsPage() {
 
             {currentProviderWebhookUrl ? (
               <div className="rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-700 dark:border-blue-900/40 dark:bg-blue-900/20 dark:text-blue-300">
-                {providerForm.provider_key === 'stripe' ? 'Stripe' : 'Creem'} Webhook 地址：<code className="break-all font-mono">{currentProviderWebhookUrl}</code>
+                {PROVIDER_LABELS[providerForm.provider_key] || providerForm.provider_key} Webhook 地址：<code className="break-all font-mono">{currentProviderWebhookUrl}</code>
               </div>
             ) : null}
 

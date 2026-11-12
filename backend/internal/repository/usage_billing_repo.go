@@ -175,15 +175,17 @@ func incrementUsageBillingSubscription(ctx context.Context, tx *sql.Tx, subscrip
 
 func deductUsageBillingBalance(ctx context.Context, tx *sql.Tx, userID int64, amount float64) (float64, error) {
 	var newBalance float64
+	// 余额扣减必须以 DB 条件更新为准：Redis 余额缓存只做快速门禁，
+	// 并发请求可能同时通过缓存校验，因此这里加 balance >= amount 兜底，避免扣成负数。
 	err := tx.QueryRowContext(ctx, `
 		UPDATE users
 		SET balance = balance - $1,
 			updated_at = NOW()
-		WHERE id = $2 AND deleted_at IS NULL
+		WHERE id = $2 AND deleted_at IS NULL AND balance >= $1
 		RETURNING balance
 	`, amount, userID).Scan(&newBalance)
 	if errors.Is(err, sql.ErrNoRows) {
-		return 0, service.ErrUserNotFound
+		return 0, service.ErrInsufficientBalance
 	}
 	if err != nil {
 		return 0, err

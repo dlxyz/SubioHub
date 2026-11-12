@@ -19,6 +19,7 @@ const (
 	TypeEasyPay      PaymentType = "easypay"
 	TypeCreem        PaymentType = "creem"
 	TypeTegro        PaymentType = "tegro"
+	TypeWaffo        PaymentType = "waffo"
 )
 
 // Order status constants shared across payment and service layers.
@@ -88,6 +89,8 @@ func GetBasePaymentType(t string) string {
 		return TypeCreem
 	case t == TypeTegro:
 		return TypeTegro
+	case t == TypeWaffo:
+		return TypeWaffo
 	case t == TypeStripe || t == TypeCard || t == TypeLink:
 		return TypeStripe
 	case len(t) >= len(TypeAlipay) && t[:len(TypeAlipay)] == TypeAlipay:
@@ -110,6 +113,8 @@ type CreatePaymentRequest struct {
 	ClientIP           string // Payer's IP address
 	IsMobile           bool   // Whether the request comes from a mobile device
 	InstanceSubMethods string // Comma-separated sub-methods from instance supported_types (for Stripe)
+	UserID             string // Payer's platform user ID (used by providers that require user info)
+	UserEmail          string // Payer's email (used by providers that require user info)
 }
 
 // CreatePaymentResponse is returned after successfully initiating a payment.

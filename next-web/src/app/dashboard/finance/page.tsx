@@ -47,6 +47,8 @@ function getMethodLabel(type: string) {
       return 'Stripe';
     case 'creem':
       return 'Creem';
+    case 'waffo':
+      return 'Waffo';
     case 'easypay':
       return 'EasyPay';
     default:

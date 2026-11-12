@@ -425,6 +425,7 @@ func TestPaymentService_MarkCompletedCreatesDiffCommissionSplitLogs(t *testing.T
 	require.NoError(t, err)
 	require.Equal(t, commissionCalcModeDiff, storedRule.CalcMode)
 
+	// 存在推广关系时 commission_split_logs 是唯一账本，旧 commission_logs 不应再写入。
 	commissionLogCount, err := client.CommissionLog.Query().
 		Where(
 			commissionlog.OrderIDEQ(order.ID),
@@ -432,7 +433,7 @@ func TestPaymentService_MarkCompletedCreatesDiffCommissionSplitLogs(t *testing.T
 		).
 		Count(ctx)
 	require.NoError(t, err)
-	require.Equal(t, 1, commissionLogCount)
+	require.Equal(t, 0, commissionLogCount)
 
 	pendingSplitCount, err := client.CommissionSplitLog.Query().
 		Where(

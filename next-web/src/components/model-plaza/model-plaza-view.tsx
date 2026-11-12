@@ -89,6 +89,8 @@ function getSourceLabel(sourceType: string, t: Translator) {
   switch (sourceType) {
     case 'subscription':
       return t('modelPlaza.sources.subscription');
+    case 'third_party':
+      return t('modelPlaza.sources.third_party');
     case 'shared':
       return t('modelPlaza.sources.shared');
     case 'interface':
@@ -101,6 +103,8 @@ function getSourceBadgeClass(sourceType: string) {
   switch (sourceType) {
     case 'subscription':
       return 'bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300';
+    case 'third_party':
+      return 'bg-violet-50 text-violet-700 dark:bg-violet-950/40 dark:text-violet-300';
     case 'shared':
       return 'bg-cyan-50 text-cyan-700 dark:bg-cyan-950/40 dark:text-cyan-300';
     case 'interface':
@@ -288,6 +292,18 @@ export default function ModelPlazaView({ variant = 'public' }: ModelPlazaViewPro
       );
     });
   }, [activeCapability, modeFilteredModels, sortBy]);
+
+  const officialModels = useMemo(() => {
+    return filteredModels.filter((model) => {
+      const scopes = model.source_scopes || [];
+      if (scopes.length === 0) return true;
+      return scopes.some((scope) => scope === 'subscription' || scope === 'interface' || scope === 'official');
+    });
+  }, [filteredModels]);
+
+  const thirdPartyModels = useMemo(() => {
+    return filteredModels.filter((model) => (model.source_scopes || []).includes('third_party'));
+  }, [filteredModels]);
 
   const filteredSummary = useMemo(() => {
     const providerSet = new Set<string>();
@@ -532,10 +548,25 @@ export default function ModelPlazaView({ variant = 'public' }: ModelPlazaViewPro
       ) : null}
 
       {!loading && filteredModels.length > 0 ? (
-        <div className={cn('grid gap-4', variant === 'dashboard' ? 'xl:grid-cols-2' : 'md:grid-cols-2 xl:grid-cols-3')}>
-          {filteredModels.map((model) => (
-            <ModelCard key={model.id} model={model} variant={variant} />
-          ))}
+        <div className="space-y-10">
+          <ModelSection
+            tone="blue"
+            title={t('modelPlaza.sections.official')}
+            description={t('modelPlaza.sections.officialDescription')}
+            countLabel={t('modelPlaza.sections.officialCount', { count: officialModels.length })}
+            models={officialModels}
+            variant={variant}
+            emptyLabel={t('modelPlaza.sections.empty')}
+          />
+          <ModelSection
+            tone="violet"
+            title={t('modelPlaza.sections.thirdParty')}
+            description={t('modelPlaza.sections.thirdPartyDescription')}
+            countLabel={t('modelPlaza.sections.thirdPartyCount', { count: thirdPartyModels.length })}
+            models={thirdPartyModels}
+            variant={variant}
+            emptyLabel={t('modelPlaza.sections.empty')}
+          />
         </div>
       ) : null}
     </div>
@@ -708,6 +739,65 @@ function ModelCard({
         <MetricCard label={t('modelPlaza.modelMode')} value={getModeLabel(model.mode || 'chat', t)} />
       </div>
     </div>
+  );
+}
+
+function ModelSection({
+  tone,
+  title,
+  description,
+  countLabel,
+  models,
+  variant,
+  emptyLabel,
+}: {
+  tone: 'blue' | 'violet';
+  title: string;
+  description: string;
+  countLabel: string;
+  models: ModelPlazaModel[];
+  variant: 'public' | 'dashboard';
+  emptyLabel: string;
+}) {
+  const badgeClass =
+    tone === 'blue'
+      ? 'bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300'
+      : 'bg-violet-50 text-violet-700 dark:bg-violet-950/40 dark:text-violet-300';
+  const barClass = tone === 'blue' ? 'bg-blue-500' : 'bg-violet-500';
+
+  return (
+    <section className="space-y-4">
+      <div className="flex flex-wrap items-end justify-between gap-3 border-b border-gray-200 pb-3 dark:border-gray-800">
+        <div className="flex items-start gap-3">
+          <span className={cn('mt-1 h-9 w-1.5 shrink-0 rounded-full', barClass)} />
+          <div>
+            <div className="flex flex-wrap items-center gap-2">
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white">{title}</h2>
+              <span className={cn('rounded-full px-2.5 py-1 text-xs font-medium', badgeClass)}>
+                {countLabel}
+              </span>
+            </div>
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{description}</p>
+          </div>
+        </div>
+      </div>
+      {models.length === 0 ? (
+        <div className="rounded-3xl border border-dashed border-gray-300 bg-white px-6 py-10 text-center text-sm text-gray-500 dark:border-gray-700 dark:bg-[#1A1A1A] dark:text-gray-400">
+          {emptyLabel}
+        </div>
+      ) : (
+        <div
+          className={cn(
+            'grid gap-4',
+            variant === 'dashboard' ? 'xl:grid-cols-2' : 'md:grid-cols-2 xl:grid-cols-3'
+          )}
+        >
+          {models.map((model) => (
+            <ModelCard key={`${tone}-${model.id}`} model={model} variant={variant} />
+          ))}
+        </div>
+      )}
+    </section>
   );
 }
 

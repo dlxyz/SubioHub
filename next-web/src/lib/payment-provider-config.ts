@@ -27,6 +27,7 @@ export const PROVIDER_SUPPORTED_TYPES: Record<string, string[]> = {
   stripe: ['card', 'alipay', 'wxpay', 'link'],
   creem: ['creem'],
   tegro: ['tegro'],
+  waffo: ['waffo'],
 };
 
 export const PROVIDER_WEBHOOK_PATHS: Record<string, string> = {
@@ -36,6 +37,7 @@ export const PROVIDER_WEBHOOK_PATHS: Record<string, string> = {
   stripe: '/api/v1/payment/webhook/stripe',
   creem: '/api/v1/payment/webhook/creem',
   tegro: '/api/v1/payment/webhook/tegro',
+  waffo: '/api/v1/payment/webhook/waffo',
 };
 
 export const PROVIDER_CALLBACK_PATHS: Record<string, PaymentProviderCallbackPaths> = {
@@ -92,6 +94,19 @@ export const PROVIDER_CONFIG_FIELDS: Record<string, PaymentProviderConfigField[]
     { key: 'paymentSystem', label: '支付系统 ID (payment_system)', sensitive: false },
     { key: 'currency', label: '币种 (USD/RUB/EUR)', sensitive: false, optional: true, defaultValue: 'USD' },
     { key: 'rate', label: '汇率 (1 USD = ? currency)', sensitive: false, optional: true, defaultValue: '1' },
+  ],
+  waffo: [
+    { key: 'merchantId', label: 'Merchant ID (MER_xxx)', sensitive: false },
+    { key: 'privateKey', label: 'API Key / 商户私钥 (PEM 或 Base64)', sensitive: true },
+    { key: 'webhookPublicKey', label: 'Webhook Public Key (PEM 或 Base64)', sensitive: true },
+    { key: 'productId', label: 'Product ID (PROD_xxx)', sensitive: false },
+    { key: 'currency', label: '币种 (默认 USD)', sensitive: false, optional: true, defaultValue: 'USD' },
+    { key: 'rate', label: '汇率 (1 USD = ? currency)', sensitive: false, optional: true, defaultValue: '1' },
+    { key: 'taxCategory', label: '税务类别 (默认 saas)', sensitive: false, optional: true, defaultValue: 'saas' },
+    { key: 'taxIncluded', label: '价格含税 (true/false，默认 true)', sensitive: false, optional: true, defaultValue: 'true' },
+    { key: 'successUrl', label: '支付成功回跳地址 (https 绝对地址)', sensitive: false, optional: true },
+    { key: 'language', label: '收银台语言 (如 zh-Hans / en)', sensitive: false, optional: true },
+    { key: 'expiresInSeconds', label: '会话有效期秒数 (可选)', sensitive: false, optional: true },
   ],
 };
 

@@ -141,3 +141,69 @@ func TestCollectPublicModelPlazaModels(t *testing.T) {
 		{ID: "voyage-rerank-2", SourceType: "interface", SourceScopes: []string{"interface"}},
 	}, models)
 }
+
+func TestCollectPublicModelPlazaModelsWithThirdParty(t *testing.T) {
+	t.Parallel()
+
+	channelService := service.NewChannelService(&stubChannelRepository{
+		channels: []service.Channel{
+			{
+				ID:           1,
+				Status:       service.StatusActive,
+				ProviderType: service.ProviderTypeStandard,
+				ModelPricing: []service.ChannelModelPricing{
+					{Models: []string{"official-model", "shared-model"}},
+				},
+			},
+			{
+				ID:             2,
+				Status:         service.StatusActive,
+				ProviderType:   service.ProviderTypeStandard,
+				ProviderConfig: map[string]any{"relay": true},
+				ModelPricing: []service.ChannelModelPricing{
+					{Models: []string{"openrouter/model", "shared-model"}},
+				},
+			},
+		},
+	}, nil)
+
+	handler := &SettingHandler{channelService: channelService}
+	models := handler.collectPublicModelPlazaModels(context.Background())
+
+	require.Equal(t, []publicModelPlazaCollectedModel{
+		{ID: "official-model", SourceType: "subscription", SourceScopes: []string{"subscription"}},
+		{ID: "shared-model", SourceType: "shared", SourceScopes: []string{"subscription", "third_party"}},
+		{ID: "openrouter/model", SourceType: "third_party", SourceScopes: []string{"third_party"}},
+	}, models)
+}
+
+func TestDeriveModelSourceType(t *testing.T) {
+	t.Parallel()
+
+	cases := []struct {
+		scopes []string
+		want   string
+	}{
+		{scopes: nil, want: ""},
+		{scopes: []string{"subscription"}, want: "subscription"},
+		{scopes: []string{"interface"}, want: "interface"},
+		{scopes: []string{"third_party"}, want: "third_party"},
+		{scopes: []string{"subscription", "interface"}, want: "shared"},
+		{scopes: []string{"subscription", "third_party"}, want: "shared"},
+		{scopes: []string{"interface", "third_party"}, want: "shared"},
+	}
+
+	for _, tc := range cases {
+		require.Equal(t, tc.want, deriveModelSourceType(tc.scopes), "scopes=%v", tc.scopes)
+	}
+}
+
+func TestIsRelayChannel(t *testing.T) {
+	t.Parallel()
+
+	require.True(t, isRelayChannel(service.Channel{ProviderConfig: map[string]any{"relay": true}}))
+	require.True(t, isRelayChannel(service.Channel{ProviderConfig: map[string]any{"relay": "true"}}))
+	require.False(t, isRelayChannel(service.Channel{ProviderConfig: map[string]any{"relay": false}}))
+	require.False(t, isRelayChannel(service.Channel{ProviderConfig: map[string]any{}}))
+	require.False(t, isRelayChannel(service.Channel{}))
+}

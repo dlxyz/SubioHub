@@ -11,6 +11,8 @@ import (
 	"time"
 
 	dbent "github.com/dlxyz/SubioHub/ent"
+	"github.com/dlxyz/SubioHub/ent/commissionlog"
+	"github.com/dlxyz/SubioHub/ent/commissionsplitlog"
 	"github.com/dlxyz/SubioHub/ent/paymentorder"
 	"github.com/dlxyz/SubioHub/internal/payment"
 	infraerrors "github.com/dlxyz/SubioHub/internal/pkg/errors"
@@ -255,7 +257,105 @@ func (s *PaymentService) markRefundOk(ctx context.Context, p *RefundPlan) (*Refu
 		return nil, fmt.Errorf("mark refund: %w", err)
 	}
 	s.writeAuditLog(ctx, p.OrderID, "REFUND_SUCCESS", "admin", map[string]any{"refundAmount": p.RefundAmount, "reason": p.Reason, "balanceDeducted": p.BalanceToDeduct, "force": p.Force})
-	return &RefundResult{Success: true, BalanceDeducted: p.BalanceToDeduct, SubDaysDeducted: p.SubDaysToDeduct}, nil
+
+	result := &RefundResult{Success: true, BalanceDeducted: p.BalanceToDeduct, SubDaysDeducted: p.SubDaysToDeduct}
+	// 退款成功后冲正该订单产生的佣金/分润，避免平台退款后仍向外返佣。
+	// 此时网关退款已完成，冲正失败不能回滚退款，只能记录审计并返回警告。
+	if err := s.reverseCommissionForRefund(ctx, p.OrderID); err != nil {
+		slog.Error("refund: commission reversal failed", "orderID", p.OrderID, "error", err)
+		s.writeAuditLog(ctx, p.OrderID, "REFUND_COMMISSION_REVERSAL_FAILED", "system", map[string]any{"error": psErrMsg(err)})
+		result.Warning = "refund succeeded but commission reversal failed: " + psErrMsg(err)
+		return result, nil
+	}
+	s.writeAuditLog(ctx, p.OrderID, "REFUND_COMMISSION_REVERSED", "system", map[string]any{"refundAmount": p.RefundAmount})
+	return result, nil
+}
+
+// reverseCommissionForRefund 冲正退款订单对应的佣金与分润。
+//
+// 处理规则：
+//   - pending  → cancelled，不再进入结算
+//   - settled  → reversed，并从受益人佣金余额中扣回
+//   - 其他状态 → 保持不动（已划转/已提现需人工追回，避免重复扣减）
+func (s *PaymentService) reverseCommissionForRefund(ctx context.Context, orderID int64) error {
+	if s.entClient == nil || orderID <= 0 {
+		return nil
+	}
+
+	tx, err := s.entClient.Tx(ctx)
+	if err != nil {
+		return fmt.Errorf("begin commission reversal tx: %w", err)
+	}
+	defer func() { _ = tx.Rollback() }()
+	txCtx := dbent.NewTxContext(ctx, tx)
+
+	splitLogs, err := tx.CommissionSplitLog.Query().
+		Where(commissionsplitlog.OrderIDEQ(orderID)).
+		All(txCtx)
+	if err != nil {
+		return fmt.Errorf("query commission split logs: %w", err)
+	}
+	for _, log := range splitLogs {
+		switch log.Status {
+		case "pending":
+			if _, err := tx.CommissionSplitLog.Update().
+				Where(commissionsplitlog.IDEQ(log.ID), commissionsplitlog.StatusEQ("pending")).
+				SetStatus("cancelled").
+				SetRemark("cancelled due to order refund").
+				Save(txCtx); err != nil {
+				return fmt.Errorf("cancel commission split log %d: %w", log.ID, err)
+			}
+		case "settled":
+			updated, err := tx.CommissionSplitLog.Update().
+				Where(commissionsplitlog.IDEQ(log.ID), commissionsplitlog.StatusEQ("settled")).
+				SetStatus("reversed").
+				SetRemark("reversed due to order refund").
+				Save(txCtx)
+			if err != nil {
+				return fmt.Errorf("reverse commission split log %d: %w", log.ID, err)
+			}
+			if updated == 0 {
+				continue
+			}
+			if err := s.userRepo.UpdateCommissionBalance(txCtx, log.BeneficiaryUserID, -log.CommissionAmount); err != nil {
+				return fmt.Errorf("deduct split commission for user %d: %w", log.BeneficiaryUserID, err)
+			}
+		}
+	}
+
+	legacyLogs, err := tx.CommissionLog.Query().
+		Where(commissionlog.OrderIDEQ(orderID)).
+		All(txCtx)
+	if err != nil {
+		return fmt.Errorf("query commission logs: %w", err)
+	}
+	for _, log := range legacyLogs {
+		switch log.Status {
+		case "pending":
+			if _, err := tx.CommissionLog.Update().
+				Where(commissionlog.IDEQ(log.ID), commissionlog.StatusEQ("pending")).
+				SetStatus("cancelled").
+				Save(txCtx); err != nil {
+				return fmt.Errorf("cancel commission log %d: %w", log.ID, err)
+			}
+		case "settled":
+			updated, err := tx.CommissionLog.Update().
+				Where(commissionlog.IDEQ(log.ID), commissionlog.StatusEQ("settled")).
+				SetStatus("reversed").
+				Save(txCtx)
+			if err != nil {
+				return fmt.Errorf("reverse commission log %d: %w", log.ID, err)
+			}
+			if updated == 0 {
+				continue
+			}
+			if err := s.userRepo.UpdateCommissionBalance(txCtx, log.UserID, -log.Amount); err != nil {
+				return fmt.Errorf("deduct commission for user %d: %w", log.UserID, err)
+			}
+		}
+	}
+
+	return tx.Commit()
 }
 
 func (s *PaymentService) RollbackRefund(ctx context.Context, p *RefundPlan, gErr error) bool {

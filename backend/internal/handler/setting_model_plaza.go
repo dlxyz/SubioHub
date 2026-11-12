@@ -210,22 +210,53 @@ func appendUniqueStrings(items []string, value string) []string {
 }
 
 func inferModelSourceScope(channel service.Channel) string {
+	if isRelayChannel(channel) {
+		return "third_party"
+	}
 	if strings.EqualFold(strings.TrimSpace(channel.ProviderType), service.ProviderTypeStandard) {
 		return "subscription"
 	}
 	return "interface"
 }
 
+// isRelayChannel 判断渠道是否由第三方中转站接入创建。
+func isRelayChannel(channel service.Channel) bool {
+	if channel.ProviderConfig == nil {
+		return false
+	}
+	value, ok := channel.ProviderConfig["relay"]
+	if !ok {
+		return false
+	}
+	switch typed := value.(type) {
+	case bool:
+		return typed
+	case string:
+		return strings.EqualFold(typed, "true")
+	default:
+		return false
+	}
+}
+
 func deriveModelSourceType(scopes []string) string {
 	hasSubscription := false
 	hasInterface := false
+	hasThirdParty := false
 	for _, scope := range scopes {
 		switch scope {
 		case "subscription":
 			hasSubscription = true
 		case "interface":
 			hasInterface = true
+		case "third_party":
+			hasThirdParty = true
 		}
+	}
+	if hasThirdParty && (hasSubscription || hasInterface) {
+		return "shared"
+	}
+	if hasThirdParty {
+		return "third_party"
 	}
 	if hasSubscription && hasInterface {
 		return "shared"

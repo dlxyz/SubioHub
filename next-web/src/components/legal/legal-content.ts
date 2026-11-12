@@ -7,7 +7,7 @@ export type LegalDoc = {
   sections: Array<{ heading: string; body: string[] }>;
 };
 
-// 联系方式（提交 Creem 审核前，请替换为真实可联系邮箱）。
+// 联系方式（提交 Creem / Waffo 等支付渠道审核前，请替换为真实可收信邮箱）。
 export const LEGAL_CONTACT_EMAIL = 'support@subio.com';
 
 type LegalDict = Record<LegalKind, LegalDoc>;
@@ -15,7 +15,7 @@ type LegalDict = Record<LegalKind, LegalDoc>;
 const zh: LegalDict = {
   privacy: {
     title: '隐私政策',
-    updated: '最近更新：2026-08-14',
+    updated: '最近更新：2026-11-07',
     intro:
       'SubioHub（以下简称「我们」）尊重并保护您的隐私。本隐私政策说明我们如何收集、使用、共享与保护您在使用本服务时提供的个人信息。',
     sections: [
@@ -23,14 +23,14 @@ const zh: LegalDict = {
         heading: '1. 我们收集的信息',
         body: [
           '账户信息：当您注册时，我们收集您的电子邮箱、用户名以及您主动填写的其他资料。',
-          '支付信息：所有付款均由第三方支付处理商 Creem 处理。我们不会接触或存储您的完整银行卡号或支付凭证。',
+          '支付信息：所有付款均由第三方支付服务商（Creem、Waffo 等）处理。我们不会接触或存储您的完整银行卡号或支付凭证。',
           '使用信息：我们可能记录您访问服务的时间、来源地址、日志等，用于安全与运营分析。',
         ],
       },
       {
         heading: '2. 支付处理',
         body: [
-          '本服务的付款由 Creem 作为商家记录方（Merchant of Record）处理。您在进行付款时提供的支付信息将直接提交给 Creem，并受 Creem 隐私政策约束。',
+          '本服务的付款由 Creem 或 Waffo 等支付服务商作为商家记录方（Merchant of Record）处理。您在付款时提供的支付信息将直接提交给相应支付服务商，并受其隐私政策约束。',
         ],
       },
       {
@@ -42,7 +42,7 @@ const zh: LegalDict = {
       {
         heading: '4. 信息的共享',
         body: [
-          '我们仅在必要时与支付处理商（Creem）等第三方共享信息，或依据法律要求、为保护我们合法权益而披露。',
+          '我们仅在必要时与支付服务商（如 Creem、Waffo）等第三方共享信息，或依据法律要求、为保护我们合法权益而披露。',
         ],
       },
       {
@@ -59,13 +59,16 @@ const zh: LegalDict = {
   },
   terms: {
     title: '服务条款',
-    updated: '最近更新：2026-08-14',
+    updated: '最近更新：2026-11-07',
     intro:
       '本服务条款（以下简称「条款」）约束您对 SubioHub（以下简称「我们」）所提供 AI API 网关服务的使用。使用本服务即表示您同意本条款。',
     sections: [
       {
         heading: '1. 服务说明',
-        body: ['SubioHub 提供统一的 AI 模型 API 分发与管理服务，包括 API 密钥、额度管理、订阅套餐等。'],
+        body: [
+          'SubioHub 提供统一的 AI 模型 API 分发与管理服务，包括 API 密钥、额度管理、订阅套餐等。',
+          '本服务为在线数字服务，不涉及任何实体商品的生产、仓储或物流配送。',
+        ],
       },
       {
         heading: '2. 账户与资格',
@@ -74,7 +77,7 @@ const zh: LegalDict = {
       {
         heading: '3. 订阅与支付',
         body: [
-          '本服务的付款由 Creem 作为商家记录方（Merchant of Record）处理。您确认并同意向 Creem 支付相应的费用、税费与续订费用。',
+          '本服务的付款由 Creem 或 Waffo 等支付服务商作为商家记录方（Merchant of Record）处理。您确认并同意向相应支付服务商支付费用、税费与续订费用。',
           '订阅将按所选周期自动续订，除非您在下一计费周期前取消。',
         ],
       },
@@ -104,9 +107,9 @@ const zh: LegalDict = {
   },
   refund: {
     title: '退款政策',
-    updated: '最近更新：2026-08-14',
+    updated: '最近更新：2026-11-07',
     intro:
-      '本退款政策说明 SubioHub 提供的退款条件与流程。本服务的付款由 Creem 处理，退款亦通过 Creem 执行。',
+      '本退款政策说明 SubioHub 提供的退款条件与流程。本服务的付款由 Creem、Waffo 等支付服务商处理，退款亦通过原支付服务商执行。',
     sections: [
       {
         heading: '1. 数字服务的性质',
@@ -163,7 +166,7 @@ const zh: LegalDict = {
 const en: LegalDict = {
   privacy: {
     title: 'Privacy Policy',
-    updated: 'Last updated: 2026-08-14',
+    updated: 'Last updated: 2026-11-07',
     intro:
       'SubioHub ("we", "us", "our") respects and protects your privacy. This Privacy Policy explains how we collect, use, share and protect your personal information when you use our services.',
     sections: [
@@ -171,14 +174,14 @@ const en: LegalDict = {
         heading: '1. Information We Collect',
         body: [
           'Account information: when you register, we collect your email address, username and other details you provide.',
-          'Payment information: all payments are processed by our third-party payment processor, Creem. We do not receive or store your full card number or payment credentials.',
+          'Payment information: all payments are processed by third-party payment providers such as Creem and Waffo. We do not receive or store your full card number or payment credentials.',
           'Usage information: we may record access time, referring address, logs and similar data for security and operations.',
         ],
       },
       {
         heading: '2. Payment Processing',
         body: [
-          'Payments for our services are processed by Creem, which acts as the Merchant of Record. Payment information you provide at checkout is submitted directly to Creem and is subject to Creem\u2019s Privacy Policy.',
+          'Payments for our services are processed by payment providers such as Creem or Waffo, which act as the Merchant of Record. Payment information you provide at checkout is submitted directly to the relevant provider and is subject to that provider\u2019s Privacy Policy.',
         ],
       },
       {
@@ -190,7 +193,7 @@ const en: LegalDict = {
       {
         heading: '4. How We Share Information',
         body: [
-          'We only share information with payment processors such as Creem where necessary, or where required by law or to protect our legitimate interests.',
+          'We only share information with payment providers such as Creem and Waffo where necessary, or where required by law or to protect our legitimate interests.',
         ],
       },
       {
@@ -207,13 +210,16 @@ const en: LegalDict = {
   },
   terms: {
     title: 'Terms of Service',
-    updated: 'Last updated: 2026-08-14',
+    updated: 'Last updated: 2026-11-07',
     intro:
       'These Terms of Service ("Terms") govern your use of the AI API gateway service provided by SubioHub ("we", "us", "our"). By using the service, you agree to these Terms.',
     sections: [
       {
         heading: '1. Service Description',
-        body: ['SubioHub provides a unified AI model API distribution and management service, including API keys, quota management and subscription plans.'],
+        body: [
+          'SubioHub provides a unified AI model API distribution and management service, including API keys, quota management and subscription plans.',
+          'The service is an online digital service. No physical goods are produced, stored or shipped.',
+        ],
       },
       {
         heading: '2. Accounts and Eligibility',
@@ -222,7 +228,7 @@ const en: LegalDict = {
       {
         heading: '3. Subscriptions and Payment',
         body: [
-          'Payments are processed by Creem, which acts as the Merchant of Record. You agree to pay Creem the applicable fees, taxes and renewal charges.',
+          'Payments are processed by payment providers such as Creem or Waffo, which act as the Merchant of Record. You agree to pay the applicable fees, taxes and renewal charges to the relevant provider.',
           'Subscriptions renew automatically for the selected period unless you cancel before the next billing cycle.',
         ],
       },
@@ -252,9 +258,9 @@ const en: LegalDict = {
   },
   refund: {
     title: 'Refund Policy',
-    updated: 'Last updated: 2026-08-14',
+    updated: 'Last updated: 2026-11-07',
     intro:
-      'This Refund Policy explains the conditions and process for refunds offered by SubioHub. Payments are processed by Creem, and refunds are executed through Creem.',
+      'This Refund Policy explains the conditions and process for refunds offered by SubioHub. Payments are processed by payment providers such as Creem or Waffo, and refunds are executed through the original payment provider.',
     sections: [
       {
         heading: '1. Nature of Digital Services',

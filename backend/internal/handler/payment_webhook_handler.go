@@ -70,6 +70,12 @@ func (h *PaymentWebhookHandler) TegroWebhook(c *gin.Context) {
 	h.handleNotify(c, payment.TypeTegro)
 }
 
+// WaffoWebhook handles Waffo payment notifications.
+// POST /api/v1/payment/webhook/waffo
+func (h *PaymentWebhookHandler) WaffoWebhook(c *gin.Context) {
+	h.handleNotify(c, payment.TypeWaffo)
+}
+
 // handleNotify is the shared logic for all provider webhook handlers.
 func (h *PaymentWebhookHandler) handleNotify(c *gin.Context, providerKey string) {
 	var rawBody string
@@ -151,6 +157,19 @@ func extractOutTradeNo(rawBody, providerKey string) string {
 			}
 			return evt.Object.RequestID
 		}
+	case payment.TypeWaffo:
+		var evt struct {
+			Data struct {
+				OrderMerchantExternalID string            `json:"orderMerchantExternalId"`
+				OrderMetadata           map[string]string `json:"orderMetadata"`
+			} `json:"data"`
+		}
+		if err := json.Unmarshal([]byte(rawBody), &evt); err == nil {
+			if evt.Data.OrderMerchantExternalID != "" {
+				return evt.Data.OrderMerchantExternalID
+			}
+			return evt.Data.OrderMetadata["order_id"]
+		}
 	}
 	// For other providers (Stripe, Alipay direct, WxPay direct), the registry
 	// typically has only one instance, so no instance lookup is needed.
@@ -179,6 +198,8 @@ func writeSuccessResponse(c *gin.Context, providerKey string) {
 	case payment.TypeStripe:
 		c.String(http.StatusOK, "")
 	case payment.TypeTegro:
+		c.String(http.StatusOK, "OK")
+	case payment.TypeWaffo:
 		c.String(http.StatusOK, "OK")
 	default:
 		c.String(http.StatusOK, "success")

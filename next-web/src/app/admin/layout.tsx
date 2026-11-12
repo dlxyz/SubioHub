@@ -79,6 +79,11 @@ const adminSections: NavSection[] = [
         icon: Box,
       },
       {
+        labelKey: "admin.nav.relayIntegrations",
+        href: "/admin/relay-integrations",
+        icon: Box,
+      },
+      {
         labelKey: "admin.nav.overseasChannels",
         href: "/admin/channels",
         icon: Globe,
