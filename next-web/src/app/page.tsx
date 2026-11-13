@@ -90,10 +90,10 @@ export default function HomePage() {
                 <Link href={localizedNewsPath} className="text-sm font-medium text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors">
                   {t('dashboard.nav.news')}
                 </Link>
-                <Link href="#" className="text-sm font-medium text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors">
+                <Link href="https://github.com/dlxyz/SubioHub" target="_blank" rel="noreferrer" className="text-sm font-medium text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors">
                   {t('dashboard.nav.docs')}
                 </Link>
-                <Link href="#" className="text-sm font-medium text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors">
+                <Link href={localizedContactPath} className="text-sm font-medium text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors">
                   {t('dashboard.nav.about')}
                 </Link>
               </nav>
@@ -170,8 +170,8 @@ export default function HomePage() {
               <Link href={localizedModelsPath} className="text-sm font-medium text-gray-600 dark:text-gray-300">{t('dashboard.nav.modelHub')}</Link>
               <Link href={localizedPricingPath} className="text-sm font-medium text-gray-600 dark:text-gray-300">{t('dashboard.nav.pricing')}</Link>
               <Link href={localizedNewsPath} className="text-sm font-medium text-gray-600 dark:text-gray-300">{t('dashboard.nav.news')}</Link>
-              <Link href="#" className="text-sm font-medium text-gray-600 dark:text-gray-300">{t('dashboard.nav.docs')}</Link>
-              <Link href="#" className="text-sm font-medium text-gray-600 dark:text-gray-300">{t('dashboard.nav.about')}</Link>
+              <Link href="https://github.com/dlxyz/SubioHub" target="_blank" rel="noreferrer" className="text-sm font-medium text-gray-600 dark:text-gray-300">{t('dashboard.nav.docs')}</Link>
+              <Link href={localizedContactPath} className="text-sm font-medium text-gray-600 dark:text-gray-300">{t('dashboard.nav.about')}</Link>
 
               <div className="flex items-center gap-2 rounded-xl border border-gray-200 px-3 py-2 text-gray-500 dark:border-gray-800 dark:text-gray-300">
                 <Globe className="h-4 w-4" />
