@@ -15,7 +15,7 @@ type LegalDict = Record<LegalKind, LegalDoc>;
 const zh: LegalDict = {
   privacy: {
     title: '隐私政策',
-    updated: '最近更新：2026-11-07',
+    updated: '最近更新：2026-11-13',
     intro:
       'SubioHub（以下简称「我们」）尊重并保护您的隐私。本隐私政策说明我们如何收集、使用、共享与保护您在使用本服务时提供的个人信息。',
     sections: [
@@ -36,7 +36,7 @@ const zh: LegalDict = {
       {
         heading: '3. 信息的使用',
         body: [
-          '我们使用上述信息用于：提供服务与账户管理、处理账单与订阅、保障服务安全、以及向您发送必要的服务通知。',
+          '我们使用上述信息用于：提供服务与账户管理、处理账单与充值、保障服务安全、以及向您发送必要的服务通知。',
         ],
       },
       {
@@ -59,14 +59,14 @@ const zh: LegalDict = {
   },
   terms: {
     title: '服务条款',
-    updated: '最近更新：2026-11-07',
+    updated: '最近更新：2026-11-13',
     intro:
       '本服务条款（以下简称「条款」）约束您对 SubioHub（以下简称「我们」）所提供 AI API 网关服务的使用。使用本服务即表示您同意本条款。',
     sections: [
       {
         heading: '1. 服务说明',
         body: [
-          'SubioHub 提供统一的 AI 模型 API 分发与管理服务，包括 API 密钥、额度管理、订阅套餐等。',
+          'SubioHub 提供统一的 AI 模型 API 分发与管理服务，包括 API 密钥、额度管理与在线充值等。',
           '本服务为在线数字服务，不涉及任何实体商品的生产、仓储或物流配送。',
         ],
       },
@@ -75,10 +75,12 @@ const zh: LegalDict = {
         body: ['您需提供真实、准确的信息注册账户，并妥善保管账户凭据。您对账户下的所有活动负责。'],
       },
       {
-        heading: '3. 订阅与支付',
+        heading: '3. 充值与支付',
         body: [
-          '本服务的付款由 Creem 或 Waffo 等支付服务商作为商家记录方（Merchant of Record）处理。您确认并同意向相应支付服务商支付费用、税费与续订费用。',
-          '订阅将按所选周期自动续订，除非您在下一计费周期前取消。',
+          '本服务的付款由 Creem 或 Waffo 等支付服务商作为商家记录方（Merchant of Record）处理。您确认并同意向相应支付服务商支付一次性充值费用及相关税费。',
+          '本服务仅提供一次性充值，不销售订阅套餐，不会自动续费，也不会产生周期性扣款或续订费用。',
+          '充值到账后的余额永久有效，不设有效期、不会过期清零，用于按实际用量抵扣模型调用费用。',
+          '充值档位、单笔最低/最高金额与手续费以《定价》页面展示为准。',
         ],
       },
       {
@@ -107,13 +109,13 @@ const zh: LegalDict = {
   },
   refund: {
     title: '退款政策',
-    updated: '最近更新：2026-11-07',
+    updated: '最近更新：2026-11-13',
     intro:
       '本退款政策说明 SubioHub 提供的退款条件与流程。本服务的付款由 Creem、Waffo 等支付服务商处理，退款亦通过原支付服务商执行。',
     sections: [
       {
         heading: '1. 数字服务的性质',
-        body: ['本服务提供的是即时生效的数字服务（API 额度与订阅）。一旦额度发放或订阅生效，通常不予退款。'],
+        body: ['本服务提供的是即时生效的数字服务（API 额度）。余额充值到账后长期有效，已消耗的额度通常不予退款。'],
       },
       {
         heading: '2. 可退款情形',
@@ -126,7 +128,7 @@ const zh: LegalDict = {
         heading: '3. 不予退款情形',
         body: [
           '因您自身原因（如误购、不再需要、账户被封禁等）申请退款；',
-          '订阅已到期或已使用的部分。',
+          '已使用或已消耗的额度。',
         ],
       },
       {
@@ -166,7 +168,7 @@ const zh: LegalDict = {
 const en: LegalDict = {
   privacy: {
     title: 'Privacy Policy',
-    updated: 'Last updated: 2026-11-07',
+    updated: 'Last updated: 2026-11-13',
     intro:
       'SubioHub ("we", "us", "our") respects and protects your privacy. This Privacy Policy explains how we collect, use, share and protect your personal information when you use our services.',
     sections: [
@@ -187,7 +189,7 @@ const en: LegalDict = {
       {
         heading: '3. How We Use Information',
         body: [
-          'We use the above information to provide and manage the service, process billing and subscriptions, secure the service, and send necessary service notices.',
+          'We use the above information to provide and manage the service, process billing and top-ups, secure the service, and send necessary service notices.',
         ],
       },
       {
@@ -210,14 +212,14 @@ const en: LegalDict = {
   },
   terms: {
     title: 'Terms of Service',
-    updated: 'Last updated: 2026-11-07',
+    updated: 'Last updated: 2026-11-13',
     intro:
       'These Terms of Service ("Terms") govern your use of the AI API gateway service provided by SubioHub ("we", "us", "our"). By using the service, you agree to these Terms.',
     sections: [
       {
         heading: '1. Service Description',
         body: [
-          'SubioHub provides a unified AI model API distribution and management service, including API keys, quota management and subscription plans.',
+          'SubioHub provides a unified AI model API distribution and management service, including API keys, quota management and one-time top-ups.',
           'The service is an online digital service. No physical goods are produced, stored or shipped.',
         ],
       },
@@ -226,10 +228,12 @@ const en: LegalDict = {
         body: ['You must provide true and accurate information to register, keep your credentials safe, and are responsible for all activity under your account.'],
       },
       {
-        heading: '3. Subscriptions and Payment',
+        heading: '3. Top-ups and Payment',
         body: [
-          'Payments are processed by payment providers such as Creem or Waffo, which act as the Merchant of Record. You agree to pay the applicable fees, taxes and renewal charges to the relevant provider.',
-          'Subscriptions renew automatically for the selected period unless you cancel before the next billing cycle.',
+          'Payments are processed by payment providers such as Creem or Waffo, which act as the Merchant of Record. You agree to pay the one-time top-up fees and applicable taxes to the relevant provider.',
+          'We only offer one-time top-ups. We do not sell subscription plans, do not auto-renew and do not create recurring charges or renewal fees.',
+          'Credited balance is valid permanently, has no expiry date and is never reset. It is used to offset model usage charges.',
+          'Top-up tiers, minimum and maximum amounts per order, and fees are published on the Pricing page.',
         ],
       },
       {
@@ -258,13 +262,13 @@ const en: LegalDict = {
   },
   refund: {
     title: 'Refund Policy',
-    updated: 'Last updated: 2026-11-07',
+    updated: 'Last updated: 2026-11-13',
     intro:
       'This Refund Policy explains the conditions and process for refunds offered by SubioHub. Payments are processed by payment providers such as Creem or Waffo, and refunds are executed through the original payment provider.',
     sections: [
       {
         heading: '1. Nature of Digital Services',
-        body: ['Our service provides instantly delivered digital services (API quota and subscriptions). Once quota is issued or a subscription becomes active, it is generally non-refundable.'],
+        body: ['Our service provides instantly delivered digital services (API quota). Credited balance remains valid permanently, and quota already consumed is generally non-refundable.'],
       },
       {
         heading: '2. Eligible for Refund',
@@ -277,7 +281,7 @@ const en: LegalDict = {
         heading: '3. Non-refundable',
         body: [
           'Refunds requested for personal reasons (e.g. mistaken purchase, no longer needed, account suspension);',
-          'Expired subscriptions or used portions.',
+          'Quota already used or consumed.',
         ],
       },
       {

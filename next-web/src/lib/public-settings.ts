@@ -9,6 +9,7 @@ export type PublicSettings = {
   site_name: string;
   site_logo: string;
   site_subtitle: string;
+  site_enabled_locales?: string[];
   contact_info?: string;
   balance_low_notify_enabled?: boolean;
   balance_low_notify_threshold?: number;

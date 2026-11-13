@@ -332,4 +332,93 @@ export default mergeMessages(ko, {
       },
     },
   },
+  pricing: {
+    meta: {
+      title: '가격 - SubioHub | 1회 충전, 잔액 만료 없음',
+      description:
+        'SubioHub는 1회 충전만 제공합니다. 구독 플랜과 자동 갱신이 없습니다. 잔액은 만료되지 않으며 토큰 사용량에 따라 과금됩니다.',
+    },
+    hero: {
+      badge: '1회 충전 · 잔액 만료 없음',
+      title: '사용한 만큼 결제하고 필요한 만큼 충전하세요',
+      subtitle:
+        'SubioHub는 1회 충전만 제공합니다. 구독 플랜, 자동 갱신, 정기 결제가 없습니다. 충전된 잔액은 영구적으로 유효하며 만료되거나 초기화되지 않습니다.',
+      primaryCta: '가입하고 충전하기',
+      secondaryCta: '모델 가격 보기',
+    },
+    highlights: {
+      noSubscription: {
+        title: '구독 없음, 자동 결제 없음',
+        description:
+          '구독 플랜을 판매하지 않고 결제 위임을 저장하지 않으며 자동 갱신이나 정기 청구서를 생성하지 않습니다.',
+      },
+      permanent: {
+        title: '잔액 만료 없음',
+        description: '충전 금액은 즉시 반영됩니다. 사용하지 않은 잔액은 유효 기간이 없고 초기화되지 않습니다.',
+      },
+      realtime: {
+        title: '토큰 단위 실시간 과금',
+        description: '공개된 입력·출력·캐시 단가에 따라 요청마다 잔액이 차감됩니다.',
+      },
+    },
+    recharge: {
+      title: '충전 금액',
+      subtitle:
+        '충전 금액과 동일하게 잔액이 적립됩니다(1:1). 수수료: 20 USD 미만은 6% + 0.50 USD, 20 USD 이상은 6%만 부과되며 충전 금액과 별도로 청구됩니다.',
+      columns: {
+        amount: '충전 금액',
+        credited: '적립 잔액',
+        fee: '수수료',
+        pay: '총 결제 금액',
+      },
+      minMax: '1회 최소 {min} USD, 최대 {max} USD입니다.',
+      customAmount: '위 범위 내에서 임의 금액을 입력할 수 있으며 동일한 수수료 규칙이 적용됩니다.',
+      sameBenefits: '모든 금액의 혜택은 동일합니다. 추가로 구매해야 하는 플랜은 없습니다.',
+    },
+    billing: {
+      title: '과금 안내',
+      tokenBilling:
+        '과금 방식: 토큰 단위로 실시간 차감. 월 요금, 최소 사용 금액, 고정 결제 주기가 없습니다.',
+      fee: '수수료: 20 USD 미만은 6% + 0.50 USD, 20 USD 이상은 6%만.',
+      modelPrices: '모델 단가: 모델 광장에 공개됩니다.',
+      currency: '통화: 미국 달러(USD)로 표시 및 결제됩니다.',
+      balanceValidity: '잔액 유효 기간: 영구적이며 만료되지 않습니다.',
+      payment: '결제 및 영수증: 결제 대행사 Waffo가 처리합니다.',
+    },
+    faq: {
+      title: '자주 묻는 질문',
+      balanceExpiry: {
+        question: '잔액이 만료되거나 초기화되나요?',
+        answer: '아니요. 잔액은 영구적으로 유효하며 만료일이 없고 미사용으로 초기화되지 않습니다.',
+      },
+      autoRenewal: {
+        question: '자동 갱신이나 정기 결제가 있나요?',
+        answer: '없습니다. 구독 플랜을 제공하지 않으며 자동 갱신이나 정기 결제 위임도 없습니다.',
+      },
+      minimum: {
+        question: '최소 충전 금액은 얼마인가요?',
+        answer: '1회 최소 {min} USD, 최대 {max} USD이며 임의 금액도 가능합니다.',
+      },
+      fee: {
+        question: '수수료는 어떻게 계산되나요?',
+        answer:
+          '20 USD 미만은 충전 금액의 6%에 0.50 USD를 더하고, 20 USD 이상은 6%만 부과합니다. 수수료는 충전 금액과 별도로 청구됩니다.',
+      },
+      usage: {
+        question: '충전 후 사용은 어떻게 과금되나요?',
+        answer: '실제 토큰 사용량에 따라 실시간으로 잔액이 차감되며 단가는 모델 광장에 공개됩니다.',
+      },
+      refund: {
+        question: '환불이 가능한가요?',
+        answer: '환불 조건과 절차는 환불 정책을 참고하세요.',
+      },
+    },
+    cta: {
+      title: '시작할 준비가 되셨나요?',
+      description: '가입 후 충전하고 API 키를 만드세요. 구독 없이 필요할 때 충전하면 됩니다.',
+      button: '지금 가입',
+      viewPricing: '가격 및 충전 안내 보기',
+    },
+    currencyNote: '모든 금액은 미국 달러(USD) 기준입니다.',
+  },
 });

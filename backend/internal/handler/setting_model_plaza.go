@@ -37,6 +37,15 @@ type publicModelPlazaCollectedModel struct {
 	SourceScopes []string
 }
 
+// pricingSourceUnavailable 表示模型既无动态价格也无兜底价格。
+const pricingSourceUnavailable = "unavailable"
+
+// shouldPublishModel 判断模型是否应在公开模型广场展示；无价格的模型不展示，
+// 避免向访客公示"暂未标定"的模型。
+func shouldPublishModel(model dto.PublicModelPlazaModel) bool {
+	return model.PricingSource != pricingSourceUnavailable
+}
+
 // GetPublicModelPlaza 获取公开模型广场数据
 // GET /api/v1/settings/public/model-plaza
 func (h *SettingHandler) GetPublicModelPlaza(c *gin.Context) {
@@ -69,11 +78,12 @@ func (h *SettingHandler) GetPublicModelPlaza(c *gin.Context) {
 
 	for _, modelID := range normalizeModelIDs(modelIDs) {
 		model := h.buildPublicModelPlazaModel(modelID, collectedByID[modelID])
+		if !shouldPublishModel(model) {
+			continue
+		}
 		models = append(models, model)
 		providerCounts[model.Provider]++
-		if model.PricingSource != "unavailable" {
-			pricedModelCount++
-		}
+		pricedModelCount++
 		if model.SupportsPromptCaching {
 			cachedModelCount++
 		}
@@ -277,7 +287,7 @@ func (h *SettingHandler) buildPublicModelPlazaModel(modelID string, collected pu
 	}
 
 	billingPricing := (*service.ModelPricing)(nil)
-	pricingSource := "unavailable"
+	pricingSource := pricingSourceUnavailable
 	if h.billingService != nil {
 		if pricing, err := h.billingService.GetModelPricing(modelID); err == nil {
 			billingPricing = pricing

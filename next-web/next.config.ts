@@ -5,6 +5,15 @@ const backendOrigin =
 
 const nextConfig: NextConfig = {
   output: 'standalone',
+  async redirects() {
+    return [
+      // 套餐/充值入口统一指向公开定价页，避免访问旧路径 404。
+      { source: '/plans', destination: '/pricing', permanent: true },
+      { source: '/recharge', destination: '/pricing', permanent: true },
+      { source: '/:locale(zh|en)/plans', destination: '/:locale/pricing', permanent: true },
+      { source: '/:locale(zh|en)/recharge', destination: '/:locale/pricing', permanent: true },
+    ];
+  },
   async rewrites() {
     return [
       {

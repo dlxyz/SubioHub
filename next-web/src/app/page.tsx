@@ -6,6 +6,7 @@ import { useAuthStore } from '@/store/auth';
 import { Play, FileText, Copy, Menu, X, Sun, Moon, Globe } from 'lucide-react';
 import { localizePath } from '@/i18n/routing';
 import { useI18n } from '@/i18n/use-i18n';
+import { PRICING_HIGHLIGHT_KEYS } from '@/lib/pricing-content';
 
 export default function HomePage() {
   const { isAuthenticated, user } = useAuthStore();
@@ -19,6 +20,7 @@ export default function HomePage() {
   const consoleEntryPath = isAuthenticated ? dashboardPath : '/login';
   const localizedHomePath = localizePath('/', locale);
   const localizedModelsPath = localizePath('/models', locale);
+  const localizedPricingPath = localizePath('/pricing', locale);
   const localizedLoginPath = localizePath('/login', locale);
   const localizedRegisterPath = localizePath('/register', locale);
   const localizedNewsPath = localizePath('/news', locale);
@@ -81,6 +83,9 @@ export default function HomePage() {
                 </Link>
                 <Link href={localizedModelsPath} className="text-sm font-medium text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors">
                   {t('dashboard.nav.modelHub')}
+                </Link>
+                <Link href={localizedPricingPath} className="text-sm font-medium text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors">
+                  {t('dashboard.nav.pricing')}
                 </Link>
                 <Link href={localizedNewsPath} className="text-sm font-medium text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors">
                   {t('dashboard.nav.news')}
@@ -163,6 +168,7 @@ export default function HomePage() {
               <Link href={localizedHomePath} className="text-sm font-semibold text-gray-900 dark:text-white">{t('dashboard.nav.home')}</Link>
               <Link href={consoleEntryPath} className="text-sm font-medium text-gray-600 dark:text-gray-300">{t('dashboard.nav.console')}</Link>
               <Link href={localizedModelsPath} className="text-sm font-medium text-gray-600 dark:text-gray-300">{t('dashboard.nav.modelHub')}</Link>
+              <Link href={localizedPricingPath} className="text-sm font-medium text-gray-600 dark:text-gray-300">{t('dashboard.nav.pricing')}</Link>
               <Link href={localizedNewsPath} className="text-sm font-medium text-gray-600 dark:text-gray-300">{t('dashboard.nav.news')}</Link>
               <Link href="#" className="text-sm font-medium text-gray-600 dark:text-gray-300">{t('dashboard.nav.docs')}</Link>
               <Link href="#" className="text-sm font-medium text-gray-600 dark:text-gray-300">{t('dashboard.nav.about')}</Link>
@@ -295,8 +301,45 @@ export default function HomePage() {
         </div>
       </div>
 
+      {/* Pricing */}
+      <section className="border-t border-gray-100 bg-white dark:border-gray-800/60 dark:bg-[#121212]">
+        <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+          <div className="flex flex-col items-center gap-6 text-center">
+            <span className="inline-flex items-center rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700 dark:border-blue-900/60 dark:bg-blue-950/40 dark:text-blue-300">
+              {t('pricing.hero.badge')}
+            </span>
+            <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">{t('pricing.hero.title')}</h2>
+            <p className="max-w-2xl text-sm text-gray-600 dark:text-gray-400 sm:text-base">{t('pricing.hero.subtitle')}</p>
+            <div className="grid w-full max-w-4xl gap-4 sm:grid-cols-3">
+              {PRICING_HIGHLIGHT_KEYS.map((key) => (
+                <div
+                  key={key}
+                  className="rounded-2xl border border-gray-200 bg-gray-50/60 p-5 text-left dark:border-gray-800 dark:bg-gray-900/40"
+                >
+                  <div className="text-sm font-semibold text-gray-900 dark:text-white">
+                    {t(`pricing.highlights.${key}.title`)}
+                  </div>
+                  <p className="mt-2 text-xs leading-5 text-gray-500 dark:text-gray-400">
+                    {t(`pricing.highlights.${key}.description`)}
+                  </p>
+                </div>
+              ))}
+            </div>
+            <Link
+              href={localizedPricingPath}
+              className="inline-flex items-center justify-center rounded-full bg-blue-600 px-7 py-3 text-sm font-medium text-white shadow-sm transition-colors hover:bg-blue-700"
+            >
+              {t('pricing.cta.viewPricing')}
+            </Link>
+          </div>
+        </div>
+      </section>
+
       <footer className="py-8 text-center mt-auto">
         <div className="mb-4 flex flex-wrap justify-center gap-x-6 gap-y-2">
+          <Link href={localizedPricingPath} className="text-sm text-gray-400 transition-colors hover:text-gray-900 dark:text-gray-500 dark:hover:text-white">
+            {t('legal.nav.pricing')}
+          </Link>
           <Link href={localizedPrivacyPath} className="text-sm text-gray-400 transition-colors hover:text-gray-900 dark:text-gray-500 dark:hover:text-white">
             {t('legal.nav.privacy')}
           </Link>

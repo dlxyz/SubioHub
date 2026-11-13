@@ -332,4 +332,98 @@ export default mergeMessages(id, {
       },
     },
   },
+  pricing: {
+    meta: {
+      title: 'Harga - SubioHub | Isi ulang sekali, saldo tidak kedaluwarsa',
+      description:
+        'SubioHub hanya menyediakan isi ulang sekali. Tanpa paket langganan dan tanpa perpanjangan otomatis. Saldo tidak kedaluwarsa dan ditagih sesuai penggunaan token.',
+    },
+    hero: {
+      badge: 'Isi ulang sekali · Saldo tidak kedaluwarsa',
+      title: 'Bayar sesuai pemakaian, isi ulang seperlunya',
+      subtitle:
+        'SubioHub hanya menyediakan isi ulang sekali. Tidak ada paket langganan, tidak ada perpanjangan otomatis dan tidak ada tagihan berkala. Saldo berlaku permanen, tidak kedaluwarsa dan tidak pernah direset.',
+      primaryCta: 'Daftar dan isi ulang',
+      secondaryCta: 'Lihat harga model',
+    },
+    highlights: {
+      noSubscription: {
+        title: 'Tanpa langganan, tanpa potongan otomatis',
+        description:
+          'Kami tidak menjual paket langganan, tidak menyimpan mandat penagihan, tidak memperpanjang otomatis atau membuat tagihan berkala.',
+      },
+      permanent: {
+        title: 'Saldo tidak kedaluwarsa',
+        description:
+          'Isi ulang langsung masuk. Saldo yang belum terpakai tidak memiliki tanggal kedaluwarsa dan tidak pernah direset.',
+      },
+      realtime: {
+        title: 'Penagihan per token secara real time',
+        description:
+          'Pemakaian dipotong per permintaan sesuai harga input, output dan cache yang dipublikasikan.',
+      },
+    },
+    recharge: {
+      title: 'Pilihan isi ulang',
+      subtitle:
+        'Saldo yang masuk sama dengan jumlah isi ulang (1:1). Biaya: 6% + 0,50 USD untuk pesanan di bawah 20 USD; 20 USD ke atas hanya 6%, dikenakan di luar jumlah isi ulang.',
+      columns: {
+        amount: 'Jumlah isi ulang',
+        credited: 'Saldo masuk',
+        fee: 'Biaya',
+        pay: 'Total bayar',
+      },
+      minMax: 'Minimal {min} USD dan maksimal {max} USD per isi ulang.',
+      customAmount: 'Jumlah berapa pun dalam rentang tersebut didukung dengan aturan biaya yang sama.',
+      sameBenefits: 'Semua pilihan setara. Tidak ada paket atau manfaat tambahan yang perlu dibeli.',
+    },
+    billing: {
+      title: 'Detail penagihan',
+      tokenBilling:
+        'Metode: dipotong per token secara real time. Tanpa biaya bulanan, tanpa belanja minimum dan tanpa siklus tetap.',
+      fee: 'Biaya: 6% + 0,50 USD untuk pesanan di bawah 20 USD; 20 USD ke atas hanya 6%.',
+      modelPrices: 'Harga model: dipublikasikan di Model Hub.',
+      currency: 'Mata uang: harga dan penagihan dalam dolar AS (USD).',
+      balanceValidity: 'Masa berlaku saldo: permanen, tidak kedaluwarsa.',
+      payment: 'Pembayaran dan kuitansi: ditangani oleh Waffo.',
+    },
+    faq: {
+      title: 'Pertanyaan umum',
+      balanceExpiry: {
+        question: 'Apakah saldo kedaluwarsa atau direset?',
+        answer: 'Tidak. Saldo berlaku permanen, tanpa tanggal kedaluwarsa dan tidak direset karena tidak dipakai.',
+      },
+      autoRenewal: {
+        question: 'Apakah ada perpanjangan otomatis atau tagihan berkala?',
+        answer:
+          'Tidak. Kami tidak menawarkan paket langganan, tidak ada perpanjangan otomatis dan tidak ada mandat penagihan berulang.',
+      },
+      minimum: {
+        question: 'Berapa isi ulang minimum?',
+        answer:
+          'Minimal {min} USD dan maksimal {max} USD per isi ulang. Jumlah khusus didukung.',
+      },
+      fee: {
+        question: 'Bagaimana biaya dihitung?',
+        answer:
+          'Pesanan di bawah 20 USD: 6% dari jumlah ditambah 0,50 USD. 20 USD ke atas: hanya 6%. Biaya ditambahkan di luar jumlah isi ulang.',
+      },
+      usage: {
+        question: 'Bagaimana pemakaian ditagih setelah isi ulang?',
+        answer:
+          'Saldo dipotong secara real time sesuai pemakaian token aktual, dengan harga yang dipublikasikan di Model Hub.',
+      },
+      refund: {
+        question: 'Bisakah saya meminta pengembalian dana?',
+        answer: 'Silakan lihat Kebijakan Pengembalian Dana untuk syarat dan prosesnya.',
+      },
+    },
+    cta: {
+      title: 'Siap memulai?',
+      description: 'Daftar, isi ulang dan buat API key. Tanpa langganan, isi ulang kapan pun dibutuhkan.',
+      button: 'Daftar sekarang',
+      viewPricing: 'Lihat harga dan detail isi ulang',
+    },
+    currencyNote: 'Semua jumlah dalam dolar AS (USD).',
+  },
 });

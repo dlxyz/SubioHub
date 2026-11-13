@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	"github.com/dlxyz/SubioHub/internal/handler/dto"
 	"github.com/dlxyz/SubioHub/internal/pkg/pagination"
 	"github.com/dlxyz/SubioHub/internal/service"
 	"github.com/stretchr/testify/require"
@@ -206,4 +207,21 @@ func TestIsRelayChannel(t *testing.T) {
 	require.False(t, isRelayChannel(service.Channel{ProviderConfig: map[string]any{"relay": false}}))
 	require.False(t, isRelayChannel(service.Channel{ProviderConfig: map[string]any{}}))
 	require.False(t, isRelayChannel(service.Channel{}))
+}
+
+func TestShouldPublishModel(t *testing.T) {
+	t.Parallel()
+
+	require.False(t, shouldPublishModel(dto.PublicModelPlazaModel{
+		ID:            "claude-opus-4-6-thinking",
+		PricingSource: "unavailable",
+	}))
+	require.True(t, shouldPublishModel(dto.PublicModelPlazaModel{
+		ID:            "gpt-5.4",
+		PricingSource: "dynamic",
+	}))
+	require.True(t, shouldPublishModel(dto.PublicModelPlazaModel{
+		ID:            "claude-sonnet-4-5",
+		PricingSource: "fallback",
+	}))
 }

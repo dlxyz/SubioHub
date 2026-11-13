@@ -332,4 +332,98 @@ export default mergeMessages(pt, {
       },
     },
   },
+  pricing: {
+    meta: {
+      title: 'Preços - SubioHub | Recarga única, saldo sem validade',
+      description:
+        'A SubioHub oferece apenas recargas únicas. Sem planos de assinatura e sem renovação automática. O saldo não expira e é cobrado por uso de tokens.',
+    },
+    hero: {
+      badge: 'Recarga única · Saldo sem validade',
+      title: 'Pague pelo uso, recarregue o que precisar',
+      subtitle:
+        'A SubioHub oferece apenas recargas únicas. Não há planos de assinatura, renovação automática ou cobranças periódicas. O saldo é válido permanentemente, não expira e nunca é zerado.',
+      primaryCta: 'Cadastrar e recarregar',
+      secondaryCta: 'Ver preços dos modelos',
+    },
+    highlights: {
+      noSubscription: {
+        title: 'Sem assinatura, sem cobrança automática',
+        description:
+          'Não vendemos planos de assinatura, não armazenamos autorizações de cobrança e não renovamos nem emitimos faturas periódicas.',
+      },
+      permanent: {
+        title: 'Saldo sem validade',
+        description:
+          'As recargas entram na hora. O saldo não utilizado não tem data de validade e nunca é zerado.',
+      },
+      realtime: {
+        title: 'Cobrança por token em tempo real',
+        description:
+          'O uso é descontado por requisição conforme os preços publicados de entrada, saída e cache.',
+      },
+    },
+    recharge: {
+      title: 'Valores de recarga',
+      subtitle:
+        'O saldo creditado é igual ao valor recarregado (1:1). Taxa: 6% + 0,50 USD para pedidos abaixo de 20 USD; a partir de 20 USD apenas 6%, cobrada além do valor da recarga.',
+      columns: {
+        amount: 'Valor da recarga',
+        credited: 'Saldo creditado',
+        fee: 'Taxa',
+        pay: 'Total a pagar',
+      },
+      minMax: 'Mínimo de {min} USD e máximo de {max} USD por recarga.',
+      customAmount: 'Qualquer valor dentro desse intervalo é aceito com a mesma regra de taxa.',
+      sameBenefits: 'Todos os valores são equivalentes. Não há planos ou benefícios adicionais para comprar.',
+    },
+    billing: {
+      title: 'Detalhes de cobrança',
+      tokenBilling:
+        'Método: desconto por token em tempo real. Sem mensalidade, sem consumo mínimo e sem ciclo fixo.',
+      fee: 'Taxa: 6% + 0,50 USD para pedidos abaixo de 20 USD; a partir de 20 USD apenas 6%.',
+      modelPrices: 'Preços dos modelos: publicados no Model Hub.',
+      currency: 'Moeda: preços e cobranças em dólares americanos (USD).',
+      balanceValidity: 'Validade do saldo: permanente, não expira.',
+      payment: 'Pagamento e recibos: processados pela Waffo.',
+    },
+    faq: {
+      title: 'Perguntas frequentes',
+      balanceExpiry: {
+        question: 'O saldo expira ou é zerado?',
+        answer: 'Não. O saldo é válido permanentemente, sem data de validade e não é zerado por inatividade.',
+      },
+      autoRenewal: {
+        question: 'Haverá renovação automática ou cobranças periódicas?',
+        answer:
+          'Não. Não oferecemos planos de assinatura, não há renovação automática nem autorização de cobrança recorrente.',
+      },
+      minimum: {
+        question: 'Qual é a recarga mínima?',
+        answer:
+          'O mínimo é {min} USD e o máximo é {max} USD por recarga. Valores personalizados são suportados.',
+      },
+      fee: {
+        question: 'Como a taxa é calculada?',
+        answer:
+          'Em pedidos abaixo de 20 USD, 6% do valor mais 0,50 USD. A partir de 20 USD, apenas 6%. A taxa é somada ao valor da recarga.',
+      },
+      usage: {
+        question: 'Como o uso é cobrado após a recarga?',
+        answer:
+          'O saldo é descontado em tempo real conforme o uso real de tokens, pelos preços publicados no Model Hub.',
+      },
+      refund: {
+        question: 'Posso solicitar reembolso?',
+        answer: 'Consulte nossa Política de Reembolso para condições e procedimentos.',
+      },
+    },
+    cta: {
+      title: 'Pronto para começar?',
+      description: 'Cadastre-se, recarregue e crie uma chave de API. Sem assinatura, recarregue quando quiser.',
+      button: 'Cadastrar agora',
+      viewPricing: 'Ver preços e detalhes de recarga',
+    },
+    currencyNote: 'Todos os valores são em dólares americanos (USD).',
+  },
 });

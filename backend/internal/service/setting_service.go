@@ -157,6 +157,7 @@ func (s *SettingService) GetPublicSettings(ctx context.Context) (*PublicSettings
 		SettingKeyRegistrationEnabled,
 		SettingKeyEmailVerifyEnabled,
 		SettingKeyRegistrationEmailSuffixWhitelist,
+		SettingKeySiteEnabledLocales,
 		SettingKeyPromoCodeEnabled,
 		SettingKeyPasswordResetEnabled,
 		SettingKeyInvitationCodeEnabled,
@@ -219,6 +220,7 @@ func (s *SettingService) GetPublicSettings(ctx context.Context) (*PublicSettings
 	registrationEmailSuffixWhitelist := ParseRegistrationEmailSuffixWhitelist(
 		settings[SettingKeyRegistrationEmailSuffixWhitelist],
 	)
+	siteEnabledLocales := parseSiteEnabledLocales(settings[SettingKeySiteEnabledLocales])
 	tableDefaultPageSize, tablePageSizeOptions := parseTablePreferences(
 		settings[SettingKeyTableDefaultPageSize],
 		settings[SettingKeyTablePageSizeOptions],
@@ -233,6 +235,7 @@ func (s *SettingService) GetPublicSettings(ctx context.Context) (*PublicSettings
 		RegistrationEnabled:              settings[SettingKeyRegistrationEnabled] == "true",
 		EmailVerifyEnabled:               emailVerifyEnabled,
 		RegistrationEmailSuffixWhitelist: registrationEmailSuffixWhitelist,
+		SiteEnabledLocales:               siteEnabledLocales,
 		PromoCodeEnabled:                 settings[SettingKeyPromoCodeEnabled] != "false", // 默认启用
 		PasswordResetEnabled:             passwordResetEnabled,
 		InvitationCodeEnabled:            settings[SettingKeyInvitationCodeEnabled] == "true",
@@ -502,6 +505,12 @@ func (s *SettingService) UpdateSettings(ctx context.Context, settings *SystemSet
 		return fmt.Errorf("marshal registration email suffix whitelist: %w", err)
 	}
 	updates[SettingKeyRegistrationEmailSuffixWhitelist] = string(registrationEmailSuffixWhitelistJSON)
+	settings.SiteEnabledLocales = normalizeSiteEnabledLocales(settings.SiteEnabledLocales)
+	siteEnabledLocalesJSON, err := json.Marshal(settings.SiteEnabledLocales)
+	if err != nil {
+		return fmt.Errorf("marshal site enabled locales: %w", err)
+	}
+	updates[SettingKeySiteEnabledLocales] = string(siteEnabledLocalesJSON)
 	updates[SettingKeyPromoCodeEnabled] = strconv.FormatBool(settings.PromoCodeEnabled)
 	updates[SettingKeyPasswordResetEnabled] = strconv.FormatBool(settings.PasswordResetEnabled)
 	updates[SettingKeyFrontendURL] = settings.FrontendURL
@@ -959,6 +968,7 @@ func (s *SettingService) InitializeDefaultSettings(ctx context.Context) error {
 		SettingKeyRegistrationEnabled:              "true",
 		SettingKeyEmailVerifyEnabled:               "false",
 		SettingKeyRegistrationEmailSuffixWhitelist: "[]",
+		SettingKeySiteEnabledLocales:               "[]",
 		SettingKeyPromoCodeEnabled:                 "true", // 默认启用优惠码功能
 		SettingKeySiteName:                         "SubioHub",
 		SettingKeySiteLogo:                         "",
@@ -1018,6 +1028,7 @@ func (s *SettingService) parseSettings(settings map[string]string) *SystemSettin
 		RegistrationEnabled:              settings[SettingKeyRegistrationEnabled] == "true",
 		EmailVerifyEnabled:               emailVerifyEnabled,
 		RegistrationEmailSuffixWhitelist: ParseRegistrationEmailSuffixWhitelist(settings[SettingKeyRegistrationEmailSuffixWhitelist]),
+		SiteEnabledLocales:               parseSiteEnabledLocales(settings[SettingKeySiteEnabledLocales]),
 		PromoCodeEnabled:                 settings[SettingKeyPromoCodeEnabled] != "false", // 默认启用
 		PasswordResetEnabled:             emailVerifyEnabled && settings[SettingKeyPasswordResetEnabled] == "true",
 		FrontendURL:                      settings[SettingKeyFrontendURL],
@@ -2299,4 +2310,55 @@ func (s *SettingService) SetStreamTimeoutSettings(ctx context.Context, settings 
 	}
 
 	return s.settingRepo.Set(ctx, SettingKeyStreamTimeoutSettings, string(data))
+}
+
+// supportedSiteLocales 前台支持的全部语言代码，需与 next-web 的 AVAILABLE_LOCALES 保持一致。
+var supportedSiteLocales = []string{"zh", "en", "es", "vi", "ar", "id", "pt", "ja", "ko", "th", "ru"}
+
+// parseSiteEnabledLocales 解析前台启用的语言列表；未配置或格式错误时返回全部语言。
+func parseSiteEnabledLocales(raw string) []string {
+	trimmed := strings.TrimSpace(raw)
+	if trimmed == "" {
+		return append([]string(nil), supportedSiteLocales...)
+	}
+	var items []string
+	if err := json.Unmarshal([]byte(trimmed), &items); err != nil {
+		return append([]string(nil), supportedSiteLocales...)
+	}
+	return filterSupportedSiteLocales(items, true)
+}
+
+// normalizeSiteEnabledLocales 归一化管理员提交的语言列表；至少保留默认语言。
+func normalizeSiteEnabledLocales(items []string) []string {
+	return filterSupportedSiteLocales(items, false)
+}
+
+func filterSupportedSiteLocales(items []string, fallbackAll bool) []string {
+	allowed := make(map[string]struct{}, len(supportedSiteLocales))
+	for _, code := range supportedSiteLocales {
+		allowed[code] = struct{}{}
+	}
+	seen := make(map[string]struct{}, len(items))
+	result := make([]string, 0, len(items))
+	for _, item := range items {
+		code := strings.ToLower(strings.TrimSpace(item))
+		if code == "" {
+			continue
+		}
+		if _, ok := allowed[code]; !ok {
+			continue
+		}
+		if _, duplicated := seen[code]; duplicated {
+			continue
+		}
+		seen[code] = struct{}{}
+		result = append(result, code)
+	}
+	if len(result) > 0 {
+		return result
+	}
+	if fallbackAll {
+		return append([]string(nil), supportedSiteLocales...)
+	}
+	return []string{"zh"}
 }

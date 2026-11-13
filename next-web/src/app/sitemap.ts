@@ -8,6 +8,7 @@ import type { AppLocale } from '@/store/locale';
 const publicStaticPaths = [
   '/',
   '/models',
+  '/pricing',
   '/news',
   '/login',
   '/register',

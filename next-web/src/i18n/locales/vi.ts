@@ -332,4 +332,98 @@ export default mergeMessages(vi, {
       },
     },
   },
+  pricing: {
+    meta: {
+      title: 'Bảng giá - SubioHub | Nạp một lần, số dư không hết hạn',
+      description:
+        'SubioHub chỉ cung cấp nạp tiền một lần. Không có gói đăng ký, không tự động gia hạn. Số dư không hết hạn và tính phí theo lượng token sử dụng.',
+    },
+    hero: {
+      badge: 'Nạp một lần · Số dư không hết hạn',
+      title: 'Trả theo mức dùng, nạp bao nhiêu dùng bấy nhiêu',
+      subtitle:
+        'SubioHub chỉ cung cấp nạp tiền một lần. Không có gói đăng ký, không tự động gia hạn và không có khoản trừ định kỳ. Số dư sau khi nạp có hiệu lực vĩnh viễn, không hết hạn và không bị đặt lại.',
+      primaryCta: 'Đăng ký và nạp tiền',
+      secondaryCta: 'Xem giá mô hình',
+    },
+    highlights: {
+      noSubscription: {
+        title: 'Không đăng ký, không tự trừ tiền',
+        description:
+          'Chúng tôi không bán gói đăng ký, không lưu ủy quyền trừ tiền, không tự gia hạn hay tạo hóa đơn định kỳ.',
+      },
+      permanent: {
+        title: 'Số dư không hết hạn',
+        description:
+          'Tiền nạp được ghi có ngay lập tức. Số dư chưa dùng không có ngày hết hạn và không bị đặt lại.',
+      },
+      realtime: {
+        title: 'Tính phí theo token theo thời gian thực',
+        description:
+          'Mỗi yêu cầu bị trừ theo đơn giá đầu vào, đầu ra và bộ nhớ đệm đã công bố.',
+      },
+    },
+    recharge: {
+      title: 'Các mức nạp',
+      subtitle:
+        'Số dư ghi có bằng đúng số tiền nạp (1:1). Phí: 6% + 0,50 USD cho đơn dưới 20 USD; từ 20 USD chỉ 6%, thu ngoài số tiền nạp.',
+      columns: {
+        amount: 'Số tiền nạp',
+        credited: 'Số dư ghi có',
+        fee: 'Phí',
+        pay: 'Tổng thanh toán',
+      },
+      minMax: 'Tối thiểu {min} USD, tối đa {max} USD mỗi lần nạp.',
+      customAmount: 'Có thể nhập bất kỳ số tiền nào trong khoảng trên, áp dụng cùng quy tắc phí.',
+      sameBenefits: 'Mọi mức nạp đều như nhau, không có gói hay quyền lợi mua thêm.',
+    },
+    billing: {
+      title: 'Chi tiết tính phí',
+      tokenBilling:
+        'Cách tính: trừ theo token theo thời gian thực. Không phí tháng, không mức tối thiểu, không chu kỳ cố định.',
+      fee: 'Phí: 6% + 0,50 USD cho đơn dưới 20 USD; từ 20 USD chỉ 6%.',
+      modelPrices: 'Giá mô hình: công bố tại Model Hub.',
+      currency: 'Tiền tệ: tính và thu bằng đô la Mỹ (USD).',
+      balanceValidity: 'Hiệu lực số dư: vĩnh viễn, không hết hạn.',
+      payment: 'Thanh toán và biên nhận: do Waffo xử lý và phát hành.',
+    },
+    faq: {
+      title: 'Câu hỏi thường gặp',
+      balanceExpiry: {
+        question: 'Số dư có hết hạn hoặc bị đặt lại không?',
+        answer: 'Không. Số dư có hiệu lực vĩnh viễn, không có ngày hết hạn và không bị đặt lại do không sử dụng.',
+      },
+      autoRenewal: {
+        question: 'Có tự động gia hạn hoặc trừ tiền định kỳ không?',
+        answer:
+          'Không. Chúng tôi không cung cấp gói đăng ký, không tự gia hạn và không lưu ủy quyền trừ tiền định kỳ.',
+      },
+      minimum: {
+        question: 'Mức nạp tối thiểu là bao nhiêu?',
+        answer:
+          'Tối thiểu {min} USD và tối đa {max} USD mỗi lần nạp. Có hỗ trợ số tiền tùy chỉnh.',
+      },
+      fee: {
+        question: 'Phí được tính như thế nào?',
+        answer:
+          'Đơn dưới 20 USD: 6% số tiền nạp cộng 0,50 USD. Từ 20 USD: chỉ 6%. Phí được cộng thêm ngoài số tiền nạp.',
+      },
+      usage: {
+        question: 'Sau khi nạp, việc dùng được tính phí thế nào?',
+        answer:
+          'Số dư bị trừ theo thời gian thực dựa trên lượng token thực tế, theo giá công bố tại Model Hub.',
+      },
+      refund: {
+        question: 'Tôi có thể yêu cầu hoàn tiền không?',
+        answer: 'Vui lòng xem Chính sách hoàn tiền để biết điều kiện và quy trình.',
+      },
+    },
+    cta: {
+      title: 'Sẵn sàng bắt đầu?',
+      description: 'Đăng ký, nạp tiền và tạo API Key. Không cần đăng ký gói, nạp bất cứ khi nào bạn cần.',
+      button: 'Đăng ký ngay',
+      viewPricing: 'Xem bảng giá và chi tiết nạp tiền',
+    },
+    currencyNote: 'Tất cả số tiền được tính bằng đô la Mỹ (USD).',
+  },
 });

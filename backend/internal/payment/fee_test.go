@@ -47,13 +47,13 @@ func TestCalculatePayAmount(t *testing.T) {
 			name:     "fee rounds UP small remainder",
 			amount:   10.00,
 			feeRate:  3.33,
-			expected: "10.34", // 10 * 3.33 / 100 = 0.333 -> round up -> 0.34
+			expected: "10.84", // 10 * 3.33 / 100 = 0.333 -> 0.34, plus 0.50 small-amount surcharge
 		},
 		{
 			name:     "very small amount",
 			amount:   0.01,
 			feeRate:  1,
-			expected: "0.02", // 0.01 * 1/100 = 0.0001 -> round up -> 0.01 -> total 0.02
+			expected: "0.52", // 0.0001 -> 0.01, plus 0.50 small-amount surcharge
 		},
 		{
 			name:     "large amount",
@@ -96,6 +96,36 @@ func TestCalculatePayAmount(t *testing.T) {
 			amount:   33.33,
 			feeRate:  7.77,
 			expected: "35.92", // 33.33 * 7.77 / 100 = 2.589741 -> round up -> 2.59 -> total 35.92
+		},
+		{
+			name:     "below 20 USD applies 6 percent plus 0.50",
+			amount:   10.00,
+			feeRate:  6,
+			expected: "11.10", // 0.60 + 0.50 surcharge
+		},
+		{
+			name:     "just below 20 USD still applies surcharge",
+			amount:   19.99,
+			feeRate:  6,
+			expected: "21.69", // 1.20 + 0.50 surcharge
+		},
+		{
+			name:     "exactly 20 USD only charges 6 percent",
+			amount:   20.00,
+			feeRate:  6,
+			expected: "21.20",
+		},
+		{
+			name:     "30 USD only charges 6 percent",
+			amount:   30.00,
+			feeRate:  6,
+			expected: "31.80",
+		},
+		{
+			name:     "500 USD only charges 6 percent",
+			amount:   500.00,
+			feeRate:  6,
+			expected: "530.00",
 		},
 	}
 

@@ -9,6 +9,7 @@ const zhCN = {
       home: "首页",
       console: "控制台",
       modelHub: "模型广场",
+      pricing: "定价",
       news: "资讯",
       plans: "套餐订购",
       docs: "文档",
@@ -657,11 +658,99 @@ const zhCN = {
   },
   legal: {
     nav: {
+      pricing: "定价",
       privacy: "隐私政策",
       terms: "服务条款",
       refund: "退款政策",
       contact: "联系我们",
     },
+  },
+  pricing: {
+    meta: {
+      title: "定价 - SubioHub｜一次性充值，余额永久有效",
+      description:
+        "SubioHub 仅提供一次性充值，不销售订阅套餐、不自动续费。余额永久有效，按模型 token 用量实时扣费。",
+    },
+    hero: {
+      badge: "一次性充值 · 余额永久有效",
+      title: "按量计费，用多少充多少",
+      subtitle:
+        "SubioHub 仅提供一次性充值，不提供订阅套餐、不自动续费、不产生周期性扣款。充值到账后的余额长期有效，不会过期清零。",
+      primaryCta: "注册并充值",
+      secondaryCta: "查看模型价格",
+    },
+    highlights: {
+      noSubscription: {
+        title: "无订阅、无自动扣费",
+        description: "不销售订阅套餐，不保存扣款授权，不会自动续费或产生周期性账单。",
+      },
+      permanent: {
+        title: "余额永久有效",
+        description: "充值实时到账，未使用的余额不设有效期，不会过期清零。",
+      },
+      realtime: {
+        title: "按 token 实时计费",
+        description: "按模型的输入、输出、缓存单价逐次扣费，价格公开在模型广场。",
+      },
+    },
+    recharge: {
+      title: "充值档位",
+      subtitle:
+        "到账金额与充值金额 1:1。手续费：单笔 20 USD 以下为 6% + 0.50 USD，20 USD 及以上仅 6%，在充值金额之外单独收取。",
+      columns: {
+        amount: "充值金额",
+        credited: "到账余额",
+        fee: "手续费",
+        pay: "实付金额",
+      },
+      minMax: "单笔最低 {min} USD，最高 {max} USD。",
+      customAmount: "除推荐档位外，可在上述区间内输入任意金额，手续费按同一规则计算。",
+      sameBenefits: "所有档位权益一致，无等级差异，也不存在需要额外购买的套餐权益。",
+    },
+    billing: {
+      title: "计费说明",
+      tokenBilling: "计费方式：按 token 用量实时扣费，无月费、无最低消费、无固定计费周期。",
+      fee: "手续费：单笔 20 USD 以下按 6% + 0.50 USD 收取，20 USD 及以上仅按 6% 收取。",
+      modelPrices: "模型单价：输入、输出、缓存读取/缓存写入单价公示在「模型广场」。",
+      currency: "结算币种：以美元（USD）计价与扣费。",
+      balanceValidity: "余额有效期：永久有效，不因时间推移失效。",
+      payment: "支付与收据：由支付服务商（Waffo）处理并出具。",
+    },
+    faq: {
+      title: "常见问题",
+      balanceExpiry: {
+        question: "余额会过期或被清零吗？",
+        answer: "不会。充值到账后的余额永久有效，不设有效期，也不会因长时间未使用而清零。",
+      },
+      autoRenewal: {
+        question: "会自动续费或产生周期性扣款吗？",
+        answer: "不会。本站不提供订阅套餐，没有自动续费，也不会保存任何周期性扣款授权。",
+      },
+      minimum: {
+        question: "最低可以充值多少？",
+        answer: "单笔最低 {min} USD，最高 {max} USD，支持自定义金额。",
+      },
+      fee: {
+        question: "手续费怎么算？",
+        answer:
+          "单笔 20 USD 以下为充值金额的 6% 加 0.50 USD；20 USD 及以上仅收取 6%。手续费在充值金额之外单独收取。",
+      },
+      usage: {
+        question: "充值后如何计费？",
+        answer: "按实际调用模型的 token 用量实时扣减余额，单价在「模型广场」公示。",
+      },
+      refund: {
+        question: "可以退款吗？",
+        answer: "退款条件与流程请参见《退款政策》页面。",
+      },
+    },
+    cta: {
+      title: "准备好开始了吗？",
+      description: "注册后即可充值并创建 API Key，无需订阅，随时按需充值。",
+      button: "立即注册",
+      viewPricing: "查看定价与充值说明",
+    },
+    currencyNote: "所有金额均以美元（USD）计价。",
   },
   publicAuth: {
     common: {

@@ -9,6 +9,7 @@ const enUS = {
       home: "Home",
       console: "Console",
       modelHub: "Model Hub",
+      pricing: "Pricing",
       news: "News",
       plans: "Plans",
       docs: "Docs",
@@ -684,11 +685,111 @@ const enUS = {
   },
   legal: {
     nav: {
+      pricing: "Pricing",
       privacy: "Privacy Policy",
       terms: "Terms of Service",
       refund: "Refund Policy",
       contact: "Contact",
     },
+  },
+  pricing: {
+    meta: {
+      title: "Pricing - SubioHub | One-time top-up, balance never expires",
+      description:
+        "SubioHub offers one-time credit top-ups only. No subscription plans, no auto-renewal. Your balance never expires and is billed per token usage.",
+    },
+    hero: {
+      badge: "One-time top-up · Balance never expires",
+      title: "Pay as you go, top up what you need",
+      subtitle:
+        "SubioHub only offers one-time top-ups. There are no subscription plans, no auto-renewal and no recurring charges. Your balance stays valid permanently and never expires or resets.",
+      primaryCta: "Sign up and top up",
+      secondaryCta: "View model pricing",
+    },
+    highlights: {
+      noSubscription: {
+        title: "No subscription, no auto-charge",
+        description:
+          "We do not sell subscription plans, store billing mandates, auto-renew or create recurring invoices.",
+      },
+      permanent: {
+        title: "Balance never expires",
+        description:
+          "Top-ups are credited instantly. Unused balance has no expiry date and is never reset.",
+      },
+      realtime: {
+        title: "Billed per token in real time",
+        description:
+          "Usage is deducted per request based on published input, output and cache prices.",
+      },
+    },
+    recharge: {
+      title: "Top-up tiers",
+      subtitle:
+        "Credited balance equals the top-up amount (1:1). Fee: 6% + 0.50 USD for orders under 20 USD, and 6% only for 20 USD and above, charged on top of the top-up amount.",
+      columns: {
+        amount: "Top-up amount",
+        credited: "Credited balance",
+        fee: "Fee",
+        pay: "Total paid",
+      },
+      minMax: "Minimum {min} USD and maximum {max} USD per top-up.",
+      customAmount:
+        "Any amount within the range above is supported and charged with the same fee rule.",
+      sameBenefits:
+        "All tiers are equivalent. There are no tiers, plans or additional benefits to purchase.",
+    },
+    billing: {
+      title: "Billing details",
+      tokenBilling:
+        "Billing method: deducted per token in real time. No monthly fee, no minimum spend and no fixed billing cycle.",
+      fee: "Fee: 6% + 0.50 USD for orders under 20 USD, and 6% only for orders of 20 USD and above.",
+      modelPrices:
+        "Model prices: input, output, cache read and cache write prices are published in the Model Hub.",
+      currency: "Currency: priced and charged in US dollars (USD).",
+      balanceValidity: "Balance validity: permanent. It does not expire over time.",
+      payment: "Payment and receipts: handled and issued by our payment provider (Waffo).",
+    },
+    faq: {
+      title: "FAQ",
+      balanceExpiry: {
+        question: "Does the balance expire or get reset?",
+        answer:
+          "No. Credited balance is valid permanently, has no expiry date and is never reset due to inactivity.",
+      },
+      autoRenewal: {
+        question: "Will I be auto-renewed or charged periodically?",
+        answer:
+          "No. We do not offer subscription plans, there is no auto-renewal and no recurring billing mandate is stored.",
+      },
+      minimum: {
+        question: "What is the minimum top-up?",
+        answer:
+          "The minimum is {min} USD and the maximum is {max} USD per top-up. Custom amounts are supported.",
+      },
+      fee: {
+        question: "How is the fee calculated?",
+        answer:
+          "For orders under 20 USD the fee is 6% of the top-up amount plus 0.50 USD. For 20 USD and above, only 6% is charged. The fee is charged on top of the top-up amount.",
+      },
+      usage: {
+        question: "How is usage charged after topping up?",
+        answer:
+          "Balance is deducted in real time according to actual token usage, at the prices published in the Model Hub.",
+      },
+      refund: {
+        question: "Can I get a refund?",
+        answer: "Please see our Refund Policy for refund conditions and process.",
+      },
+    },
+    cta: {
+      title: "Ready to get started?",
+      description:
+        "Sign up, top up and create an API key. No subscription required, top up whenever you need.",
+      button: "Sign up now",
+      viewPricing: "View pricing and top-up details",
+    },
+    currencyNote: "All amounts are denominated in US dollars (USD).",
   },
   publicAuth: {
     common: {

@@ -93,3 +93,14 @@ func TestSettingService_AffiliateSettlementSettings_DefaultAndOverride(t *testin
 	require.True(t, svc.IsAffiliateAutoSettlementEnabled(context.Background()))
 	require.False(t, svc.IsAffiliateManualPayoutSettlementEnabled(context.Background()))
 }
+
+func TestParseSiteEnabledLocales(t *testing.T) {
+	t.Parallel()
+
+	require.Equal(t, supportedSiteLocales, parseSiteEnabledLocales(""))
+	require.Equal(t, supportedSiteLocales, parseSiteEnabledLocales("{not-json"))
+	require.Equal(t, []string{"zh", "en"}, parseSiteEnabledLocales(`["ZH"," en ","xx","zh"]`))
+	require.Equal(t, []string{"ja"}, parseSiteEnabledLocales(`["ja"]`))
+	require.Equal(t, []string{"zh"}, normalizeSiteEnabledLocales([]string{"xx", ""}))
+	require.Equal(t, []string{"ko", "ru"}, normalizeSiteEnabledLocales([]string{"ko", "ru", "ko"}))
+}

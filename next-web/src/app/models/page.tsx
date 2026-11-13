@@ -16,6 +16,7 @@ export default function ModelsPage() {
   const consoleEntryPath = isAuthenticated ? dashboardPath : '/login';
   const localizedHomePath = localizePath('/', locale);
   const localizedModelsPath = localizePath('/models', locale);
+  const localizedPricingPath = localizePath('/pricing', locale);
   const localizedLoginPath = localizePath('/login', locale);
   const localizedNewsPath = localizePath('/news', locale);
 
@@ -56,6 +57,9 @@ export default function ModelsPage() {
               </Link>
               <Link href={localizedModelsPath} className="text-sm font-semibold text-gray-900 dark:text-white">
                 {t('dashboard.nav.modelHub')}
+              </Link>
+              <Link href={localizedPricingPath} className="text-sm font-medium text-gray-600 transition-colors hover:text-gray-900 dark:text-gray-400 dark:hover:text-white">
+                {t('dashboard.nav.pricing')}
               </Link>
               <Link href={localizedNewsPath} className="text-sm font-medium text-gray-600 transition-colors hover:text-gray-900 dark:text-gray-400 dark:hover:text-white">
                 {t('dashboard.nav.news')}

@@ -110,7 +110,11 @@ export default function FinancePage() {
   }, [t]);
 
   useEffect(() => {
-    void loadFinanceData();
+    // 延后到下一个事件循环执行，避免在 effect 内同步 setState 触发级联渲染。
+    const timer = window.setTimeout(() => {
+      void loadFinanceData();
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, [loadFinanceData]);
 
   const localAmount = useMemo(() => {
@@ -137,7 +141,10 @@ export default function FinancePage() {
 
   const selectedMethodMeta = selectedMethod ? checkout.methods[selectedMethod] : undefined;
   const effectiveFeeRate = selectedMethodMeta?.fee_rate ?? checkout.recharge_fee_rate ?? 0;
-  const feeAmount = amountUSD > 0 && effectiveFeeRate > 0 ? Math.ceil(amountUSD * effectiveFeeRate) / 100 : 0;
+  // 与后端 internal/payment/fee.go 保持一致：20 USD 以下加收 0.50 USD 固定手续费。
+  const percentageFee = amountUSD > 0 && effectiveFeeRate > 0 ? Math.ceil(amountUSD * effectiveFeeRate) / 100 : 0;
+  const feeAmount =
+    percentageFee > 0 && amountUSD < 20 ? Number((percentageFee + 0.5).toFixed(2)) : percentageFee;
   const actualPayUSD = amountUSD + feeAmount;
   const creditedAmountUSD = amountUSD * (checkout.balance_recharge_multiplier > 0 ? checkout.balance_recharge_multiplier : 1);
   const canCreateOrder = !checkout.balance_disabled && amountUSD > 0 && !!selectedMethod && availableMethods.some(([key]) => key === selectedMethod);

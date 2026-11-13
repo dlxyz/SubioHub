@@ -27,6 +27,7 @@ type SystemSettings struct {
 	RegistrationEnabled              bool     `json:"registration_enabled"`
 	EmailVerifyEnabled               bool     `json:"email_verify_enabled"`
 	RegistrationEmailSuffixWhitelist []string `json:"registration_email_suffix_whitelist"`
+	SiteEnabledLocales               []string `json:"site_enabled_locales"`
 	PromoCodeEnabled                 bool     `json:"promo_code_enabled"`
 	PasswordResetEnabled             bool     `json:"password_reset_enabled"`
 	FrontendURL                      string   `json:"frontend_url"`
@@ -193,6 +194,7 @@ type PublicSettings struct {
 	RegistrationEnabled              bool             `json:"registration_enabled"`
 	EmailVerifyEnabled               bool             `json:"email_verify_enabled"`
 	RegistrationEmailSuffixWhitelist []string         `json:"registration_email_suffix_whitelist"`
+	SiteEnabledLocales               []string         `json:"site_enabled_locales"`
 	PromoCodeEnabled                 bool             `json:"promo_code_enabled"`
 	PasswordResetEnabled             bool             `json:"password_reset_enabled"`
 	InvitationCodeEnabled            bool             `json:"invitation_code_enabled"`

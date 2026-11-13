@@ -41,6 +41,7 @@ import {
   type PaymentProviderOption,
 } from '@/lib/payment-provider-config';
 import { useI18n } from '@/i18n/use-i18n';
+import { AVAILABLE_LOCALES } from '@/store/locale';
 
 type SettingsForm = {
   registration_enabled: boolean;
@@ -51,6 +52,7 @@ type SettingsForm = {
   totp_enabled: boolean;
   frontend_url: string;
   registration_email_suffix_whitelist_text: string;
+  site_enabled_locales: string[];
   site_name: string;
   site_logo: string;
   site_subtitle: string;
@@ -226,6 +228,10 @@ function buildForm(settings: SystemSettings): SettingsForm {
     totp_enabled: Boolean(settings.totp_enabled),
     frontend_url: String(settings.frontend_url || ''),
     registration_email_suffix_whitelist_text: (settings.registration_email_suffix_whitelist || []).join('\n'),
+    site_enabled_locales:
+      Array.isArray(settings.site_enabled_locales) && settings.site_enabled_locales.length > 0
+        ? [...settings.site_enabled_locales]
+        : AVAILABLE_LOCALES.map((item) => item.code),
     site_name: String(settings.site_name || ''),
     site_logo: String(settings.site_logo || ''),
     site_subtitle: String(settings.site_subtitle || ''),
@@ -502,6 +508,24 @@ export default function AdminSettingsPage() {
     setForm((prev) => (prev ? { ...prev, [key]: value } : prev));
   };
 
+  const toggleSiteLocale = (code: string) => {
+    setForm((prev) => {
+      if (!prev) {
+        return prev;
+      }
+      const exists = prev.site_enabled_locales.includes(code);
+      if (exists && prev.site_enabled_locales.length === 1) {
+        return prev; // 至少保留一种前台语言
+      }
+      return {
+        ...prev,
+        site_enabled_locales: exists
+          ? prev.site_enabled_locales.filter((item) => item !== code)
+          : [...prev.site_enabled_locales, code],
+      };
+    });
+  };
+
   const setProviderFormField = <K extends keyof ProviderFormState>(key: K, value: ProviderFormState[K]) => {
     setProviderForm((prev) => ({ ...prev, [key]: value }));
   };
@@ -746,6 +770,7 @@ export default function AdminSettingsPage() {
         totp_enabled: form.totp_enabled,
         frontend_url: form.frontend_url.trim(),
         registration_email_suffix_whitelist: parseStringList(form.registration_email_suffix_whitelist_text),
+        site_enabled_locales: form.site_enabled_locales,
         site_name: form.site_name.trim(),
         site_logo: form.site_logo.trim(),
         site_subtitle: form.site_subtitle.trim(),
@@ -1060,6 +1085,31 @@ export default function AdminSettingsPage() {
               onChange={(e) => updateForm('site_subtitle', e.target.value)}
               className="w-full rounded-lg border border-gray-200 bg-transparent px-3 py-2 text-sm dark:border-gray-700 dark:text-white"
             />
+          </div>
+          <div className="md:col-span-2">
+            <FieldLabel>前台显示语言</FieldLabel>
+            <p className="mb-2 text-xs text-gray-500 dark:text-gray-400">
+              勾选后，前台语言切换器只显示所选语言；至少保留一种。全部勾选即显示全部语言。
+            </p>
+            <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+              {AVAILABLE_LOCALES.map((item) => {
+                const checked = form.site_enabled_locales.includes(item.code);
+                return (
+                  <label
+                    key={item.code}
+                    className="flex cursor-pointer items-center gap-2 rounded-lg border border-gray-200 px-3 py-2 text-sm dark:border-gray-700"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={checked}
+                      onChange={() => toggleSiteLocale(item.code)}
+                    />
+                    <span>{item.name}</span>
+                    <span className="text-xs text-gray-400">{item.shortLabel}</span>
+                  </label>
+                );
+              })}
+            </div>
           </div>
           <div>
             <FieldLabel>站点 Logo</FieldLabel>

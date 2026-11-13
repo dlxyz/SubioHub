@@ -6,6 +6,7 @@ export const appLocales = AVAILABLE_LOCALES.map((item) => item.code);
 export const publicRoutePrefixes = [
   '/',
   '/models',
+  '/pricing',
   '/login',
   '/register',
   '/forgot-password',
