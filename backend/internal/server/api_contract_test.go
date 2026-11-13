@@ -456,6 +456,7 @@ func TestAPIContracts(t *testing.T) {
 					service.SettingKeyRegistrationEnabled:              "true",
 					service.SettingKeyEmailVerifyEnabled:               "false",
 					service.SettingKeyRegistrationEmailSuffixWhitelist: "[]",
+					service.SettingKeySiteEnabledLocales:               `["zh","en"]`,
 					service.SettingKeyPromoCodeEnabled:                 "true",
 
 					service.SettingKeySMTPHost:     "smtp.example.com",
@@ -520,6 +521,7 @@ func TestAPIContracts(t *testing.T) {
 					"registration_enabled": true,
 					"email_verify_enabled": false,
 					"registration_email_suffix_whitelist": [],
+					"site_enabled_locales": ["zh", "en"],
 					"promo_code_enabled": true,
 					"affiliate_auto_settlement_enabled": false,
 					"affiliate_manual_payout_settlement_enabled": true,
