@@ -65,8 +65,8 @@ export default function HomePage() {
             <div className="flex items-center gap-6 md:gap-8">
               {/* Logo */}
               <div className="flex items-center gap-2">
-                <div className="h-8 w-8 rounded-full bg-gradient-to-tr from-blue-500 to-purple-500 flex items-center justify-center shadow-sm">
-                  <span className="text-white font-bold text-lg leading-none">S</span>
+                <div className="h-8 w-8 flex items-center justify-center">
+                  <img src="/logo-mark.png" alt="SubioHub" className="h-full w-full object-contain" />
                 </div>
                 <span className="text-xl font-bold tracking-tight text-gray-900 dark:text-white">
                   SubioHub

@@ -100,8 +100,8 @@ export default function NewsListView() {
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-8">
             <Link href={localizedHomePath} className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-tr from-blue-500 to-purple-500 shadow-sm">
-                <span className="text-lg font-bold leading-none text-white">S</span>
+              <div className="flex h-8 w-8 items-center justify-center">
+                <img src="/logo-mark.png" alt="SubioHub" className="h-full w-full object-contain" />
               </div>
               <span className="text-xl font-bold tracking-tight">SubioHub</span>
             </Link>

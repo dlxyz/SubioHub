@@ -258,8 +258,8 @@ export default function DashboardLayout({
       >
         <div className="flex h-20 items-center justify-between border-b border-gray-200/70 px-5 dark:border-gray-800/70">
           <Link href="/" className="flex min-w-0 items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-purple-500 text-lg font-bold text-white shadow-lg shadow-blue-500/20">
-              S
+            <div className="flex h-11 w-11 items-center justify-center">
+              <img src="/logo-mark.png" alt="SubioHub" className="h-full w-full object-contain" />
             </div>
             <div className="min-w-0">
               <div className="truncate text-lg font-bold tracking-tight text-gray-900 dark:text-white">
@@ -441,8 +441,8 @@ export default function DashboardLayout({
                 href="/"
                 className="flex min-w-0 items-center gap-2 md:hidden"
               >
-                <div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-purple-500 text-sm font-bold text-white shadow-lg shadow-blue-500/20">
-                  S
+                <div className="flex h-9 w-9 items-center justify-center">
+                  <img src="/logo-mark.png" alt="SubioHub" className="h-full w-full object-contain" />
                 </div>
                 <span className="truncate text-base font-semibold text-gray-900 dark:text-white">
                   SubioHub
